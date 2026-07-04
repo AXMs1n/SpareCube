@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Warehouse K</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%230D0F12'/%3E%3Cstop offset='1' stop-color='%23152A2A'/%3E%3C/linearGradient%3E%3Cfilter id='glow' x='-50%25' y='-50%25' width='200%25' height='200%25'%3E%3CfeGaussianBlur stdDeviation='2'/%3E%3C/filter%3E%3C/defs%3E%3Crect x='2' y='2' width='60' height='60' rx='14' fill='url(%23bg)' stroke='%232DD4BF' stroke-opacity='0.45' stroke-width='2'/%3E%3Cg transform='translate(15,16) scale(1.4)' filter='url(%23glow)' opacity='0.55'%3E%3Cpath d='M3 21v-13l9 -4l9 4v13' fill='none' stroke='%232DD4BF' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M13 13h4v8h-10v-6h6' fill='none' stroke='%232DD4BF' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M13 21v-9a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v3' fill='none' stroke='%232DD4BF' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/g%3E%3Cg transform='translate(15,16) scale(1.4)'%3E%3Cpath d='M3 21v-13l9 -4l9 4v13' fill='none' stroke='%232DD4BF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M13 13h4v8h-10v-6h6' fill='none' stroke='%232DD4BF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M13 21v-9a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v3' fill='none' stroke='%232DD4BF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#14161A; --panel:#1B1E23; --panelAlt:#22262C; --border:#2C3139;
+    --text:#ECEDEF; --muted:#878D97; --mutedFaint:#5B6068;
+    --accent:#2DD4BF; --accentDim:#134E4A; --warn:#F5A623; --warnDim:#4A3413;
+    --danger:#F0473E; --dangerDim:#4A1613; --machine:#3B82F6; --machineDim:#152A4A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Prompt',sans-serif;-webkit-font-smoothing:antialiased;}
+  .head{font-family:'Prompt',sans-serif;}
+  .mono{font-family:'Prompt',sans-serif;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px 40px;}
+  .topbar{position:sticky;top:0;background:radial-gradient(ellipse at 8% 50%, rgba(45,212,191,0.18), transparent 60%), var(--bg);border-bottom:1px solid var(--border);z-index:20;}
+  .topbar-inner{max-width:1180px;margin:0 auto;padding:20px 24px 0;}
+  .brand{display:flex;align-items:center;gap:8px;}
+  .brand .icon{background:var(--accentDim);border-radius:8px;padding:7px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:19px;box-shadow:0 0 12px #2DD4BF55;}
+  .row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .btn{border:none;cursor:pointer;font-family:'Prompt',sans-serif;font-weight:600;border-radius:8px;padding:9px 14px;font-size:13px;display:inline-flex;align-items:center;gap:6px;}
+  .btn-accent{background:var(--accent);color:#0A0C0E;}
+  .btn-ghost{background:var(--panelAlt);color:var(--text);border:1px solid var(--border);}
+  .btn-danger{background:var(--dangerDim);color:var(--danger);border:1px solid #F0473E44;}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);}
+  .tab{background:none;border:none;color:var(--muted);padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .badge{background:var(--danger);color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;font-family:'Prompt',sans-serif;}
+  .content{padding-top:20px;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+  .stat{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;}
+  .stat .lbl{color:var(--muted);font-size:11px;}
+  .stat .val{font-family:'Prompt',sans-serif;font-size:24px;margin-top:6px;}
+  .section-title{font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  .card-list{display:flex;flex-direction:column;gap:8px;}
+  .low-card{display:flex;align-items:center;gap:12px;padding:12px;background:var(--dangerDim);border:1px solid #F0473E44;border-radius:10px;}
+  .thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid var(--border);background:var(--panelAlt);}
+  .thumb-ph{width:40px;height:40px;border-radius:8px;background:var(--panelAlt);display:flex;align-items:center;justify-content:center;color:var(--mutedFaint);flex-shrink:0;font-size:16px;}
+  .grow{flex:1;min-width:0;}
+  .truncate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .search{position:relative;margin-bottom:16px;}
+  .search input{width:100%;padding:10px 12px 10px 36px;}
+  .search .icon{position:absolute;left:12px;top:11px;color:var(--mutedFaint);}
+  input,textarea,select{background:var(--panelAlt);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Prompt',sans-serif;font-size:14px;outline:none;width:100%;}
+  input:focus,textarea:focus,select:focus{border-color:var(--accent);}
+  label.field{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .field-wrap{margin-bottom:14px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .parts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  @media(min-width:600px){.parts-grid{grid-template-columns:repeat(3,1fr);}}
+  @media(min-width:900px){.parts-grid{grid-template-columns:repeat(4,1fr);}}
+  .part-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .part-photo{aspect-ratio:4/3;background:var(--panelAlt);position:relative;display:flex;align-items:center;justify-content:center;color:var(--mutedFaint);}
+  .part-photo img{width:100%;height:100%;object-fit:cover;}
+  .edit-btn{position:absolute;top:6px;right:6px;background:rgba(20,22,26,.75);border:none;border-radius:6px;padding:5px;cursor:pointer;color:var(--text);}
+  .part-body{padding:12px;}
+  .part-name{font-size:15px;font-weight:600;}
+  .part-code{color:var(--mutedFaint);font-size:12px;font-family:'Prompt',sans-serif;margin-bottom:8px;}
+  .machine-tag{color:var(--machine);font-size:11.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:4px;}
+  .machine-select-row{display:flex;gap:8px;}
+  .machine-select-row select{flex:1;}
+  .machine-add-inline{margin-top:8px;display:flex;gap:8px;}
+  .machine-add-inline input{flex:1;}
+  .machine-add-inline button{white-space:nowrap;}
+  .machine-group{border:1.5px solid var(--machine);border-radius:14px;padding:14px 14px 4px;margin-bottom:18px;background:#3B82F60A;}
+  .machine-group.unassigned{border:1.5px dashed var(--border);background:transparent;}
+  .machine-group-title{color:var(--machine);font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  .machine-group.unassigned .machine-group-title{color:var(--mutedFaint);}
+  .zoomable{cursor:zoom-in;}
+  .lightbox-overlay{position:fixed;inset:0;background:rgba(8,9,11,.92);z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;}
+  .lightbox-overlay img{max-width:100%;max-height:100%;border-radius:10px;object-fit:contain;}
+  .lightbox-close{position:absolute;top:16px;right:20px;background:rgba(20,22,26,.75);border:none;border-radius:8px;padding:8px 12px;color:var(--text);font-size:18px;cursor:pointer;}
+  .gauge-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px;}
+  .gauge-bar{background:var(--panelAlt);height:4px;border-radius:2px;overflow:hidden;}
+  .gauge-fill{height:100%;transition:width .3s;}
+  .withdraw-btn{width:100%;margin-top:10px;padding:8px 0;background:var(--panelAlt);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+  .withdraw-btn i{color:var(--accent);font-size:14px;}
+  .btn i{font-size:14px;}
+  .btn-accent i{color:#0A0C0E;}
+  .empty{text-align:center;padding:40px 0;color:var(--mutedFaint);font-size:13px;}
+  .hist-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--panel);border:1px solid var(--border);border-radius:10px;}
+  .hist-icon{background:var(--panelAlt);border-radius:8px;padding:8px;display:flex;color:var(--accent);font-size:15px;}
+  .overlay{position:fixed;inset:0;background:rgba(10,11,13,.7);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
+  @media(min-width:600px){.overlay{align-items:center;}}
+  .modal{background:var(--panel);border:1px solid var(--border);border-radius:16px 16px 0 0;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;}
+  @media(min-width:600px){.modal{border-radius:16px;}}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--panel);}
+  .modal-body{padding:20px;}
+  .close-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;}
+  .photo-picker{width:120px;height:120px;border-radius:12px;background:var(--panelAlt);border:1px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--mutedFaint);cursor:pointer;margin:0 auto 16px;overflow:hidden;}
+  .photo-picker img{width:100%;height:100%;object-fit:cover;}
+  .err-text{color:var(--danger);font-size:12px;margin-bottom:12px;}
+  .notice{padding:14px;background:var(--warnDim);border:1px solid #F5A62344;border-radius:10px;margin-bottom:20px;font-size:12.5px;color:#F0D3A0;line-height:1.6;}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);padding:10px 18px;border-radius:8px;font-size:13px;z-index:100;}
+  .spin{animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  a{color:var(--accent);}
+  .login-screen{
+    min-height:100vh;
+    position:relative;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(45,212,191,0.13), transparent 55%),
+      radial-gradient(circle at 90% 85%, rgba(124,58,237,0.08), transparent 50%),
+      repeating-linear-gradient(0deg, rgba(45,212,191,0.05) 0, rgba(45,212,191,0.05) 1px, transparent 1px, transparent 42px),
+      repeating-linear-gradient(90deg, rgba(45,212,191,0.05) 0, rgba(45,212,191,0.05) 1px, transparent 1px, transparent 42px),
+      radial-gradient(rgba(45,212,191,0.16) 1px, transparent 1.2px) 0 0/26px 26px,
+      var(--bg);
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="wrap" style="padding-top:80px;text-align:center;color:var(--mutedFaint);">กำลังโหลด...</div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc,
+  runTransaction, serverTimestamp, query, orderBy, limit
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+/* หมายเหตุ: ไม่ใช้ Firebase Storage เพราะ Google เปลี่ยนนโยบายให้ต้องผูกบัตรเครดิต (Blaze plan)
+   ถึงจะใช้ได้แล้ว เราเลยเก็บรูปเป็น base64 ไว้ในเอกสาร Firestore แทน ยังฟรี 100% ไม่ต้องผูกบัตร */
+
+/* ======================================================
+   1) วางค่า Firebase config ของคุณตรงนี้
+   (หาได้จาก Firebase Console > Project settings > Your apps > SDK setup and configuration)
+   ====================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDHuOU2qwFxwq2TFJbC_lzSXgscgqU8tcQ",
+  authDomain: "warehouse-part-k.firebaseapp.com",
+  projectId: "warehouse-part-k",
+  storageBucket: "warehouse-part-k.firebasestorage.app",
+  messagingSenderId: "704935032914",
+  appId: "1:704935032914:web:ef4ad7317a4863d7f5078b"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* ======================================================
+   ตั้งรหัสผ่านสำหรับสิทธิ์ Admin ตรงนี้ (เปลี่ยนเป็นรหัสของคุณเองได้เลย)
+   ====================================================== */
+const ADMIN_PIN = "1234";
+
+/* ---------------- state ---------------- */
+let parts = [];
+let history = [];
+let machines = [];
+let view = "dashboard";
+let search = "";
+let addOpen = false, editPart = null, withdrawPart = null, saving = false;
+let showNewMachineInput = false;
+let editingMachineId = null;
+let savingMachine = false;
+let lightboxImg = null;
+let currentRole = localStorage.getItem("wk_role") || null; // "admin" | "user"
+let currentName = localStorage.getItem("wk_name") || "";
+let loginErr = "";
+let loginShowPin = false;
+
+/* ---------------- firestore live sync ---------------- */
+onSnapshot(collection(db, "parts"), (snap) => {
+  parts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  render();
+}, (err) => showToast("โหลดคลังไม่สำเร็จ: " + err.message));
+
+onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(200)), (snap) => {
+  history = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  render();
+}, (err) => showToast("โหลดประวัติไม่สำเร็จ: " + err.message));
+
+onSnapshot(query(collection(db, "machines"), orderBy("name")), (snap) => {
+  machines = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  render();
+}, (err) => showToast("โหลดรายชื่อเครื่องจักรไม่สำเร็จ: " + err.message));
+
+/* ---------------- helpers ---------------- */
+function esc(s){ return (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function gaugeColor(qty, min){
+  if (qty <= min) return "var(--danger)";
+  if (qty <= min * 1.3) return "var(--warn)";
+  return "var(--accent)";
+}
+
+function compressImage(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("อ่านไฟล์รูปไม่สำเร็จ"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("โหลดรูปไม่สำเร็จ"));
+      img.onload = () => {
+        const maxW = 360;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.5));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+let toastTimer;
+function showToast(msg){
+  clearTimeout(toastTimer);
+  let el = document.getElementById("toast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "toast";
+    el.className = "toast";
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.display = "block";
+  toastTimer = setTimeout(() => { el.style.display = "none"; }, 2600);
+}
+
+/* ---------------- data actions ---------------- */
+async function ensureMachine(name){
+  const existing = machines.find(m => m.name.trim().toLowerCase() === name.trim().toLowerCase());
+  if (existing) return existing.name;
+  try {
+    await addDoc(collection(db, "machines"), { name: name.trim(), createdAt: serverTimestamp() });
+  } catch (e) {
+    showToast("บันทึกเครื่องจักรใหม่ไม่สำเร็จ: " + e.message);
+  }
+  return name.trim();
+}
+
+async function savePart(data){
+  saving = true; render();
+  try {
+    const { id, ...rest } = data;
+    if (id) {
+      await updateDoc(doc(db, "parts", id), rest);
+    } else {
+      await addDoc(collection(db, "parts"), { ...rest, createdAt: serverTimestamp() });
+    }
+    addOpen = false; editPart = null;
+  } catch (e) {
+    showToast("บันทึกไม่สำเร็จ: " + e.message);
+  } finally {
+    saving = false; render();
+  }
+}
+
+async function deletePart(id){
+  try {
+    await deleteDoc(doc(db, "parts", id));
+    editPart = null; render();
+  } catch (e) {
+    showToast("ลบไม่สำเร็จ: " + e.message);
+  }
+}
+
+async function addMachine(name){
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  if (machines.find(m => m.name.trim().toLowerCase() === trimmed.toLowerCase())) {
+    showToast("มีชื่อเครื่องจักรนี้อยู่แล้ว"); return;
+  }
+  try {
+    await addDoc(collection(db, "machines"), { name: trimmed, createdAt: serverTimestamp() });
+  } catch (e) {
+    showToast("เพิ่มเครื่องจักรไม่สำเร็จ: " + e.message);
+  }
+}
+
+async function renameMachine(id, oldName, newName){
+  const trimmed = newName.trim();
+  if (!trimmed) { showToast("กรุณากรอกชื่อเครื่องจักร"); return; }
+  if (trimmed === oldName) { editingMachineId = null; render(); return; }
+  if (machines.find(m => m.id !== id && m.name.trim().toLowerCase() === trimmed.toLowerCase())) {
+    showToast("มีชื่อเครื่องจักรนี้อยู่แล้ว"); return;
+  }
+  savingMachine = true; render();
+  try {
+    await updateDoc(doc(db, "machines", id), { name: trimmed });
+    const affected = parts.filter(p => p.machine === oldName);
+    await Promise.all(affected.map(p => updateDoc(doc(db, "parts", p.id), { machine: trimmed })));
+    editingMachineId = null;
+  } catch (e) {
+    showToast("แก้ไขชื่อเครื่องจักรไม่สำเร็จ: " + e.message);
+  } finally {
+    savingMachine = false; render();
+  }
+}
+
+async function deleteMachine(id){
+  try {
+    await deleteDoc(doc(db, "machines", id));
+  } catch (e) {
+    showToast("ลบเครื่องจักรไม่สำเร็จ: " + e.message);
+  }
+}
+
+async function deleteHistory(id){
+  try {
+    await deleteDoc(doc(db, "history", id));
+  } catch (e) {
+    showToast("ลบประวัติไม่สำเร็จ: " + e.message);
+  }
+}
+
+function exportHistoryExcel(fromStr, toStr){
+  if (typeof XLSX === "undefined") { showToast("โหลดตัวช่วยสร้าง Excel ไม่สำเร็จ ลองเช็คอินเทอร์เน็ต"); return; }
+  let rows = history;
+  if (fromStr || toStr) {
+    const start = fromStr ? new Date(fromStr + "T00:00:00") : null;
+    const end = toStr ? new Date(toStr + "T23:59:59") : new Date(fromStr + "T23:59:59");
+    rows = history.filter(h => {
+      if (!h.timestamp) return false;
+      const d = h.timestamp.toDate ? h.timestamp.toDate() : new Date(h.timestamp);
+      if (start && d < start) return false;
+      if (end && d > end) return false;
+      return true;
+    });
+  }
+  if (rows.length === 0) { showToast("ไม่พบข้อมูลในช่วงที่เลือก"); return; }
+  const data = rows.slice().reverse().map(h => ({
+    "วันที่เวลา": fmtDate(h.timestamp),
+    "ชื่ออะไหล่": h.partName || "",
+    "รหัสอะไหล่": h.partCode || "",
+    "จำนวนที่เบิก": h.qtyWithdrawn ?? "",
+    "เครื่องที่ใช้": h.machine || "",
+    "ผู้เบิก": h.by || "",
+    "หมายเหตุ": h.note || "",
+    "คงเหลือหลังเบิก": h.qtyAfter ?? ""
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws["!cols"] = [{wch:18},{wch:22},{wch:12},{wch:12},{wch:22},{wch:18},{wch:20},{wch:14}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "ประวัติการเบิก");
+  const label = (fromStr && toStr && fromStr !== toStr) ? `${fromStr}_ถึง_${toStr}` : (fromStr || "ทั้งหมด");
+  XLSX.writeFile(wb, `ประวัติการเบิก_${label}.xlsx`);
+}
+
+async function withdraw(part, qty, machine, by, note){
+  saving = true; render();
+  try {
+    await runTransaction(db, async (tx) => {
+      const ref_ = doc(db, "parts", part.id);
+      const snap = await tx.get(ref_);
+      if (!snap.exists()) throw new Error("ไม่พบอะไหล่นี้แล้ว");
+      const current = snap.data().qty;
+      if (qty > current) throw new Error("คลังเหลือแค่ " + current + " " + snap.data().unit);
+      const qtyAfter = current - qty;
+      tx.update(ref_, { qty: qtyAfter });
+      const histRef = doc(collection(db, "history"));
+      tx.set(histRef, {
+        partId: part.id, partName: part.name, partCode: part.code,
+        qtyWithdrawn: qty, qtyAfter, machine, by, note,
+        timestamp: serverTimestamp()
+      });
+    });
+    withdrawPart = null;
+  } catch (e) {
+    showToast("เบิกไม่สำเร็จ: " + e.message);
+  } finally {
+    saving = false; render();
+  }
+}
+
+/* ---------------- rendering ---------------- */
+function fmtDate(ts){
+  if (!ts) return "-";
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString("th-TH") + " " + d.toLocaleTimeString("th-TH", { hour:"2-digit", minute:"2-digit" });
+}
+
+function lowStockParts(){ return parts.filter(p => p.qty <= p.min); }
+
+function render(){
+  const app = document.getElementById("app");
+  if (!currentRole) {
+    app.innerHTML = renderLogin();
+    bindLoginEvents();
+    return;
+  }
+  const isAdmin = currentRole === "admin";
+  const low = lowStockParts();
+  const today = new Date().toDateString();
+  const todayCount = history.filter(h => h.timestamp && (h.timestamp.toDate ? h.timestamp.toDate() : new Date(h.timestamp)).toDateString() === today).length;
+
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="row">
+          <div class="brand">
+            <span class="icon"><i class="ti ti-building-warehouse" aria-hidden="true"></i></span>
+            <span class="head" style="font-size:18px;font-weight:600;">Warehouse K</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="text-align:right;line-height:1.3;">
+              <div style="font-size:12px;font-weight:600;">${esc(currentName)}</div>
+              <div style="font-size:10px;color:${isAdmin?'var(--warn)':'var(--muted)'};">${isAdmin?"Admin":"Technician"}</div>
+            </div>
+            <button class="btn btn-ghost" id="btnLogout" title="ออกจากระบบ / สลับผู้ใช้" style="padding:8px;"><i class="ti ti-logout" aria-hidden="true"></i></button>
+            ${isAdmin ? `<button class="btn btn-accent" id="btnAdd">+ เพิ่มอะไหล่</button>` : ""}
+          </div>
+        </div>
+        <div class="tabs">
+          ${tabBtn("dashboard","ภาพรวม",low.length)}
+          ${tabBtn("inventory","คลัง")}
+          ${tabBtn("history","ประวัติ")}
+          ${tabBtn("settings","ตั้งค่า")}
+        </div>
+      </div>
+    </div>
+    <div class="wrap content">
+      ${view === "dashboard" ? renderDashboard(low, todayCount) : ""}
+      ${view === "inventory" ? renderInventory() : ""}
+      ${view === "history" ? renderHistory() : ""}
+      ${view === "settings" ? renderSettings(low.length) : ""}
+    </div>
+    ${(addOpen || editPart) ? renderPartForm() : ""}
+    ${withdrawPart ? renderWithdrawForm() : ""}
+    ${lightboxImg ? renderLightbox() : ""}
+  `;
+  bindEvents();
+}
+
+function renderLogin(){
+  return `
+    <div class="login-screen">
+    <i class="ti ti-box" style="position:absolute;top:8%;left:6%;color:#2DD4BF;opacity:.16;font-size:34px;pointer-events:none;" aria-hidden="true"></i>
+    <i class="ti ti-box" style="position:absolute;top:22%;right:9%;color:#2DD4BF;opacity:.12;font-size:46px;pointer-events:none;" aria-hidden="true"></i>
+    <i class="ti ti-box" style="position:absolute;bottom:14%;left:11%;color:#2DD4BF;opacity:.14;font-size:28px;pointer-events:none;" aria-hidden="true"></i>
+    <i class="ti ti-box" style="position:absolute;top:44%;right:22%;color:#2DD4BF;opacity:.1;font-size:22px;pointer-events:none;" aria-hidden="true"></i>
+    <i class="ti ti-box" style="position:absolute;bottom:22%;right:7%;color:#2DD4BF;opacity:.15;font-size:24px;pointer-events:none;" aria-hidden="true"></i>
+    <i class="ti ti-box" style="position:absolute;top:64%;left:5%;color:#2DD4BF;opacity:.1;font-size:20px;pointer-events:none;" aria-hidden="true"></i>
+    <div class="wrap" style="max-width:380px;padding-top:80px;position:relative;">
+      <div style="text-align:center;margin-bottom:28px;">
+        <span class="icon" style="font-size:26px;display:inline-flex;padding:14px;"><i class="ti ti-building-warehouse" aria-hidden="true"></i></span>
+        <div class="head" style="font-size:19px;font-weight:600;margin-top:10px;">Warehouse K</div>
+        <div style="color:var(--muted);font-size:12.5px;margin-top:4px;">เข้าสู่ระบบเพื่อใช้งาน</div>
+      </div>
+      <div class="field-wrap"><label class="field">ชื่อของคุณ</label><input id="loginName" placeholder="เช่น สมชาย" value="${esc(currentName)}"></div>
+      <div class="field-wrap">
+        <label class="field">สิทธิ์การใช้งาน</label>
+        <div class="grid2">
+          <button class="btn btn-ghost" id="roleUser" style="justify-content:center;padding:12px 0;"><i class="ti ti-tool" aria-hidden="true"></i> Technician</button>
+          <button class="btn btn-ghost" id="roleAdmin" style="justify-content:center;padding:12px 0;"><i class="ti ti-shield-lock" aria-hidden="true"></i> Admin</button>
+        </div>
+      </div>
+      <div class="field-wrap" id="pinWrap" style="display:${loginShowPin?"block":"none"};">
+        <label class="field">รหัสผ่าน Admin</label>
+        <input id="loginPin" type="password" placeholder="••••" inputmode="numeric">
+      </div>
+      ${loginErr ? `<div class="err-text">${esc(loginErr)}</div>` : ""}
+      <button class="btn btn-accent" id="btnLogin" style="width:100%;justify-content:center;margin-top:4px;">เข้าใช้งาน</button>
+      <div style="color:var(--mutedFaint);font-size:11px;text-align:center;margin-top:16px;line-height:1.6;">
+        Technician เลือกได้เลยไม่ต้องใส่รหัส · Admin ต้องใส่รหัสผ่าน
+      </div>
+    </div>
+    </div>
+  `;
+}
+
+function tabBtn(key, label, count){
+  return `<button class="tab ${view===key?"active":""}" data-tab="${key}">${label}${count ? `<span class="badge">${count}</span>`:""}</button>`;
+}
+
+function renderDashboard(low, todayCount){
+  return `
+    <div class="stats">
+      <div class="stat"><div class="lbl">รายการทั้งหมด</div><div class="val">${parts.length}</div></div>
+      <div class="stat"><div class="lbl">ต่ำกว่า min</div><div class="val" style="color:${low.length?'var(--danger)':'var(--accent)'}">${low.length}</div></div>
+      <div class="stat"><div class="lbl">เบิกวันนี้</div><div class="val">${todayCount}</div></div>
+    </div>
+    ${low.length > 0 ? `
+    <div class="section-title"><i class="ti ti-bell-exclamation" style="color:var(--danger);" aria-hidden="true"></i> ต้องสั่งซื้อเพิ่ม</div>
+    <div class="card-list" style="margin-bottom:24px;">
+      ${low.map(p => `
+        <div class="low-card">
+          ${p.photo ? `<img class="thumb zoomable" src="${p.photo}">` : `<div class="thumb-ph">📦</div>`}
+          <div class="grow">
+            <div class="truncate" style="font-size:13px;font-weight:600;">${esc(p.name)}</div>
+            <div class="mono" style="color:var(--muted);font-size:11px;">${esc(p.code)}</div>
+            ${p.machine ? `<div class="machine-tag truncate" style="margin-bottom:0;">${esc(p.machine)}</div>` : ""}
+          </div>
+          <div class="mono" style="color:var(--danger);font-size:18px;">${p.qty}<span style="color:var(--mutedFaint);font-size:11px;"> /${p.min}</span></div>
+          <button class="btn btn-ghost" style="padding:6px 10px;" data-withdraw="${p.id}">เบิก</button>
+        </div>
+      `).join("")}
+    </div>` : ""}
+    <div class="section-title">เบิกล่าสุด</div>
+    ${history.length === 0 ? `<div class="empty">ยังไม่มีการเบิกอะไหล่</div>` :
+      `<div class="card-list">${history.slice(0,5).map(histRow).join("")}</div>`}
+  `;
+}
+
+function partCardHtml(p){
+  const denom = Math.max(p.min * 2, p.qty, 1);
+  const pct = Math.max(4, Math.min(100, (p.qty / denom) * 100));
+  const color = gaugeColor(p.qty, p.min);
+  return `
+    <div class="part-card">
+      <div class="part-photo">
+        ${p.photo ? `<img class="zoomable" src="${p.photo}">` : "📦"}
+        ${currentRole === "admin" ? `<button class="edit-btn" data-edit="${p.id}">✎</button>` : ""}
+      </div>
+      <div class="part-body">
+        <div class="part-name truncate">${esc(p.name)}</div>
+        <div class="part-code">${esc(p.code)} · ${esc(p.unit)}</div>
+        <div class="gauge-top">
+          <span class="mono" style="color:${color};font-size:32px;font-weight:600;line-height:1;">${p.qty}</span>
+          <span class="mono" style="color:var(--mutedFaint);font-size:12px;">min ${p.min}</span>
+        </div>
+        <div class="gauge-bar"><div class="gauge-fill" style="width:${pct}%;background:${color};"></div></div>
+        <button class="withdraw-btn" data-withdraw="${p.id}"><i class="ti ti-transfer-out" aria-hidden="true"></i> เบิกใช้</button>
+      </div>
+    </div>`;
+}
+
+function renderInventory(){
+  const filtered = parts.filter(p => (p.name + p.code + (p.machine||"")).toLowerCase().includes(search.toLowerCase()));
+  if (filtered.length === 0) {
+    return `
+      <div class="search">
+        <span class="icon">🔍</span>
+        <input id="searchInput" placeholder="ค้นหาชื่อ รหัส หรือเครื่องจักร" value="${esc(search)}">
+      </div>
+      <div class="empty">ไม่พบอะไหล่ ลองเพิ่มรายการใหม่</div>
+    `;
+  }
+
+  // group by machine name; parts without a machine go into "unassigned"
+  const groups = new Map();
+  filtered.forEach(p => {
+    const key = p.machine && p.machine.trim() ? p.machine.trim() : "__unassigned__";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  });
+  const machineKeys = [...groups.keys()].filter(k => k !== "__unassigned__").sort((a,b) => a.localeCompare(b, "th"));
+  if (groups.has("__unassigned__")) machineKeys.push("__unassigned__");
+
+  return `
+    <div class="search">
+      <span class="icon">🔍</span>
+      <input id="searchInput" placeholder="ค้นหาชื่อ รหัส หรือเครื่องจักร" value="${esc(search)}">
+    </div>
+    ${machineKeys.map(key => {
+      const isUnassigned = key === "__unassigned__";
+      const groupParts = groups.get(key);
+      return `
+      <div class="machine-group ${isUnassigned?"unassigned":""}">
+        <div class="machine-group-title">${isUnassigned ? "ยังไม่ระบุเครื่องจักร" : esc(key)} <span class="mono" style="color:var(--mutedFaint);font-weight:500;font-size:11px;">(${groupParts.length})</span></div>
+        <div class="parts-grid" style="margin-bottom:10px;">
+          ${groupParts.map(partCardHtml).join("")}
+        </div>
+      </div>`;
+    }).join("")}
+  `;
+}
+
+function histRow(h){
+  return `
+    <div class="hist-row">
+      <div class="hist-icon"><i class="ti ti-transfer-out" aria-hidden="true"></i></div>
+      <div class="grow">
+        <div class="truncate" style="font-size:13px;"><b>${esc(h.partName)}</b> <span style="color:var(--muted);">· เครื่อง ${esc(h.machine||"-")}</span></div>
+        <div style="color:var(--mutedFaint);font-size:11px;">${h.by ? "โดย "+esc(h.by)+" · " : ""}${fmtDate(h.timestamp)}</div>
+      </div>
+      <div class="mono" style="color:var(--danger);font-size:14px;">-${h.qtyWithdrawn}</div>
+      ${currentRole === "admin" ? `<button data-del-hist="${h.id}" title="ลบประวัตินี้" style="background:none;border:none;color:var(--mutedFaint);cursor:pointer;padding:4px;flex-shrink:0;">🗑</button>` : ""}
+    </div>
+  `;
+}
+
+function renderHistory(){
+  const filtered = history.filter(h => ((h.partName||"")+(h.machine||"")+(h.by||"")).toLowerCase().includes(search.toLowerCase()));
+  return `
+    <div class="search">
+      <span class="icon">🔍</span>
+      <input id="searchInput" placeholder="ค้นหาตามอะไหล่ เครื่อง หรือผู้เบิก" value="${esc(search)}">
+    </div>
+    ${filtered.length === 0 ? `<div class="empty">ไม่พบประวัติ</div>` : `<div class="card-list">${filtered.map(histRow).join("")}</div>`}
+  `;
+}
+
+function renderSettings(lowCount){
+  const isAdmin = currentRole === "admin";
+  return `
+    <div class="notice">
+      ⚠️ การแจ้งเตือนจริงผ่าน LINE/Email อัตโนมัติ ต้องต่อกับ Firebase Cloud Functions เพิ่มเติม (มีตัวจับเวลาเช็คสต็อกฝั่งเซิร์ฟเวอร์)
+      ตอนนี้หน้าเว็บจะแจ้งเตือนในแท็บ "ภาพรวม" เท่านั้น ดูคู่มือเพิ่มเติมได้ในไฟล์ README ที่แนบมาด้วย
+    </div>
+    <div style="color:var(--muted);font-size:12px;margin-bottom:24px;">
+      ขณะนี้มีอะไหล่ต่ำกว่า min <span class="mono" style="color:var(--danger);">${lowCount}</span> รายการ
+    </div>
+    ${isAdmin ? `
+    <div class="section-title" style="margin-top:8px;"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i> ส่งออกประวัติการเบิกเป็น Excel</div>
+    <div class="grid2" style="margin-bottom:10px;">
+      <div class="field-wrap" style="margin-bottom:0;"><label class="field">จากวันที่</label><input type="date" id="exportFrom"></div>
+      <div class="field-wrap" style="margin-bottom:0;"><label class="field">ถึงวันที่ (เว้นว่าง = วันเดียว)</label><input type="date" id="exportTo"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
+      <button class="btn btn-accent" id="btnExportRange"><i class="ti ti-download" aria-hidden="true"></i> ดาวน์โหลดตามช่วงที่เลือก</button>
+      <button class="btn btn-ghost" id="btnExportAll"><i class="ti ti-download" aria-hidden="true"></i> โหลดทั้งหมด</button>
+    </div>` : ""}
+    <div class="section-title">จัดการเครื่องจักร</div>
+    ${isAdmin ? `
+    <div class="machine-add-inline" style="margin-top:0;margin-bottom:14px;">
+      <input id="newMachineName" placeholder="ชื่อเครื่องจักรใหม่ เช่น เครื่องอัดหมายเลข 3">
+      <button class="btn btn-accent" id="btnAddMachine">+ เพิ่ม</button>
+    </div>` : `<div style="color:var(--mutedFaint);font-size:11.5px;margin-bottom:14px;">เฉพาะ Admin เท่านั้นที่แก้ไขรายชื่อเครื่องจักรได้</div>`}
+    ${machines.length === 0 ? `<div class="empty">ยังไม่มีรายชื่อเครื่องจักร</div>` : `
+    <div class="card-list">
+      ${machines.map(m => {
+        if (isAdmin && editingMachineId === m.id) {
+          return `
+          <div class="low-card" style="background:var(--panel);border-color:var(--border);align-items:center;">
+            <div class="grow">
+              <input id="editMachineName_${m.id}" value="${esc(m.name)}" style="padding:8px 10px;font-size:13px;">
+            </div>
+            <button data-save-machine="${m.id}" data-old-name="${esc(m.name)}" style="background:none;border:none;color:var(--accent);cursor:pointer;padding:4px;flex-shrink:0;font-size:13px;font-weight:600;" title="บันทึก" ${savingMachine?"disabled":""}>${savingMachine?"⏳":"✓ บันทึก"}</button>
+            <button data-cancel-edit-machine style="background:none;border:none;color:var(--mutedFaint);cursor:pointer;padding:4px;flex-shrink:0;" title="ยกเลิก">✕</button>
+          </div>`;
+        }
+        return `
+        <div class="low-card" style="background:var(--panel);border-color:var(--border);">
+          <div class="grow">
+            <div class="truncate" style="font-size:13px;font-weight:600;color:var(--machine);">${esc(m.name)}</div>
+          </div>
+          ${isAdmin ? `
+          <button data-edit-machine="${m.id}" style="background:none;border:none;color:var(--mutedFaint);cursor:pointer;padding:4px;flex-shrink:0;" title="แก้ไขชื่อเครื่องจักร">✎</button>
+          <button data-del-machine="${m.id}" style="background:none;border:none;color:var(--mutedFaint);cursor:pointer;padding:4px;flex-shrink:0;" title="ลบเครื่องจักร">🗑</button>` : ""}
+        </div>`;
+      }).join("")}
+    </div>`}
+    ${isAdmin ? `
+    <div style="margin-top:28px;padding-top:16px;border-top:1px solid var(--border);color:var(--mutedFaint);font-size:11px;line-height:1.7;">
+      🔑 คุณกำลังใช้งานสิทธิ์ Admin — เห็นและแก้ไขได้ทุกอย่าง เปลี่ยนรหัสผ่าน Admin ได้จากตัวแปร <span class="mono">ADMIN_PIN</span> ในไฟล์ index.html<br>
+      หมายเหตุ: ระบบสิทธิ์นี้เป็นการ "ซ่อนปุ่ม" ในหน้าเว็บเท่านั้น ยังไม่ใช่การล็อกจากฐานข้อมูลจริง เหมาะกับทีมที่ไว้ใจกันและไม่แชร์ลิงก์ออกนอกบริษัท
+    </div>` : ""}
+  `;
+}
+
+function renderPartForm(){
+  const p = editPart;
+  return `
+    <div class="overlay" id="overlayPart">
+      <div class="modal">
+        <div class="modal-head">
+          <span class="head" style="font-size:16px;font-weight:600;">${p ? "แก้ไขอะไหล่" : "เพิ่มอะไหล่ใหม่"}</span>
+          <button class="close-btn" id="closePart">✕</button>
+        </div>
+        <div class="modal-body">
+          <label class="photo-picker" id="photoPicker">
+            <span id="photoPreviewWrap">${(pendingPhotoBlob || (p && p.photo)) ? `<img src="${pendingPhotoBlob || (p && p.photo)}">` : `📷<br><span style="font-size:11px;">ถ่าย/เลือกรูป</span>`}</span>
+            <input type="file" accept="image/*" id="photoInput" style="display:none;">
+          </label>
+          <div id="photoErr" class="err-text" style="display:none;text-align:center;"></div>
+
+          <div class="field-wrap"><label class="field">ชื่ออะไหล่</label><input id="fName" value="${esc(p?.name||"")}" placeholder="เช่น สายพานราวลิ้น"></div>
+          <div class="field-wrap">
+            <label class="field">เครื่องจักร</label>
+            <div class="machine-select-row">
+              <select id="fMachineSelect">
+                <option value="">— ไม่ระบุเครื่องจักร —</option>
+                ${machines.map(m => `<option value="${esc(m.name)}" ${p?.machine===m.name?"selected":""}>${esc(m.name)}</option>`).join("")}
+                ${(p?.machine && !machines.find(m=>m.name===p.machine)) ? `<option value="${esc(p.machine)}" selected>${esc(p.machine)}</option>` : ""}
+                <option value="__new__" ${showNewMachineInput?"selected":""}>+ เพิ่มเครื่องจักรใหม่...</option>
+              </select>
+            </div>
+            <div class="machine-add-inline" id="machineNewWrap" style="display:${showNewMachineInput?"flex":"none"};">
+              <input id="fMachineNew" placeholder="ชื่อเครื่องจักรใหม่" value="">
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field-wrap"><label class="field">รหัสอะไหล่</label><input id="fCode" value="${esc(p?.code||"")}" placeholder="PT-0012"></div>
+            <div class="field-wrap"><label class="field">หน่วย</label><input id="fUnit" value="${esc(p?.unit||"ชิ้น")}"></div>
+          </div>
+          <div class="grid2">
+            <div class="field-wrap"><label class="field">จำนวนคงเหลือ</label><input type="number" id="fQty" value="${p?.qty ?? 0}"></div>
+            <div class="field-wrap"><label class="field">จำนวนขั้นต่ำ (min)</label><input type="number" id="fMin" value="${p?.min ?? 1}"></div>
+          </div>
+          <div id="formErr" class="err-text" style="display:none;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-accent" style="flex:1;justify-content:center;" id="btnSavePart" ${saving?"disabled":""}>${saving?"⏳ กำลังบันทึก...":"💾 บันทึก"}</button>
+            ${p ? `<button class="btn btn-danger" id="btnDeletePart">🗑</button>` : ""}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderWithdrawForm(){
+  const p = withdrawPart;
+  return `
+    <div class="overlay" id="overlayWithdraw">
+      <div class="modal">
+        <div class="modal-head">
+          <span class="head" style="font-size:16px;font-weight:600;">เบิกอะไหล่</span>
+          <button class="close-btn" id="closeWithdraw">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px;background:var(--panelAlt);border-radius:10px;">
+            ${p.photo ? `<img class="thumb zoomable" src="${p.photo}">` : `<div class="thumb-ph">📦</div>`}
+            <div>
+              <div style="font-size:13px;font-weight:600;">${esc(p.name)}</div>
+              <div class="mono" style="color:var(--mutedFaint);font-size:11px;">คงเหลือ ${p.qty} ${esc(p.unit)}</div>
+            </div>
+          </div>
+          <div class="field-wrap"><label class="field">จำนวนที่เบิก (${esc(p.unit)})</label><input type="number" id="wQty" value="1" min="1" max="${p.qty}"></div>
+          <div class="field-wrap"><label class="field">เครื่องที่นำไปใช้</label><input id="wMachine" placeholder="เช่น เครื่องอัดหมายเลข 3"></div>
+          <div class="field-wrap"><label class="field">ผู้เบิก (ชื่อ/รหัสพนักงาน)</label><input id="wBy" value="${esc(currentName)}" placeholder="เช่น สมชาย / EMP-014"></div>
+          <div class="field-wrap"><label class="field">หมายเหตุ (ถ้ามี)</label><input id="wNote"></div>
+          <div id="wErr" class="err-text" style="display:none;"></div>
+          <button class="btn btn-accent" style="width:100%;justify-content:center;" id="btnConfirmWithdraw" ${saving?"disabled":""}>${saving?"⏳ กำลังบันทึก...":`<i class="ti ti-transfer-out" aria-hidden="true"></i> ยืนยันการเบิก`}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderLightbox(){
+  return `
+    <div class="lightbox-overlay" id="overlayLightbox">
+      <button class="lightbox-close" id="closeLightbox">✕</button>
+      <img src="${lightboxImg}">
+    </div>
+  `;
+}
+
+/* ---------------- login events ---------------- */
+function bindLoginEvents(){
+  document.getElementById("roleUser")?.addEventListener("click", () => { loginShowPin = false; attemptLogin("user"); });
+  document.getElementById("roleAdmin")?.addEventListener("click", () => {
+    const nameEl = document.getElementById("loginName");
+    if (nameEl) currentName = nameEl.value; // keep typed name before re-render shows the pin field
+    loginShowPin = true; loginErr="";
+    render();
+    document.getElementById("loginPin")?.focus();
+  });
+  document.getElementById("btnLogin")?.addEventListener("click", () => attemptLogin(loginShowPin ? "admin" : "user"));
+  document.getElementById("loginPin")?.addEventListener("keydown", (e) => { if (e.key === "Enter") attemptLogin("admin"); });
+  document.getElementById("loginName")?.addEventListener("keydown", (e) => { if (e.key === "Enter" && !loginShowPin) attemptLogin("user"); });
+}
+
+function attemptLogin(role){
+  const nameEl = document.getElementById("loginName");
+  const name = nameEl ? nameEl.value.trim() : currentName;
+  if (nameEl) currentName = nameEl.value; // preserve whatever was typed across re-renders
+  if (!name) { loginErr = "กรุณากรอกชื่อของคุณ"; render(); document.getElementById("loginName")?.focus(); return; }
+  if (role === "admin") {
+    const pin = document.getElementById("loginPin")?.value || "";
+    if (pin !== ADMIN_PIN) { loginErr = "รหัสผ่าน Admin ไม่ถูกต้อง"; loginShowPin = true; render(); return; }
+  }
+  currentName = name; currentRole = role; loginErr = "";
+  localStorage.setItem("wk_name", name);
+  localStorage.setItem("wk_role", role);
+  render();
+}
+
+/* ---------------- events ---------------- */
+let pendingPhotoBlob = null, pendingPhotoPreview = null;
+
+function bindEvents(){
+  document.getElementById("btnLogout")?.addEventListener("click", () => {
+    if (confirm("ออกจากระบบ / สลับผู้ใช้?")) {
+      localStorage.removeItem("wk_role");
+      currentRole = null; render();
+    }
+  });
+  document.getElementById("btnAdd")?.addEventListener("click", () => { addOpen = true; pendingPhotoBlob=null; pendingPhotoPreview=null; showNewMachineInput=false; render(); });
+  document.querySelectorAll("[data-tab]").forEach(el => el.addEventListener("click", () => { view = el.dataset.tab; search=""; render(); }));
+  document.querySelectorAll("[data-withdraw]").forEach(el => el.addEventListener("click", () => {
+    withdrawPart = parts.find(p => p.id === el.dataset.withdraw); render();
+  }));
+  document.querySelectorAll("[data-edit]").forEach(el => el.addEventListener("click", () => {
+    editPart = parts.find(p => p.id === el.dataset.edit); pendingPhotoBlob=null; pendingPhotoPreview=null; showNewMachineInput=false; render();
+  }));
+  document.querySelectorAll("[data-del-hist]").forEach(el => el.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    if (confirm("ยืนยันลบประวัติรายการนี้? (จะไม่คืนยอดของกลับเข้าคลัง)")) deleteHistory(el.dataset.delHist);
+  }));
+  document.querySelectorAll(".zoomable").forEach(el => el.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    lightboxImg = el.src; render();
+  }));
+  document.getElementById("closeLightbox")?.addEventListener("click", () => { lightboxImg = null; render(); });
+  document.getElementById("overlayLightbox")?.addEventListener("click", (ev) => {
+    if (ev.target.id === "overlayLightbox") { lightboxImg = null; render(); }
+  });
+  document.getElementById("btnExportRange")?.addEventListener("click", () => {
+    const from = document.getElementById("exportFrom")?.value || "";
+    const to = document.getElementById("exportTo")?.value || "";
+    if (!from) { showToast("กรุณาเลือกวันที่อย่างน้อย 1 วัน"); return; }
+    exportHistoryExcel(from, to || from);
+  });
+  document.getElementById("btnExportAll")?.addEventListener("click", () => {
+    exportHistoryExcel(null, null);
+  });
+  document.getElementById("btnAddMachine")?.addEventListener("click", async () => {
+    const input = document.getElementById("newMachineName");
+    await addMachine(input.value);
+    input.value = "";
+  });
+  document.getElementById("newMachineName")?.addEventListener("keydown", async (e) => {
+    if (e.key === "Enter") {
+      const input = e.target;
+      await addMachine(input.value);
+      input.value = "";
+    }
+  });
+  document.querySelectorAll("[data-del-machine]").forEach(el => el.addEventListener("click", () => {
+    if (confirm("ยืนยันลบเครื่องจักรนี้? (อะไหล่ที่เคยผูกไว้จะยังแสดงชื่อเดิม)")) deleteMachine(el.dataset.delMachine);
+  }));
+  document.querySelectorAll("[data-edit-machine]").forEach(el => el.addEventListener("click", () => {
+    editingMachineId = el.dataset.editMachine; render();
+    const input = document.getElementById("editMachineName_" + editingMachineId);
+    if (input) { input.focus(); const p = input.value.length; input.setSelectionRange(p, p); }
+  }));
+  document.querySelectorAll("[data-cancel-edit-machine]").forEach(el => el.addEventListener("click", () => {
+    editingMachineId = null; render();
+  }));
+  document.querySelectorAll("[data-save-machine]").forEach(el => el.addEventListener("click", () => {
+    const id = el.dataset.saveMachine;
+    const oldName = el.dataset.oldName;
+    const input = document.getElementById("editMachineName_" + id);
+    renameMachine(id, oldName, input.value);
+  }));
+  document.querySelectorAll("[id^='editMachineName_']").forEach(el => el.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const id = e.target.id.replace("editMachineName_", "");
+      const m = machines.find(x => x.id === id);
+      renameMachine(id, m ? m.name : "", e.target.value);
+    } else if (e.key === "Escape") {
+      editingMachineId = null; render();
+    }
+  }));
+  document.getElementById("searchInput")?.addEventListener("input", (e) => {
+    search = e.target.value; render();
+    const el = document.getElementById("searchInput");
+    if (el) { el.focus(); const p = search.length; el.setSelectionRange(p, p); }
+  });
+
+  // part form
+  document.getElementById("closePart")?.addEventListener("click", () => { addOpen=false; editPart=null; showNewMachineInput=false; render(); });
+  document.getElementById("fMachineSelect")?.addEventListener("change", (e) => {
+    showNewMachineInput = e.target.value === "__new__";
+    render();
+    if (showNewMachineInput) document.getElementById("fMachineNew")?.focus();
+  });
+  document.getElementById("photoInput")?.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    try {
+      pendingPhotoBlob = await compressImage(file); // dataURL string
+      render();
+      const errEl = document.getElementById("photoErr");
+      if (errEl) errEl.style.display = "none";
+    } catch (err) {
+      pendingPhotoBlob = null;
+      render();
+      const errEl = document.getElementById("photoErr");
+      if (errEl) { errEl.textContent = "อัปโหลดรูปไม่สำเร็จ ลองรูปอื่น"; errEl.style.display = "block"; }
+    }
+  });
+  document.getElementById("btnSavePart")?.addEventListener("click", async () => {
+    const name = document.getElementById("fName").value.trim();
+    const code = document.getElementById("fCode").value.trim();
+    const unit = document.getElementById("fUnit").value.trim() || "ชิ้น";
+    const qty = Number(document.getElementById("fQty").value);
+    const min = Number(document.getElementById("fMin").value);
+    const errEl = document.getElementById("formErr");
+    if (!name || !code) { errEl.textContent = "กรุณากรอกชื่อและรหัสอะไหล่"; errEl.style.display="block"; return; }
+    const machineSelectVal = document.getElementById("fMachineSelect")?.value || "";
+    let machine = "";
+    if (machineSelectVal === "__new__") {
+      const newName = document.getElementById("fMachineNew")?.value.trim() || "";
+      if (!newName) { errEl.textContent = "กรุณากรอกชื่อเครื่องจักรใหม่ หรือเลือกเครื่องจักรที่มีอยู่"; errEl.style.display="block"; return; }
+      machine = await ensureMachine(newName);
+    } else {
+      machine = machineSelectVal;
+    }
+    let photo = editPart?.photo || null;
+    if (pendingPhotoBlob) photo = pendingPhotoBlob; // base64 dataURL string
+    showNewMachineInput = false;
+    await savePart({ id: editPart?.id, name, code, unit, qty, min, machine, photo });
+  });
+  document.getElementById("btnDeletePart")?.addEventListener("click", () => {
+    if (confirm("ยืนยันลบอะไหล่นี้?")) deletePart(editPart.id);
+  });
+
+  // withdraw form
+  document.getElementById("closeWithdraw")?.addEventListener("click", () => { withdrawPart=null; render(); });
+  document.getElementById("btnConfirmWithdraw")?.addEventListener("click", () => {
+    const qty = Number(document.getElementById("wQty").value);
+    const machine = document.getElementById("wMachine").value.trim();
+    const by = document.getElementById("wBy").value.trim();
+    const note = document.getElementById("wNote").value.trim();
+    const errEl = document.getElementById("wErr");
+    if (!qty || qty <= 0) { errEl.textContent="ระบุจำนวนให้ถูกต้อง"; errEl.style.display="block"; return; }
+    if (qty > withdrawPart.qty) { errEl.textContent=`คลังเหลือแค่ ${withdrawPart.qty} ${withdrawPart.unit}`; errEl.style.display="block"; return; }
+    if (!machine) { errEl.textContent="ระบุเครื่องที่นำไปใช้"; errEl.style.display="block"; return; }
+    errEl.style.display="none";
+    withdraw(withdrawPart, qty, machine, by, note);
+  });
+}
+
+render();
+</script>
+</body>
+</html>
