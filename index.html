@@ -606,12 +606,43 @@ function histRow(h){
 
 function renderHistory(){
   const filtered = history.filter(h => ((h.partName||"")+(h.machine||"")+(h.by||"")).toLowerCase().includes(search.toLowerCase()));
+  if (filtered.length === 0) {
+    return `
+      <div class="search">
+        <span class="icon">🔍</span>
+        <input id="searchInput" placeholder="ค้นหาตามอะไหล่ เครื่อง หรือผู้เบิก" value="${esc(search)}">
+      </div>
+      <div class="empty">ไม่พบประวัติ</div>
+    `;
+  }
+
+  // group by the zone of the related part; entries whose part has no zone (or part was deleted) go into "unassigned"
+  const groups = new Map();
+  filtered.forEach(h => {
+    const part = parts.find(p => p.id === h.partId);
+    const key = part && part.zone && part.zone.trim() ? part.zone.trim() : "__unassigned__";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(h);
+  });
+  const zoneKeys = [...groups.keys()].filter(k => k !== "__unassigned__").sort((a,b) => a.localeCompare(b, "th"));
+  if (groups.has("__unassigned__")) zoneKeys.push("__unassigned__");
+
   return `
     <div class="search">
       <span class="icon">🔍</span>
       <input id="searchInput" placeholder="ค้นหาตามอะไหล่ เครื่อง หรือผู้เบิก" value="${esc(search)}">
     </div>
-    ${filtered.length === 0 ? `<div class="empty">ไม่พบประวัติ</div>` : `<div class="card-list">${filtered.map(histRow).join("")}</div>`}
+    ${zoneKeys.map(key => {
+      const isUnassigned = key === "__unassigned__";
+      const groupItems = groups.get(key);
+      return `
+      <div class="machine-group ${isUnassigned?"unassigned":""}">
+        <div class="machine-group-title">${isUnassigned ? "ยังไม่ระบุโซน" : esc(key)} <span class="mono" style="color:var(--mutedFaint);font-weight:500;font-size:11px;">(${groupItems.length})</span></div>
+        <div class="card-list" style="margin-bottom:10px;">
+          ${groupItems.map(histRow).join("")}
+        </div>
+      </div>`;
+    }).join("")}
   `;
 }
 
