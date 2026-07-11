@@ -32,12 +32,12 @@
   .topbar{position:sticky;top:0;background:radial-gradient(ellipse at 8% 50%, rgba(45,212,191,0.18), transparent 60%), var(--bg);border-bottom:1px solid var(--border);z-index:20;}
   .topbar-inner{max-width:1180px;margin:0 auto;padding:20px 24px 0;}
   .brand{display:flex;align-items:center;gap:10px;}
-  .brand .icon{background:var(--accentDim);border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:26px;box-shadow:0 0 14px #2DD4BF55;}
+  .brand img{border-radius:10px;box-shadow:0 0 14px #2DD4BF44;}
   .row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
   @media (max-width:480px){
     .topbar-inner{padding:14px 14px 0;}
     .row{flex-wrap:wrap;row-gap:10px;}
-    .brand .icon{font-size:19px;padding:8px;border-radius:8px;}
+    .brand img{width:34px !important;height:34px !important;border-radius:8px;}
     .brand .head{font-size:17px !important;}
     #btnAdd{padding:8px 10px;font-size:12px;white-space:nowrap;}
     .row > div:last-child{gap:8px !important;}
@@ -429,8 +429,10 @@ function render(){
       <div class="topbar-inner">
         <div class="row">
           <div class="brand">
-            <span class="icon"><i class="ti ti-box" aria-hidden="true"></i></span>
-            <span class="head" style="font-size:24px;font-weight:700;">SpareCube</span>
+            <img src="icon-192.png" alt="SpareCube" style="width:44px;height:44px;border-radius:10px;box-shadow:0 0 14px #2DD4BF44;">
+            <span class="head" style="font-size:24px;font-weight:700;letter-spacing:-0.3px;">
+              <span style="color:#ECEDEF;">Spare</span><span style="background:linear-gradient(90deg,#2DD4BF,#6EE7D8);-webkit-background-clip:text;background-clip:text;color:transparent;">Cube</span>
+            </span>
           </div>
           <div style="display:flex;align-items:center;gap:10px;">
             <div style="text-align:right;line-height:1.3;">
