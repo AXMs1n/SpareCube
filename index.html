@@ -187,6 +187,8 @@ let currentRole = localStorage.getItem("wk_role") || null; // "admin" | "user"
 let currentName = localStorage.getItem("wk_name") || "";
 let loginErr = "";
 let loginShowPin = false;
+let loginAnimFrame = null;
+let loginAnimCleanup = null;
 
 /* ---------------- firestore live sync ---------------- */
 onSnapshot(collection(db, "parts"), (snap) => {
@@ -417,6 +419,7 @@ function render(){
   if (!currentRole) {
     app.innerHTML = renderLogin();
     bindLoginEvents();
+    startLoginParticles();
     return;
   }
   const isAdmin = currentRole === "admin";
@@ -467,12 +470,7 @@ function render(){
 function renderLogin(){
   return `
     <div class="login-screen">
-    <i class="ti ti-box" style="position:absolute;top:8%;left:6%;color:#2DD4BF;opacity:.16;font-size:34px;pointer-events:none;" aria-hidden="true"></i>
-    <i class="ti ti-box" style="position:absolute;top:22%;right:9%;color:#2DD4BF;opacity:.12;font-size:46px;pointer-events:none;" aria-hidden="true"></i>
-    <i class="ti ti-box" style="position:absolute;bottom:14%;left:11%;color:#2DD4BF;opacity:.14;font-size:28px;pointer-events:none;" aria-hidden="true"></i>
-    <i class="ti ti-box" style="position:absolute;top:44%;right:22%;color:#2DD4BF;opacity:.1;font-size:22px;pointer-events:none;" aria-hidden="true"></i>
-    <i class="ti ti-box" style="position:absolute;bottom:22%;right:7%;color:#2DD4BF;opacity:.15;font-size:24px;pointer-events:none;" aria-hidden="true"></i>
-    <i class="ti ti-box" style="position:absolute;top:64%;left:5%;color:#2DD4BF;opacity:.1;font-size:20px;pointer-events:none;" aria-hidden="true"></i>
+    <canvas id="loginParticles" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
     <div class="wrap" style="max-width:380px;padding-top:80px;position:relative;">
       <div style="text-align:center;margin-bottom:28px;">
         <img src="icon-192.png" alt="SpareCube" style="width:96px;height:96px;border-radius:22px;box-shadow:0 0 24px #2DD4BF44;">
@@ -872,6 +870,146 @@ function renderLightbox(){
       <img src="${lightboxImg}">
     </div>
   `;
+}
+
+/* ---------------- login background animation ---------------- */
+function startLoginParticles(){
+  const canvas = document.getElementById("loginParticles");
+  if (!canvas) return;
+
+  // stop and fully tear down any previous instance (e.g. from a prior render
+  // of this screen) before starting a new one, so listeners never pile up
+  if (loginAnimCleanup) { loginAnimCleanup(); loginAnimCleanup = null; }
+
+  const ctx = canvas.getContext("2d");
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 0;
+
+  function resize(){
+    const screenEl = canvas.parentElement;
+    W = screenEl.offsetWidth;
+    H = screenEl.offsetHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+
+  const isSmall = W < 480;
+  const COUNT = isSmall ? 26 : 50;
+  const LINK_DIST = isSmall ? 95 : 135;
+  const MOUSE_DIST = 150;
+
+  const nodes = [];
+  for (let i = 0; i < COUNT; i++){
+    nodes.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.22,
+      vy: (Math.random() - 0.5) * 0.22,
+      size: 3 + Math.random() * 4,
+      rot: Math.random() * Math.PI,
+      rotSpeed: (Math.random() - 0.5) * 0.008,
+    });
+  }
+
+  const mouse = { x: -9999, y: -9999, active: false };
+  const onMove = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+    mouse.active = true;
+  };
+  const onLeave = () => { mouse.active = false; mouse.x = -9999; mouse.y = -9999; };
+  const onTouch = (e) => {
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = t.clientX - rect.left;
+    mouse.y = t.clientY - rect.top;
+    mouse.active = true;
+  };
+
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseleave", onLeave);
+  window.addEventListener("touchmove", onTouch, { passive: true });
+  window.addEventListener("resize", resize);
+
+  loginAnimCleanup = () => {
+    if (loginAnimFrame) { cancelAnimationFrame(loginAnimFrame); loginAnimFrame = null; }
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseleave", onLeave);
+    window.removeEventListener("touchmove", onTouch);
+    window.removeEventListener("resize", resize);
+  };
+
+  function frame(){
+    // if the login screen has been replaced (e.g. user logged in), stop cleanly
+    if (!document.getElementById("loginParticles")) {
+      if (loginAnimCleanup) { loginAnimCleanup(); loginAnimCleanup = null; }
+      return;
+    }
+
+    ctx.clearRect(0, 0, W, H);
+
+    for (const n of nodes){
+      n.x += n.vx; n.y += n.vy;
+      n.rot += n.rotSpeed;
+      if (n.x < -10) n.x = W + 10; else if (n.x > W + 10) n.x = -10;
+      if (n.y < -10) n.y = H + 10; else if (n.y > H + 10) n.y = -10;
+
+      if (mouse.active){
+        const dx = n.x - mouse.x, dy = n.y - mouse.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < MOUSE_DIST && dist > 0.01){
+          const f = (1 - dist / MOUSE_DIST) * 0.55;
+          n.x += (dx / dist) * f;
+          n.y += (dy / dist) * f;
+        }
+      }
+    }
+
+    for (let i = 0; i < nodes.length; i++){
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++){
+        const b = nodes[j];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < LINK_DIST){
+          const op = (1 - dist / LINK_DIST) * 0.22;
+          ctx.strokeStyle = `rgba(45,212,191,${op})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+      if (mouse.active){
+        const dx = a.x - mouse.x, dy = a.y - mouse.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < MOUSE_DIST){
+          const op = (1 - dist / MOUSE_DIST) * 0.35;
+          ctx.strokeStyle = `rgba(110,231,216,${op})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y); ctx.lineTo(mouse.x, mouse.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    for (const n of nodes){
+      ctx.save();
+      ctx.translate(n.x, n.y);
+      ctx.rotate(n.rot);
+      ctx.fillStyle = "rgba(94,214,200,0.55)";
+      ctx.fillRect(-n.size / 2, -n.size / 2, n.size, n.size);
+      ctx.restore();
+    }
+
+    loginAnimFrame = requestAnimationFrame(frame);
+  }
+  loginAnimFrame = requestAnimationFrame(frame);
 }
 
 /* ---------------- login events ---------------- */
