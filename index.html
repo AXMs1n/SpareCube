@@ -81,10 +81,15 @@
   .btn-ghost{background:var(--panelAlt);color:var(--text);border:1px solid var(--border);}
   .btn-danger{background:var(--dangerDim);color:var(--danger);border:1px solid #F0473E44;}
   .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);}
-  .tab{background:none;border:none;color:var(--muted);padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;}
-  .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .tab{background:none;border:none;color:var(--muted);padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;transform:scale(1);transform-origin:center;transition:color .25s ease, transform .25s cubic-bezier(.34,1.56,.64,1), border-color .25s ease;}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);transform:scale(1.1);}
   .badge{background:var(--danger);color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;font-family:'Prompt',sans-serif;}
   .content{padding-top:20px;}
+  .view-enter{animation:viewEnter .34s cubic-bezier(.22,1,.36,1);}
+  @keyframes viewEnter{
+    from{ opacity:0; transform:translateX(18px); }
+    to{ opacity:1; transform:translateX(0); }
+  }
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
   .stat{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;}
   .stat .lbl{color:var(--muted);font-size:11px;}
@@ -210,6 +215,7 @@ let parts = [];
 let history = [];
 let machines = [];
 let view = "dashboard";
+let lastRenderedView = null;
 let search = "";
 let zoneFilter = "";
 let addOpen = false, editPart = null, withdrawPart = null, saving = false;
@@ -460,6 +466,8 @@ function render(){
   const low = lowStockParts();
   const today = new Date().toDateString();
   const todayCount = history.filter(h => h.timestamp && (h.timestamp.toDate ? h.timestamp.toDate() : new Date(h.timestamp)).toDateString() === today).length;
+  const viewChanged = view !== lastRenderedView;
+  lastRenderedView = view;
 
   app.innerHTML = `
     <div class="topbar">
@@ -490,7 +498,7 @@ function render(){
         </div>
       </div>
     </div>
-    <div class="wrap content">
+    <div class="wrap content${viewChanged ? " view-enter" : ""}">
       ${view === "dashboard" ? renderDashboard(low, todayCount) : ""}
       ${view === "inventory" ? renderInventory() : ""}
       ${view === "history" ? renderHistory() : ""}
