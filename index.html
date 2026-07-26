@@ -26,6 +26,8 @@
   }
   *{box-sizing:border-box;}
   body{margin:0;background:var(--bg);color:var(--text);font-family:'Prompt',sans-serif;-webkit-font-smoothing:antialiased;}
+  #bgParticles{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;}
+  #app{position:relative;z-index:1;}
   .head{font-family:'Prompt',sans-serif;}
   .mono{font-family:'Prompt',sans-serif;}
   .wrap{max-width:1180px;margin:0 auto;padding:0 24px 40px;}
@@ -130,10 +132,18 @@
   .machine-group.unassigned{border:1.5px dashed var(--border);background:transparent;}
   .machine-group-title{color:var(--machine);font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
   .machine-group.unassigned .machine-group-title{color:var(--mutedFaint);}
-  .zoomable{cursor:zoom-in;}
-  .lightbox-overlay{position:fixed;inset:0;background:rgba(8,9,11,.92);z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;}
-  .lightbox-overlay img{max-width:100%;max-height:100%;border-radius:10px;object-fit:contain;}
+  .zoomable{cursor:zoom-in;touch-action:manipulation;}
+  .lightbox-overlay{position:fixed;inset:0;background:rgba(8,9,11,.92);z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;animation:lightboxFadeIn .22s ease;}
+  .lightbox-overlay img{max-width:100%;max-height:100%;border-radius:10px;object-fit:contain;animation:lightboxPopIn .28s cubic-bezier(.22,1,.36,1);}
   .lightbox-close{position:absolute;top:16px;right:20px;background:rgba(20,22,26,.75);border:none;border-radius:8px;padding:8px 12px;color:var(--text);font-size:18px;cursor:pointer;}
+  @keyframes lightboxFadeIn{
+    from{ opacity:0; }
+    to{ opacity:1; }
+  }
+  @keyframes lightboxPopIn{
+    from{ opacity:0; transform:scale(.88); }
+    to{ opacity:1; transform:scale(1); }
+  }
   .gauge-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px;}
   .gauge-bar{background:var(--panelAlt);height:4px;border-radius:2px;overflow:hidden;}
   .gauge-fill{height:100%;transition:width .3s;}
@@ -168,13 +178,13 @@
       radial-gradient(circle at 90% 85%, rgba(124,58,237,0.08), transparent 50%),
       repeating-linear-gradient(0deg, rgba(45,212,191,0.05) 0, rgba(45,212,191,0.05) 1px, transparent 1px, transparent 42px),
       repeating-linear-gradient(90deg, rgba(45,212,191,0.05) 0, rgba(45,212,191,0.05) 1px, transparent 1px, transparent 42px),
-      radial-gradient(rgba(45,212,191,0.16) 1px, transparent 1.2px) 0 0/26px 26px,
-      var(--bg);
+      radial-gradient(rgba(45,212,191,0.16) 1px, transparent 1.2px) 0 0/26px 26px;
   }
 </style>
 </head>
 <body>
 
+<canvas id="bgParticles"></canvas>
 <div id="app">
   <div class="wrap" style="padding-top:80px;text-align:center;color:var(--mutedFaint);">กำลังโหลด...</div>
 </div>
@@ -227,8 +237,6 @@ let currentRole = localStorage.getItem("wk_role") || null; // "admin" | "user"
 let currentName = localStorage.getItem("wk_name") || "";
 let loginErr = "";
 let loginShowPin = false;
-let loginAnimFrame = null;
-let loginAnimCleanup = null;
 
 /* ---------------- firestore live sync ---------------- */
 onSnapshot(collection(db, "parts"), (snap) => {
@@ -459,7 +467,6 @@ function render(){
   if (!currentRole) {
     app.innerHTML = renderLogin();
     bindLoginEvents();
-    startLoginParticles();
     return;
   }
   const isAdmin = currentRole === "admin";
@@ -514,7 +521,6 @@ function render(){
 function renderLogin(){
   return `
     <div class="login-screen">
-    <canvas id="loginParticles" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
     <div class="wrap" style="max-width:380px;padding-top:80px;position:relative;">
       <div style="text-align:center;margin-bottom:28px;">
         <span class="brand-icon-wrap" style="border-radius:22px;">
@@ -918,85 +924,79 @@ function renderLightbox(){
   `;
 }
 
-/* ---------------- login background animation ---------------- */
-function startLoginParticles(){
-  const canvas = document.getElementById("loginParticles");
+/* ---------------- persistent app-wide background animation ---------------- */
+function initBgParticles(){
+  const canvas = document.getElementById("bgParticles");
   if (!canvas) return;
-
-  // stop and fully tear down any previous instance (e.g. from a prior render
-  // of this screen) before starting a new one, so listeners never pile up
-  if (loginAnimCleanup) { loginAnimCleanup(); loginAnimCleanup = null; }
 
   const ctx = canvas.getContext("2d");
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   let W = 0, H = 0;
 
   function resize(){
-    const screenEl = canvas.parentElement;
-    W = screenEl.offsetWidth;
-    H = screenEl.offsetHeight;
+    W = window.innerWidth;
+    H = window.innerHeight;
     canvas.width = W * dpr;
     canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   resize();
-
-  const isSmall = W < 480;
-  const COUNT = isSmall ? 26 : 50;
-  const LINK_DIST = isSmall ? 95 : 135;
-  const MOUSE_DIST = 150;
-
-  const nodes = [];
-  for (let i = 0; i < COUNT; i++){
-    nodes.push({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.22,
-      vy: (Math.random() - 0.5) * 0.22,
-      size: 3 + Math.random() * 4,
-      rot: Math.random() * Math.PI,
-      rotSpeed: (Math.random() - 0.5) * 0.008,
-    });
-  }
-
-  const mouse = { x: -9999, y: -9999, active: false };
-  const onMove = (e) => {
-    const rect = canvas.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
-    mouse.active = true;
-  };
-  const onLeave = () => { mouse.active = false; mouse.x = -9999; mouse.y = -9999; };
-  const onTouch = (e) => {
-    const t = e.touches && e.touches[0];
-    if (!t) return;
-    const rect = canvas.getBoundingClientRect();
-    mouse.x = t.clientX - rect.left;
-    mouse.y = t.clientY - rect.top;
-    mouse.active = true;
-  };
-
-  window.addEventListener("mousemove", onMove);
-  window.addEventListener("mouseleave", onLeave);
-  window.addEventListener("touchmove", onTouch, { passive: true });
   window.addEventListener("resize", resize);
 
-  loginAnimCleanup = () => {
-    if (loginAnimFrame) { cancelAnimationFrame(loginAnimFrame); loginAnimFrame = null; }
-    window.removeEventListener("mousemove", onMove);
-    window.removeEventListener("mouseleave", onLeave);
-    window.removeEventListener("touchmove", onTouch);
-    window.removeEventListener("resize", resize);
-  };
-
-  function frame(){
-    // if the login screen has been replaced (e.g. user logged in), stop cleanly
-    if (!document.getElementById("loginParticles")) {
-      if (loginAnimCleanup) { loginAnimCleanup(); loginAnimCleanup = null; }
-      return;
+  function spawnNodes(){
+    const isSmall = W < 480;
+    const count = isSmall ? 30 : 60;
+    const arr = [];
+    for (let i = 0; i < count; i++){
+      arr.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: (Math.random() - 0.5) * 0.2,
+        size: 3 + Math.random() * 4,
+        rot: Math.random() * Math.PI,
+        rotSpeed: (Math.random() - 0.5) * 0.007,
+      });
     }
+    return arr;
+  }
+  let nodes = spawnNodes();
+  window.addEventListener("resize", () => { nodes = spawnNodes(); });
 
+  const mouse = { x: -9999, y: -9999, active: false };
+  window.addEventListener("mousemove", (e) => {
+    mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true;
+  });
+  window.addEventListener("mouseleave", () => { mouse.active = false; mouse.x = -9999; mouse.y = -9999; });
+  window.addEventListener("touchmove", (e) => {
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    mouse.x = t.clientX; mouse.y = t.clientY; mouse.active = true;
+  }, { passive: true });
+
+  const LINK_DIST = 135;
+  const MOUSE_DIST = 150;
+  // colors oscillate slowly and continuously between teal and purple ("หลบไปมา")
+  const TEAL = [45, 212, 191];
+  const PURPLE = [124, 58, 237];
+  const LIGHT_TEAL = [110, 231, 216];
+  const LIGHT_PURPLE = [192, 160, 250];
+
+  function mixColor(c1, c2, t){
+    return [
+      Math.round(c1[0] + (c2[0] - c1[0]) * t),
+      Math.round(c1[1] + (c2[1] - c1[1]) * t),
+      Math.round(c1[2] + (c2[2] - c1[2]) * t),
+    ];
+  }
+
+  function frame(t){
     ctx.clearRect(0, 0, W, H);
+
+    const cyclePos = (Math.sin(t * 0.00012) + 1) / 2; // 0..1, ~8.7s half-cycle
+    const linkColor = mixColor(TEAL, PURPLE, cyclePos);
+    const nodeColor = mixColor(LIGHT_TEAL, LIGHT_PURPLE, cyclePos);
+    const mouseLinkColor = mixColor(LIGHT_TEAL, LIGHT_PURPLE, cyclePos);
 
     for (const n of nodes){
       n.x += n.vx; n.y += n.vy;
@@ -1022,8 +1022,8 @@ function startLoginParticles(){
         const dx = a.x - b.x, dy = a.y - b.y;
         const dist = Math.hypot(dx, dy);
         if (dist < LINK_DIST){
-          const op = (1 - dist / LINK_DIST) * 0.22;
-          ctx.strokeStyle = `rgba(45,212,191,${op})`;
+          const op = (1 - dist / LINK_DIST) * 0.16;
+          ctx.strokeStyle = `rgba(${linkColor[0]},${linkColor[1]},${linkColor[2]},${op})`;
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
@@ -1034,8 +1034,8 @@ function startLoginParticles(){
         const dx = a.x - mouse.x, dy = a.y - mouse.y;
         const dist = Math.hypot(dx, dy);
         if (dist < MOUSE_DIST){
-          const op = (1 - dist / MOUSE_DIST) * 0.35;
-          ctx.strokeStyle = `rgba(110,231,216,${op})`;
+          const op = (1 - dist / MOUSE_DIST) * 0.3;
+          ctx.strokeStyle = `rgba(${mouseLinkColor[0]},${mouseLinkColor[1]},${mouseLinkColor[2]},${op})`;
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y); ctx.lineTo(mouse.x, mouse.y);
@@ -1048,14 +1048,14 @@ function startLoginParticles(){
       ctx.save();
       ctx.translate(n.x, n.y);
       ctx.rotate(n.rot);
-      ctx.fillStyle = "rgba(94,214,200,0.55)";
+      ctx.fillStyle = `rgba(${nodeColor[0]},${nodeColor[1]},${nodeColor[2]},0.45)`;
       ctx.fillRect(-n.size / 2, -n.size / 2, n.size, n.size);
       ctx.restore();
     }
 
-    loginAnimFrame = requestAnimationFrame(frame);
+    requestAnimationFrame(frame);
   }
-  loginAnimFrame = requestAnimationFrame(frame);
+  requestAnimationFrame(frame);
 }
 
 /* ---------------- login events ---------------- */
@@ -1267,6 +1267,7 @@ function bindEvents(){
 }
 
 render();
+initBgParticles();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
