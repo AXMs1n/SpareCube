@@ -224,7 +224,7 @@ const ADMIN_PIN = "1234";
 let parts = [];
 let history = [];
 let machines = [];
-let view = "dashboard";
+let view = "inventory";
 let lastRenderedView = null;
 let search = "";
 let zoneFilter = "";
@@ -470,6 +470,7 @@ function render(){
     return;
   }
   const isAdmin = currentRole === "admin";
+  if (!isAdmin && view !== "inventory") view = "inventory";
   const low = lowStockParts();
   const today = new Date().toDateString();
   const todayCount = history.filter(h => h.timestamp && (h.timestamp.toDate ? h.timestamp.toDate() : new Date(h.timestamp)).toDateString() === today).length;
@@ -498,10 +499,10 @@ function render(){
           </div>
         </div>
         <div class="tabs">
-          ${tabBtn("dashboard","ภาพรวม",low.length)}
           ${tabBtn("inventory","คลัง")}
-          ${tabBtn("history","ประวัติ")}
-          ${tabBtn("settings","ตั้งค่า")}
+          ${isAdmin ? tabBtn("dashboard","ภาพรวม",low.length) : ""}
+          ${isAdmin ? tabBtn("history","ประวัติ") : ""}
+          ${isAdmin ? tabBtn("settings","ตั้งค่า") : ""}
         </div>
       </div>
     </div>
