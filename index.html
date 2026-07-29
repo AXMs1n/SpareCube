@@ -126,6 +126,14 @@
   .machine-select-row{display:flex;gap:8px;}
   .machine-select-row select{flex:1;}
   .machine-add-inline{margin-top:8px;display:flex;gap:8px;}
+  .pill-group{display:flex;flex-wrap:wrap;gap:8px;}
+  .pr-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;}
+  .pr-table{width:100%;border-collapse:collapse;min-width:820px;}
+  .pr-table th{background:var(--panelAlt);color:var(--muted);font-size:11px;text-align:left;padding:8px;white-space:nowrap;font-weight:600;}
+  .pr-table td{padding:6px 8px;border-top:1px solid var(--border);}
+  .pr-table input{width:100%;background:var(--panelAlt);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12.5px;color:var(--text);box-sizing:border-box;}
+  .pr-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+  .pr-attach-row{display:flex;align-items:center;gap:8px;background:var(--panelAlt);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;}
   .machine-add-inline input{flex:1;}
   .machine-add-inline button{white-space:nowrap;}
   .machine-group{border:1.5px solid var(--machine);border-radius:14px;padding:14px 14px 4px;margin-bottom:18px;background:#3B82F60A;}
@@ -220,6 +228,12 @@ const db = getFirestore(app);
    ====================================================== */
 const ADMIN_PIN = "1234";
 
+/* ======================================================
+   วางลิงก์ Google Apps Script Web App ตรงนี้ (สำหรับระบบ PR + Google Drive)
+   ดูวิธีสร้างในไฟล์ PR-SETUP.md ที่แนบมาด้วย
+   ====================================================== */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz4TV0cwdsaV8oCP5Me8DGtd4JHR3aewzOaP-YwCM3x0nO6qNLM7EEILYcRJvky2E-8/exec";
+
 /* ---------------- state ---------------- */
 let parts = [];
 let history = [];
@@ -238,6 +252,33 @@ let currentName = localStorage.getItem("wk_name") || "";
 let loginErr = "";
 let loginShowPin = false;
 
+/* ---------------- PR (purchase request) state ---------------- */
+let prRequests = [];
+let prForm = {
+  department: "", prNumber: "", po: "", poDate: "", jobName: "", jobOwner: "",
+  reason: "", jobType: "", jobTypeProjectName: "", category: "", categoryIoNumber: "",
+  cca: "", gl: "", vendor: "", receiveDate: "",
+};
+let prRows = [];
+let prPendingFiles = []; // [{file, name, size}] staged before submit
+let prSaving = false;
+let prSearch = "";
+let prViewerFile = null; // {url, name, mime} currently shown in the preview modal
+let prDeletingId = null;
+let prExpandedIds = new Set();
+
+function newPRRow(){ return { id: uid(), matCode: "", desc: "", qty: "", unit: "", price: "" }; }
+function resetPRForm(){
+  prForm = {
+    department: "", prNumber: "", po: "", poDate: "", jobName: "", jobOwner: "",
+    reason: "", jobType: "", jobTypeProjectName: "", category: "", categoryIoNumber: "",
+    cca: "", gl: "", vendor: "", receiveDate: "",
+  };
+  prRows = [newPRRow()];
+  prPendingFiles = [];
+}
+resetPRForm();
+
 /* ---------------- firestore live sync ---------------- */
 onSnapshot(collection(db, "parts"), (snap) => {
   parts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -254,6 +295,11 @@ onSnapshot(query(collection(db, "machines"), orderBy("name")), (snap) => {
   render();
 }, (err) => showToast("โหลดรายชื่อเครื่องจักรไม่สำเร็จ: " + err.message));
 
+onSnapshot(query(collection(db, "pr_requests"), orderBy("createdAt", "desc"), limit(300)), (snap) => {
+  prRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  render();
+}, (err) => showToast("โหลดรายการ PR ไม่สำเร็จ: " + err.message));
+
 /* ---------------- helpers ---------------- */
 function getPartZones(p){
   if (!p) return [];
@@ -263,6 +309,7 @@ function getPartZones(p){
 }
 
 function esc(s){ return (s ?? "").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 
 function gaugeColor(qty, min){
   if (qty <= min) return "var(--danger)";
@@ -394,6 +441,182 @@ async function deleteHistory(id){
   }
 }
 
+/* ---------------- PR actions ---------------- */
+function syncPRFormFromDOM(){
+  const g = id => document.getElementById(id);
+  const set = (key, id) => { const el = g(id); if (el) prForm[key] = el.value; };
+  set("department", "prDepartment");
+  set("prNumber", "prNumber");
+  set("po", "prPO");
+  set("poDate", "prPODate");
+  set("jobName", "prJobName");
+  set("jobOwner", "prJobOwner");
+  set("reason", "prReason");
+  set("jobTypeProjectName", "prJobTypeProjectName");
+  set("categoryIoNumber", "prCategoryIoNumber");
+  set("cca", "prCCA");
+  set("gl", "prGL");
+  set("vendor", "prVendor");
+  set("receiveDate", "prReceiveDate");
+
+  prRows.forEach(row => {
+    const matEl = g(`prRow_${row.id}_matcode`); if (matEl) row.matCode = matEl.value;
+    const descEl = g(`prRow_${row.id}_desc`); if (descEl) row.desc = descEl.value;
+    const qtyEl = g(`prRow_${row.id}_qty`); if (qtyEl) row.qty = qtyEl.value;
+    const unitEl = g(`prRow_${row.id}_unit`); if (unitEl) row.unit = unitEl.value;
+    const priceEl = g(`prRow_${row.id}_price`); if (priceEl) row.price = priceEl.value;
+  });
+}
+
+function addPRRow(){
+  syncPRFormFromDOM();
+  prRows.push(newPRRow());
+  render();
+}
+
+function removePRRow(rowId){
+  syncPRFormFromDOM();
+  prRows = prRows.filter(r => r.id !== rowId);
+  if (prRows.length === 0) prRows.push(newPRRow());
+  render();
+}
+
+function setPRJobType(val){
+  syncPRFormFromDOM();
+  prForm.jobType = (prForm.jobType === val) ? "" : val;
+  render();
+}
+
+function setPRCategory(val){
+  syncPRFormFromDOM();
+  prForm.category = (prForm.category === val) ? "" : val;
+  render();
+}
+
+function addPendingFiles(fileList){
+  syncPRFormFromDOM();
+  for (const file of fileList) prPendingFiles.push(file);
+  render();
+}
+
+function removePendingFile(idx){
+  syncPRFormFromDOM();
+  prPendingFiles.splice(idx, 1);
+  render();
+}
+
+function fileToBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("อ่านไฟล์ไม่สำเร็จ"));
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadFileToDrive(file, folderName){
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("วางลิงก์")) {
+    throw new Error("ยังไม่ได้ตั้งค่า Google Apps Script (APPS_SCRIPT_URL) ในโค้ด");
+  }
+  const base64 = await fileToBase64(file);
+  const resp = await fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight on Apps Script
+    body: JSON.stringify({
+      action: "upload",
+      folder: folderName,
+      filename: file.name,
+      mimeType: file.type || "application/octet-stream",
+      data: base64,
+    }),
+  });
+  const json = await resp.json();
+  if (!json.success) throw new Error(json.error || "อัปโหลดไฟล์ไม่สำเร็จ");
+  return json.file; // {id, name, url, previewUrl, mimeType}
+}
+
+async function submitPR(){
+  syncPRFormFromDOM();
+  const errEl = document.getElementById("prFormErr");
+  const hideErr = () => { if (errEl) errEl.style.display = "none"; };
+  const showErr = (msg) => { if (errEl) { errEl.textContent = msg; errEl.style.display = "block"; } };
+
+  if (!prForm.department.trim() || !prForm.prNumber.trim() || !prForm.jobName.trim()) {
+    showErr("กรุณากรอกหน่วยงาน, เลขที่ PR และชื่องานให้ครบ");
+    return;
+  }
+  const cleanRows = prRows.filter(r => (r.desc||"").trim() || (r.matCode||"").trim());
+  if (cleanRows.length === 0) {
+    showErr("กรุณากรอกรายการสินค้าอย่างน้อย 1 รายการ");
+    return;
+  }
+  hideErr();
+
+  prSaving = true; render();
+  try {
+    const attachments = [];
+    for (const file of prPendingFiles) {
+      const uploaded = await uploadFileToDrive(file, currentName || "unknown");
+      attachments.push(uploaded);
+    }
+    await addDoc(collection(db, "pr_requests"), {
+      ...prForm,
+      rows: cleanRows,
+      totalAmount: cleanRows.reduce((s, r) => s + prRowAmount(r), 0),
+      attachments,
+      submittedBy: currentName,
+      createdAt: serverTimestamp(),
+    });
+    resetPRForm();
+    showToast("ส่ง PR สำเร็จ");
+  } catch (e) {
+    showErr("ส่ง PR ไม่สำเร็จ: " + e.message);
+  } finally {
+    prSaving = false; render();
+  }
+}
+
+async function deletePRAttachment(prId, fileId){
+  try {
+    if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes("วางลิงก์")) {
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "delete", fileId }),
+      });
+    }
+    const pr = prRequests.find(p => p.id === prId);
+    if (pr) {
+      const nextAttachments = (pr.attachments || []).filter(a => a.id !== fileId);
+      await updateDoc(doc(db, "pr_requests", prId), { attachments: nextAttachments });
+    }
+    showToast("ลบไฟล์แล้ว");
+  } catch (e) {
+    showToast("ลบไฟล์ไม่สำเร็จ: " + e.message);
+  }
+}
+
+async function deletePRRequest(prId){
+  try {
+    const pr = prRequests.find(p => p.id === prId);
+    if (pr && APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes("วางลิงก์")) {
+      for (const att of (pr.attachments || [])) {
+        try {
+          await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "delete", fileId: att.id }),
+          });
+        } catch (_) { /* best-effort */ }
+      }
+    }
+    await deleteDoc(doc(db, "pr_requests", prId));
+    showToast("ลบใบ PR แล้ว");
+  } catch (e) {
+    showToast("ลบใบ PR ไม่สำเร็จ: " + e.message);
+  }
+}
+
 function exportHistoryExcel(fromStr, toStr){
   if (typeof XLSX === "undefined") { showToast("โหลดตัวช่วยสร้าง Excel ไม่สำเร็จ ลองเช็คอินเทอร์เน็ต"); return; }
   let rows = history;
@@ -470,7 +693,7 @@ function render(){
     return;
   }
   const isAdmin = currentRole === "admin";
-  if (!isAdmin && view !== "inventory") view = "inventory";
+  if (!isAdmin && view !== "inventory" && view !== "openpr") view = "inventory";
   const low = lowStockParts();
   const today = new Date().toDateString();
   const todayCount = history.filter(h => h.timestamp && (h.timestamp.toDate ? h.timestamp.toDate() : new Date(h.timestamp)).toDateString() === today).length;
@@ -500,6 +723,8 @@ function render(){
         </div>
         <div class="tabs">
           ${tabBtn("inventory","คลัง")}
+          ${tabBtn("openpr","เปิด PR")}
+          ${isAdmin ? tabBtn("prlist","รายการ PR") : ""}
           ${isAdmin ? tabBtn("dashboard","ภาพรวม",low.length) : ""}
           ${isAdmin ? tabBtn("history","ประวัติ") : ""}
           ${isAdmin ? tabBtn("settings","ตั้งค่า") : ""}
@@ -511,10 +736,13 @@ function render(){
       ${view === "inventory" ? renderInventory() : ""}
       ${view === "history" ? renderHistory() : ""}
       ${view === "settings" ? renderSettings(low.length) : ""}
+      ${view === "openpr" ? renderOpenPR() : ""}
+      ${view === "prlist" ? renderPRList() : ""}
     </div>
     ${(addOpen || editPart) ? renderPartForm() : ""}
     ${withdrawPart ? renderWithdrawForm() : ""}
     ${lightboxImg ? renderLightbox() : ""}
+    ${prViewerFile ? renderPRViewerModal() : ""}
   `;
   bindEvents();
 }
@@ -756,6 +984,224 @@ function renderHistory(){
         </div>
       </div>`;
     }).join("")}
+  `;
+}
+
+/* ---------------- PR form ---------------- */
+const PR_JOB_TYPES = ["PM","CM","CMH","BD","ทั่วไป","GMP","SHE/คปอ.","โครงการ","สิ้นเปลือง"];
+const PR_CATEGORIES = [{key:"K",label:"K"},{key:"A_IO",label:"A IO"},{key:"F_IO",label:"F IO"}];
+
+function pillGroupHtml(options, selectedValue, dataAttr){
+  return `<div class="pill-group">${options.map(opt => {
+    const val = typeof opt === "string" ? opt : opt.key;
+    const label = typeof opt === "string" ? opt : opt.label;
+    const active = selectedValue === val;
+    return `<button type="button" class="btn ${active?"btn-accent":"btn-ghost"}" data-${dataAttr}="${esc(val)}" style="padding:8px 14px;font-size:12.5px;">${esc(label)}</button>`;
+  }).join("")}</div>`;
+}
+
+function prRowAmount(row){ return (parseFloat(row.qty)||0) * (parseFloat(row.price)||0); }
+function prFormatMoney(n){ return n.toLocaleString("th-TH", {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+function prRowHtml(row, idx){
+  const amount = prRowAmount(row);
+  return `
+    <tr>
+      <td class="mono" style="text-align:center;color:var(--mutedFaint);">${idx+1}</td>
+      <td><input id="prRow_${row.id}_matcode" value="${esc(row.matCode)}" placeholder="Mat Code"></td>
+      <td><input id="prRow_${row.id}_desc" value="${esc(row.desc)}" placeholder="รายการ" style="min-width:180px;"></td>
+      <td><input id="prRow_${row.id}_qty" class="prRowQty" data-row="${row.id}" type="number" value="${esc(row.qty)}" placeholder="0" style="width:70px;"></td>
+      <td><input id="prRow_${row.id}_unit" value="${esc(row.unit)}" placeholder="หน่วย" style="width:70px;"></td>
+      <td><input id="prRow_${row.id}_price" class="prRowPrice" data-row="${row.id}" type="number" value="${esc(row.price)}" placeholder="0.00" style="width:90px;"></td>
+      <td class="mono" id="prRow_${row.id}_amount" style="text-align:right;white-space:nowrap;">${prFormatMoney(amount)}</td>
+      <td><button type="button" data-remove-row="${row.id}" style="background:none;border:none;color:var(--mutedFaint);cursor:pointer;"><i class="ti ti-trash" aria-hidden="true"></i></button></td>
+    </tr>
+  `;
+}
+
+function renderOpenPR(){
+  const f = prForm;
+  const total = prRows.reduce((s, r) => s + prRowAmount(r), 0);
+  return `
+    <div class="section-title"><i class="ti ti-file-invoice" aria-hidden="true"></i> เปิดใบสั่งซื้อสินค้า (PR)</div>
+
+    <div class="grid2">
+      <div class="field-wrap"><label class="field">หน่วยงาน</label><input id="prDepartment" value="${esc(f.department)}"></div>
+      <div class="field-wrap"><label class="field">เลขที่ PR</label><input id="prNumber" value="${esc(f.prNumber)}"></div>
+    </div>
+    <div class="grid2">
+      <div class="field-wrap"><label class="field">PO</label><input id="prPO" value="${esc(f.po)}"></div>
+      <div class="field-wrap"><label class="field">วันที่ออก PO</label><input type="date" id="prPODate" value="${esc(f.poDate)}"></div>
+    </div>
+    <div class="grid2">
+      <div class="field-wrap"><label class="field">ชื่องาน</label><input id="prJobName" value="${esc(f.jobName)}"></div>
+      <div class="field-wrap"><label class="field">เจ้าของงาน</label><input id="prJobOwner" value="${esc(f.jobOwner)}"></div>
+    </div>
+    <div class="field-wrap"><label class="field">เหตุผล/หมายเหตุ</label><textarea id="prReason" rows="3" style="width:100%;box-sizing:border-box;">${esc(f.reason)}</textarea></div>
+
+    <div class="field-wrap">
+      <label class="field">ลักษณะงาน</label>
+      ${pillGroupHtml(PR_JOB_TYPES, f.jobType, "jobtype")}
+      ${f.jobType === "โครงการ" ? `<input id="prJobTypeProjectName" value="${esc(f.jobTypeProjectName)}" placeholder="ชื่อโครงการ" style="margin-top:8px;">` : ""}
+    </div>
+
+    <div class="field-wrap">
+      <label class="field">ประเภท</label>
+      ${pillGroupHtml(PR_CATEGORIES, f.category, "category")}
+      ${(f.category === "A_IO" || f.category === "F_IO") ? `<input id="prCategoryIoNumber" value="${esc(f.categoryIoNumber)}" placeholder="เลข IO" style="margin-top:8px;">` : ""}
+    </div>
+
+    <div class="grid2">
+      <div class="field-wrap"><label class="field">CCA</label><input id="prCCA" value="${esc(f.cca)}"></div>
+      <div class="field-wrap"><label class="field">GL</label><input id="prGL" value="${esc(f.gl)}"></div>
+    </div>
+    <div class="grid2">
+      <div class="field-wrap"><label class="field">ผู้ขาย</label><input id="prVendor" value="${esc(f.vendor)}"></div>
+      <div class="field-wrap"><label class="field">วันที่รับสินค้า</label><input type="date" id="prReceiveDate" value="${esc(f.receiveDate)}"></div>
+    </div>
+
+    <div class="section-title" style="margin-top:20px;">รายการสินค้า</div>
+    <div class="pr-table-wrap">
+      <table class="pr-table">
+        <thead><tr>
+          <th>ลำดับ</th><th>Mat Code</th><th>รายการ</th><th>จำนวน</th><th>หน่วย</th><th>ราคา/หน่วย</th><th>จำนวนเงิน</th><th></th>
+        </tr></thead>
+        <tbody id="prRowsBody">
+          ${prRows.map((r, i) => prRowHtml(r, i)).join("")}
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+      <button type="button" class="btn btn-ghost" id="btnAddPRRow"><i class="ti ti-plus" aria-hidden="true"></i> เพิ่มรายการ</button>
+      <div style="font-size:13px;">รวมเป็นเงิน <span class="mono" id="prTotalAmount" style="color:var(--accent);font-size:16px;">${prFormatMoney(total)}</span></div>
+    </div>
+
+    <div class="section-title" style="margin-top:20px;">แนบไฟล์เอกสาร</div>
+    <label class="btn btn-ghost" style="cursor:pointer;display:inline-flex;">
+      <i class="ti ti-paperclip" aria-hidden="true"></i> เลือกไฟล์แนบ
+      <input type="file" id="prFileInput" multiple style="display:none;">
+    </label>
+    <div style="margin-top:10px;">
+      ${prPendingFiles.map((pf, idx) => `
+        <div class="pr-attach-row">
+          <i class="ti ti-file" style="color:var(--muted);" aria-hidden="true"></i>
+          <span style="flex:1;font-size:12.5px;" class="truncate">${esc(pf.name)}</span>
+          <span class="mono" style="color:var(--mutedFaint);font-size:11px;">${(pf.size/1024).toFixed(0)} KB</span>
+          <button type="button" data-remove-pending-file="${idx}" style="background:none;border:none;color:var(--danger);cursor:pointer;"><i class="ti ti-x" aria-hidden="true"></i></button>
+        </div>
+      `).join("")}
+    </div>
+
+    <div id="prFormErr" class="err-text" style="display:none;margin-top:14px;"></div>
+    <button class="btn btn-accent" id="btnSubmitPR" style="width:100%;justify-content:center;margin-top:14px;padding:12px 0;" ${prSaving?"disabled":""}>
+      ${prSaving ? "⏳ กำลังส่ง..." : `<i class="ti ti-send" aria-hidden="true"></i> ส่ง PR`}
+    </button>
+  `;
+}
+
+/* ---------------- PR list (admin) ---------------- */
+function prAttachmentRowHtml(pr, att){
+  const isPdf = (att.mimeType || "").includes("pdf");
+  const isImg = (att.mimeType || "").startsWith("image/");
+  return `
+    <div class="pr-attach-row">
+      <i class="ti ${isPdf?"ti-file-type-pdf":isImg?"ti-photo":"ti-file"}" style="color:var(--muted);" aria-hidden="true"></i>
+      <span style="flex:1;font-size:12.5px;" class="truncate">${esc(att.name)}</span>
+      ${(isPdf || isImg) ? `<button type="button" data-preview-file="${esc(att.id)}" data-preview-pr="${pr.id}" style="background:none;border:none;color:var(--accent);cursor:pointer;" title="ดูตัวอย่าง"><i class="ti ti-eye" aria-hidden="true"></i></button>` : ""}
+      <a href="${esc(att.url)}" target="_blank" rel="noopener" style="color:var(--muted);" title="ดาวน์โหลด"><i class="ti ti-download" aria-hidden="true"></i></a>
+      <button type="button" data-delete-attachment="${esc(att.id)}" data-delete-attachment-pr="${pr.id}" style="background:none;border:none;color:var(--danger);cursor:pointer;" title="ลบไฟล์"><i class="ti ti-trash" aria-hidden="true"></i></button>
+    </div>
+  `;
+}
+
+function prCardHtml(pr){
+  const expanded = prExpandedIds.has(pr.id);
+  const total = (pr.rows||[]).reduce((s,r) => s + prRowAmount(r), 0);
+  const dateStr = pr.createdAt ? fmtDate(pr.createdAt) : "-";
+  return `
+    <div class="pr-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;cursor:pointer;" data-toggle-pr="${pr.id}">
+        <div style="min-width:0;">
+          <div style="font-size:14px;font-weight:600;" class="truncate">${esc(pr.jobName || "(ไม่ระบุชื่องาน)")}</div>
+          <div style="color:var(--muted);font-size:12px;margin-top:2px;">
+            PR ${esc(pr.prNumber || "-")} · ${esc(pr.department || "-")} · โดย ${esc(pr.submittedBy || "-")} · ${dateStr}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div class="mono" style="color:var(--accent);font-size:14px;">${prFormatMoney(total)}</div>
+          <i class="ti ti-chevron-${expanded?"up":"down"}" style="color:var(--mutedFaint);" aria-hidden="true"></i>
+        </div>
+      </div>
+      ${expanded ? `
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+          <div class="grid2" style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">
+            <div>PO: ${esc(pr.po||"-")}</div>
+            <div>วันที่ออก PO: ${esc(pr.poDate||"-")}</div>
+            <div>เจ้าของงาน: ${esc(pr.jobOwner||"-")}</div>
+            <div>ผู้ขาย: ${esc(pr.vendor||"-")}</div>
+            <div>ลักษณะงาน: ${esc(pr.jobType||"-")}${pr.jobTypeProjectName?` (${esc(pr.jobTypeProjectName)})`:""}</div>
+            <div>ประเภท: ${esc(pr.category||"-")}${pr.categoryIoNumber?` (${esc(pr.categoryIoNumber)})`:""}</div>
+            <div>CCA: ${esc(pr.cca||"-")}</div>
+            <div>GL: ${esc(pr.gl||"-")}</div>
+          </div>
+          ${pr.reason ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">หมายเหตุ: ${esc(pr.reason)}</div>` : ""}
+          <div class="pr-table-wrap" style="margin-bottom:10px;">
+            <table class="pr-table">
+              <thead><tr><th>ลำดับ</th><th>Mat Code</th><th>รายการ</th><th>จำนวน</th><th>หน่วย</th><th>ราคา/หน่วย</th><th>จำนวนเงิน</th></tr></thead>
+              <tbody>
+                ${(pr.rows||[]).map((r,i) => `
+                  <tr>
+                    <td class="mono" style="text-align:center;color:var(--mutedFaint);">${i+1}</td>
+                    <td>${esc(r.matCode)}</td><td>${esc(r.desc)}</td><td>${esc(r.qty)}</td><td>${esc(r.unit)}</td>
+                    <td class="mono">${prFormatMoney(parseFloat(r.price)||0)}</td>
+                    <td class="mono">${prFormatMoney(prRowAmount(r))}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;">ไฟล์แนบ (${(pr.attachments||[]).length})</div>
+          ${(pr.attachments||[]).length === 0 ? `<div style="color:var(--mutedFaint);font-size:12px;margin-bottom:10px;">ไม่มีไฟล์แนบ</div>` :
+            (pr.attachments||[]).map(att => prAttachmentRowHtml(pr, att)).join("")}
+          <button type="button" class="btn btn-danger" data-delete-pr="${pr.id}" style="margin-top:8px;">
+            <i class="ti ti-trash" aria-hidden="true"></i> ลบใบ PR นี้
+          </button>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+function renderPRList(){
+  const filtered = prRequests.filter(pr =>
+    ((pr.prNumber||"")+(pr.jobName||"")+(pr.department||"")+(pr.submittedBy||"")+(pr.vendor||"")).toLowerCase().includes(prSearch.toLowerCase())
+  );
+  return `
+    <div class="search">
+      <span class="icon">🔍</span>
+      <input id="prSearchInput" placeholder="ค้นหาเลขที่ PR ชื่องาน หน่วยงาน หรือผู้กรอก" value="${esc(prSearch)}">
+    </div>
+    ${filtered.length === 0 ? `<div class="empty">ยังไม่มีใบ PR</div>` : filtered.map(prCardHtml).join("")}
+  `;
+}
+
+function renderPRViewerModal(){
+  const f = prViewerFile;
+  const isPdf = (f.mimeType||"").includes("pdf");
+  return `
+    <div class="overlay" id="overlayPRViewer">
+      <div class="modal" style="max-width:720px;height:85vh;display:flex;flex-direction:column;">
+        <div class="modal-head">
+          <span class="head truncate" style="font-size:15px;font-weight:600;display:block;max-width:560px;">${esc(f.name)}</span>
+          <button class="close-btn" id="closePRViewer">✕</button>
+        </div>
+        <div style="flex:1;padding:12px;overflow:hidden;">
+          ${isPdf
+            ? `<iframe src="${esc(f.previewUrl || f.url)}" style="width:100%;height:100%;border:none;border-radius:8px;"></iframe>`
+            : `<img src="${esc(f.url)}" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">`}
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -1119,6 +1565,63 @@ function bindEvents(){
   document.getElementById("overlayLightbox")?.addEventListener("click", (ev) => {
     if (ev.target.id === "overlayLightbox") { lightboxImg = null; render(); }
   });
+
+  /* ---- PR form ---- */
+  document.querySelectorAll("[data-jobtype]").forEach(el => el.addEventListener("click", () => setPRJobType(el.dataset.jobtype)));
+  document.querySelectorAll("[data-category]").forEach(el => el.addEventListener("click", () => setPRCategory(el.dataset.category)));
+  document.getElementById("btnAddPRRow")?.addEventListener("click", addPRRow);
+  document.querySelectorAll("[data-remove-row]").forEach(el => el.addEventListener("click", () => removePRRow(el.dataset.removeRow)));
+  document.querySelectorAll(".prRowQty, .prRowPrice").forEach(el => el.addEventListener("input", () => {
+    const rowId = el.dataset.row;
+    const qtyEl = document.getElementById(`prRow_${rowId}_qty`);
+    const priceEl = document.getElementById(`prRow_${rowId}_price`);
+    const amountEl = document.getElementById(`prRow_${rowId}_amount`);
+    const amount = (parseFloat(qtyEl?.value)||0) * (parseFloat(priceEl?.value)||0);
+    if (amountEl) amountEl.textContent = prFormatMoney(amount);
+    let sum = 0;
+    document.querySelectorAll(".prRowQty").forEach(qEl => {
+      const rid = qEl.dataset.row;
+      const pEl = document.getElementById(`prRow_${rid}_price`);
+      sum += (parseFloat(qEl.value)||0) * (parseFloat(pEl?.value)||0);
+    });
+    const totalEl = document.getElementById("prTotalAmount");
+    if (totalEl) totalEl.textContent = prFormatMoney(sum);
+  }));
+  document.getElementById("prFileInput")?.addEventListener("change", (e) => {
+    if (e.target.files && e.target.files.length) addPendingFiles(e.target.files);
+  });
+  document.querySelectorAll("[data-remove-pending-file]").forEach(el => el.addEventListener("click", () => removePendingFile(Number(el.dataset.removePendingFile))));
+  document.getElementById("btnSubmitPR")?.addEventListener("click", submitPR);
+
+  /* ---- PR list (admin) ---- */
+  document.getElementById("prSearchInput")?.addEventListener("input", (e) => {
+    prSearch = e.target.value; render();
+    const el = document.getElementById("prSearchInput");
+    if (el) { el.focus(); const p = prSearch.length; el.setSelectionRange(p, p); }
+  });
+  document.querySelectorAll("[data-toggle-pr]").forEach(el => el.addEventListener("click", () => {
+    const id = el.dataset.togglePr;
+    if (prExpandedIds.has(id)) prExpandedIds.delete(id); else prExpandedIds.add(id);
+    render();
+  }));
+  document.querySelectorAll("[data-preview-file]").forEach(el => el.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    const pr = prRequests.find(p => p.id === el.dataset.previewPr);
+    const att = pr && (pr.attachments||[]).find(a => a.id === el.dataset.previewFile);
+    if (att) { prViewerFile = att; render(); }
+  }));
+  document.getElementById("closePRViewer")?.addEventListener("click", () => { prViewerFile = null; render(); });
+  document.getElementById("overlayPRViewer")?.addEventListener("click", (ev) => {
+    if (ev.target.id === "overlayPRViewer") { prViewerFile = null; render(); }
+  });
+  document.querySelectorAll("[data-delete-attachment]").forEach(el => el.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    if (confirm("ยืนยันลบไฟล์นี้?")) deletePRAttachment(el.dataset.deleteAttachmentPr, el.dataset.deleteAttachment);
+  }));
+  document.querySelectorAll("[data-delete-pr]").forEach(el => el.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    if (confirm("ยืนยันลบใบ PR นี้ทั้งหมด รวมไฟล์แนบ?")) deletePRRequest(el.dataset.deletePr);
+  }));
   document.getElementById("btnExportRange")?.addEventListener("click", () => {
     const from = document.getElementById("exportFrom")?.value || "";
     const to = document.getElementById("exportTo")?.value || "";
