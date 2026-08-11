@@ -27,6 +27,78 @@
   *{box-sizing:border-box;}
   body{margin:0;background:var(--bg);color:var(--text);font-family:'Prompt',sans-serif;-webkit-font-smoothing:antialiased;}
   #bgParticles{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;}
+
+  #doorLightBurst{
+    position:fixed; inset:0; z-index:39; pointer-events:none;
+    background:radial-gradient(circle at 50% 55%, rgba(160,255,240,0.55), rgba(45,212,191,0.18) 35%, transparent 65%);
+    opacity:0; transform:scale(0.6);
+  }
+  #doorLightBurst.burst{ animation:doorBurst 1.1s ease-out forwards; }
+  @keyframes doorBurst{
+    0%{ opacity:0; transform:scale(0.5); }
+    35%{ opacity:1; transform:scale(1.05); }
+    100%{ opacity:0; transform:scale(1.6); }
+  }
+
+  #warehouseDoor{
+    position:fixed; inset:0; z-index:40;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    touch-action:none; cursor:grab;
+    will-change:transform;
+  }
+  #warehouseDoor.dragging{ cursor:grabbing; }
+  #warehouseDoor.snapping{ transition:transform .38s cubic-bezier(.34,1.2,.4,1); }
+  #warehouseDoor.opening{ transition:transform .62s cubic-bezier(.5,0,.3,1); }
+  .door-slats{
+    position:absolute; inset:0;
+    background:
+      linear-gradient(180deg, rgba(45,212,191,0.05), transparent 30%),
+      repeating-linear-gradient(180deg, #1E2229 0px, #1E2229 22px, #171A1F 22px, #171A1F 24px),
+      #14161A;
+    border-bottom:3px solid #2C3139;
+  }
+  .door-siren{
+    position:absolute; left:0; right:0; height:6px; z-index:1;
+    background:repeating-linear-gradient(90deg, #F5A623 0 22px, transparent 22px 44px);
+    animation:doorSirenPulse 1.6s ease-in-out infinite;
+  }
+  .door-siren-top{ top:0; }
+  .door-siren-bottom{ bottom:3px; }
+  @keyframes doorSirenPulse{
+    0%,100%{ opacity:.35; }
+    50%{ opacity:.95; }
+  }
+  .door-handle-wrap{
+    position:relative; z-index:2;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    user-select:none; -webkit-user-select:none;
+  }
+  .door-handle{
+    width:76px; height:44px; border-radius:10px;
+    background:linear-gradient(180deg, #2C3139, #1B1E23);
+    border:1px solid #3A4048;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--accent); font-size:22px;
+    box-shadow:0 4px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+    animation:doorHandleHint 1.8s ease-in-out infinite;
+  }
+  @keyframes doorHandleHint{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-6px); }
+  }
+  .door-hint{ color:var(--muted); font-size:13px; font-weight:600; letter-spacing:.2px; }
+  .door-hint-arrow{ color:var(--accent); font-size:16px; opacity:.8; animation:doorHandleHint 1.8s ease-in-out infinite; }
+  #warehouseDoor.dragging .door-handle,
+  #warehouseDoor.dragging .door-hint-arrow{ animation:none; }
+  #warehouseDoor.hidden{ display:none; }
+  @keyframes doorShake{
+    0%,100%{ transform:translateX(0) rotate(0deg); }
+    20%{ transform:translateX(-6px) rotate(-0.4deg); }
+    40%{ transform:translateX(5px) rotate(0.4deg); }
+    60%{ transform:translateX(-4px) rotate(-0.3deg); }
+    80%{ transform:translateX(3px) rotate(0.2deg); }
+  }
+  #warehouseDoor.shake .door-slats{ animation:doorShake .45s ease-in-out; }
   #app{position:relative;z-index:1;}
   .head{font-family:'Prompt',sans-serif;}
   .mono{font-family:'Prompt',sans-serif;}
@@ -193,6 +265,21 @@
 <body>
 
 <canvas id="bgParticles"></canvas>
+
+<div id="doorLightBurst"></div>
+<div id="warehouseDoor">
+  <div class="door-siren door-siren-top"></div>
+  <div class="door-slats"></div>
+  <div class="door-handle-wrap">
+    <div class="door-handle" id="doorHandle">
+      <i class="ti ti-grip-horizontal" aria-hidden="true"></i>
+    </div>
+    <div class="door-hint">ลากขึ้นเพื่อเข้าใช้งาน</div>
+    <i class="ti ti-chevron-up door-hint-arrow" aria-hidden="true"></i>
+  </div>
+  <div class="door-siren door-siren-bottom"></div>
+</div>
+
 <div id="app">
   <div class="wrap" style="padding-top:80px;text-align:center;color:var(--mutedFaint);">กำลังโหลด...</div>
 </div>
@@ -232,7 +319,7 @@ const ADMIN_PIN = "1234";
    วางลิงก์ Google Apps Script Web App ตรงนี้ (สำหรับระบบ PR + Google Drive)
    ดูวิธีสร้างในไฟล์ PR-SETUP.md ที่แนบมาด้วย
    ====================================================== */
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz4TV0cwdsaV8oCP5Me8DGtd4JHR3aewzOaP-YwCM3x0nO6qNLM7EEILYcRJvky2E-8/exec";
+const APPS_SCRIPT_URL = "วางลิงก์ Apps Script ของคุณตรงนี้";
 
 /* ---------------- state ---------------- */
 let parts = [];
@@ -1770,8 +1857,72 @@ function bindEvents(){
   });
 }
 
+/* ---------------- roll-up warehouse door entrance ---------------- */
+function initWarehouseDoor(){
+  const door = document.getElementById("warehouseDoor");
+  const burst = document.getElementById("doorLightBurst");
+  if (!door) return;
+
+  let dragging = false;
+  let startY = 0;
+  let currentDelta = 0;
+  let opened = false;
+
+  function openThreshold(){ return Math.min(window.innerHeight * 0.28, 220); }
+
+  function onPointerDown(e){
+    if (opened) return;
+    dragging = true;
+    startY = e.clientY;
+    door.classList.remove("snapping", "opening");
+    door.classList.add("dragging");
+  }
+
+  function onPointerMove(e){
+    if (!dragging || opened) return;
+    const rawDelta = startY - e.clientY;
+    currentDelta = Math.max(0, Math.min(rawDelta, window.innerHeight));
+    door.style.transform = `translateY(-${currentDelta}px)`;
+  }
+
+  function onPointerUp(){
+    if (!dragging || opened) return;
+    dragging = false;
+    door.classList.remove("dragging");
+
+    if (currentDelta > openThreshold()) {
+      completeOpen();
+    } else if (currentDelta > 4) {
+      snapClosed();
+    } else {
+      door.classList.add("shake");
+      setTimeout(() => door.classList.remove("shake"), 480);
+    }
+    currentDelta = 0;
+  }
+
+  function snapClosed(){
+    door.classList.add("snapping");
+    door.style.transform = "translateY(0)";
+  }
+
+  function completeOpen(){
+    opened = true;
+    door.classList.add("opening");
+    door.style.transform = "translateY(-115%)";
+    if (burst) burst.classList.add("burst");
+    setTimeout(() => { door.classList.add("hidden"); }, 680);
+  }
+
+  door.addEventListener("pointerdown", onPointerDown);
+  window.addEventListener("pointermove", onPointerMove);
+  window.addEventListener("pointerup", onPointerUp);
+  window.addEventListener("pointercancel", onPointerUp);
+}
+
 render();
 initBgParticles();
+initWarehouseDoor();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
