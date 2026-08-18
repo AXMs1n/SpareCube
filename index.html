@@ -608,7 +608,7 @@ function fileToBase64(file){
   });
 }
 
-async function uploadFileToDrive(file, folderName){
+async function uploadFileToDrive(file, folderName, jobName){
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("วางลิงก์")) {
     throw new Error("ยังไม่ได้ตั้งค่า Google Apps Script (APPS_SCRIPT_URL) ในโค้ด");
   }
@@ -619,6 +619,7 @@ async function uploadFileToDrive(file, folderName){
     body: JSON.stringify({
       action: "upload",
       folder: folderName,
+      jobName: jobName,
       filename: file.name,
       mimeType: file.type || "application/octet-stream",
       data: base64,
@@ -650,7 +651,7 @@ async function submitPR(){
   try {
     const attachments = [];
     for (const file of prPendingFiles) {
-      const uploaded = await uploadFileToDrive(file, currentName || "unknown");
+      const uploaded = await uploadFileToDrive(file, currentName || "unknown", prForm.jobName);
       attachments.push(uploaded);
     }
     await addDoc(collection(db, "pr_requests"), {
