@@ -361,6 +361,12 @@ let prViewerFile = null; // {url, name, mime} currently shown in the preview mod
 let prDeletingId = null;
 let prExpandedIds = new Set();
 
+/* ---- Admin: full edit of an existing PR (price, PR/PO number, everything) ---- */
+let editingPR = null;   // the raw pr_requests doc currently being edited (or null)
+let prEditForm = null;  // working copy of editable top-level fields
+let prEditRows = [];    // working copy of line items
+let prEditSaving = false;
+
 function newPRRow(){ return { id: uid(), matCode: "", desc: "", qty: "", unit: "", price: "" }; }
 function resetPRForm(){
   prForm = {
@@ -741,6 +747,114 @@ async function rejectPRRequest(prId){
   }
 }
 
+function openPREdit(pr){
+  editingPR = pr;
+  prEditForm = {
+    department: pr.department || "", prNumber: pr.prNumber || "", po: pr.po || "",
+    poDate: pr.poDate || "", jobName: pr.jobName || "", jobOwner: pr.jobOwner || "",
+    reason: pr.reason || "", jobType: pr.jobType || "", jobTypeProjectName: pr.jobTypeProjectName || "",
+    category: pr.category || "", categoryIoNumber: pr.categoryIoNumber || "",
+    cca: pr.cca || "", gl: pr.gl || "", vendor: pr.vendor || "", receiveDate: pr.receiveDate || "",
+    status: pr.status || "pending",
+  };
+  prEditRows = (pr.rows && pr.rows.length ? pr.rows : [{}]).map(r => ({
+    id: uid(), matCode: r.matCode || "", desc: r.desc || "", qty: r.qty ?? "", unit: r.unit || "", price: r.price ?? "",
+  }));
+  render();
+}
+
+function closePREdit(){
+  editingPR = null; prEditForm = null; prEditRows = []; prEditSaving = false;
+  render();
+}
+
+function syncPREditFormFromDOM(){
+  if (!prEditForm) return;
+  const g = id => document.getElementById(id);
+  const set = (key, id) => { const el = g(id); if (el) prEditForm[key] = el.value; };
+  set("prEditDepartment", "prEditDepartment");
+  set("prEditNumber", "prEditNumber");
+  set("prEditPO", "prEditPO");
+  set("prEditPODate", "prEditPODate");
+  set("prEditJobName", "prEditJobName");
+  set("prEditJobOwner", "prEditJobOwner");
+  set("prEditReason", "prEditReason");
+  set("prEditJobTypeProjectName", "prEditJobTypeProjectName");
+  set("prEditCategoryIoNumber", "prEditCategoryIoNumber");
+  set("prEditCCA", "prEditCCA");
+  set("prEditGL", "prEditGL");
+  set("prEditVendor", "prEditVendor");
+  set("prEditReceiveDate", "prEditReceiveDate");
+  const statusEl = g("prEditStatus"); if (statusEl) prEditForm.status = statusEl.value;
+
+  prEditRows.forEach(row => {
+    const matEl = g(`prEditRow_${row.id}_matcode`); if (matEl) row.matCode = matEl.value;
+    const descEl = g(`prEditRow_${row.id}_desc`); if (descEl) row.desc = descEl.value;
+    const qtyEl = g(`prEditRow_${row.id}_qty`); if (qtyEl) row.qty = qtyEl.value;
+    const unitEl = g(`prEditRow_${row.id}_unit`); if (unitEl) row.unit = unitEl.value;
+    const priceEl = g(`prEditRow_${row.id}_price`); if (priceEl) row.price = priceEl.value;
+  });
+}
+
+function addPREditRow(){
+  syncPREditFormFromDOM();
+  prEditRows.push({ id: uid(), matCode: "", desc: "", qty: "", unit: "", price: "" });
+  render();
+}
+
+function removePREditRow(rowId){
+  syncPREditFormFromDOM();
+  prEditRows = prEditRows.filter(r => r.id !== rowId);
+  if (prEditRows.length === 0) prEditRows.push({ id: uid(), matCode: "", desc: "", qty: "", unit: "", price: "" });
+  render();
+}
+
+function setPREditJobType(val){
+  syncPREditFormFromDOM();
+  prEditForm.jobType = (prEditForm.jobType === val) ? "" : val;
+  render();
+}
+
+function setPREditCategory(val){
+  syncPREditFormFromDOM();
+  prEditForm.category = (prEditForm.category === val) ? "" : val;
+  render();
+}
+
+async function savePREdit(){
+  syncPREditFormFromDOM();
+  const errEl = document.getElementById("prEditErr");
+  const hideErr = () => { if (errEl) errEl.style.display = "none"; };
+  const showErr = (msg) => { if (errEl) { errEl.textContent = msg; errEl.style.display = "block"; } };
+
+  if (!prEditForm.department.trim() || !prEditForm.prNumber.trim() || !prEditForm.jobName.trim()) {
+    showErr("กรุณากรอกหน่วยงาน, เลขที่ PR และชื่องานให้ครบ");
+    return;
+  }
+  const cleanRows = prEditRows.filter(r => (r.desc||"").trim() || (r.matCode||"").trim());
+  if (cleanRows.length === 0) {
+    showErr("กรุณากรอกรายการสินค้าอย่างน้อย 1 รายการ");
+    return;
+  }
+  hideErr();
+
+  prEditSaving = true; render();
+  try {
+    const prId = editingPR.id;
+    const payload = {
+      ...prEditForm,
+      rows: cleanRows,
+      totalAmount: cleanRows.reduce((s, r) => s + prRowAmount(r), 0),
+    };
+    await updateDoc(doc(db, "pr_requests", prId), payload);
+    showToast("บันทึกการแก้ไข PR แล้ว");
+    closePREdit();
+  } catch (e) {
+    showErr("บันทึกไม่สำเร็จ: " + e.message);
+    prEditSaving = false; render();
+  }
+}
+
 function exportHistoryExcel(fromStr, toStr){
   if (typeof XLSX === "undefined") { showToast("โหลดตัวช่วยสร้าง Excel ไม่สำเร็จ ลองเช็คอินเทอร์เน็ต"); return; }
   let rows = history;
@@ -873,6 +987,7 @@ function render(){
     ${withdrawPart ? renderWithdrawForm() : ""}
     ${lightboxImg ? renderLightbox() : ""}
     ${prViewerFile ? renderPRViewerModal() : ""}
+    ${editingPR ? renderPREditModal() : ""}
   `;
   bindEvents();
 }
@@ -1346,6 +1461,7 @@ function prCardHtml(pr){
               <button type="button" class="btn btn-danger" data-reject-pr="${pr.id}"><i class="ti ti-circle-x" aria-hidden="true"></i> ปฏิเสธ</button>
             ` : ""}
             ${isAdminRole ? `
+              <button type="button" class="btn btn-ghost" data-edit-pr="${pr.id}"><i class="ti ti-edit" aria-hidden="true"></i> แก้ไข</button>
               <button type="button" class="btn btn-danger" data-delete-pr="${pr.id}"><i class="ti ti-trash" aria-hidden="true"></i> ลบใบ PR นี้</button>
             ` : ""}
           </div>
@@ -1394,6 +1510,102 @@ function renderPRList(){
         ${items.map(prCardHtml).join("")}
       </div>`;
     }).join("")}
+  `;
+}
+
+function prEditRowHtml(row, idx){
+  const amount = prRowAmount(row);
+  return `
+    <tr>
+      <td class="mono" style="text-align:center;color:var(--mutedFaint);">${idx+1}</td>
+      <td><input id="prEditRow_${row.id}_matcode" value="${esc(row.matCode)}" placeholder="Mat Code"></td>
+      <td><input id="prEditRow_${row.id}_desc" value="${esc(row.desc)}" placeholder="รายการ" style="min-width:180px;"></td>
+      <td><input id="prEditRow_${row.id}_qty" class="prEditRowQty" data-row="${row.id}" type="number" value="${esc(row.qty)}" placeholder="0" style="width:70px;"></td>
+      <td><input id="prEditRow_${row.id}_unit" value="${esc(row.unit)}" placeholder="หน่วย" style="width:70px;"></td>
+      <td><input id="prEditRow_${row.id}_price" class="prEditRowPrice" data-row="${row.id}" type="number" value="${esc(row.price)}" placeholder="0.00" style="width:90px;"></td>
+      <td class="mono" id="prEditRow_${row.id}_amount" style="text-align:right;white-space:nowrap;">${prFormatMoney(amount)}</td>
+      <td><button type="button" data-remove-edit-row="${row.id}" style="background:none;border:none;color:var(--mutedFaint);cursor:pointer;"><i class="ti ti-trash" aria-hidden="true"></i></button></td>
+    </tr>
+  `;
+}
+
+function renderPREditModal(){
+  const f = prEditForm;
+  const total = prEditRows.reduce((s, r) => s + prRowAmount(r), 0);
+  return `
+    <div class="overlay" id="overlayPREdit">
+      <div class="modal" style="max-width:760px;">
+        <div class="modal-head">
+          <span class="head" style="font-size:16px;font-weight:600;">✎ แก้ไขใบ PR (Admin)</span>
+          <button class="close-btn" id="closePREdit">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="grid2">
+            <div class="field-wrap"><label class="field">หน่วยงาน</label><input id="prEditDepartment" value="${esc(f.department)}"></div>
+            <div class="field-wrap"><label class="field">เลขที่ PR</label><input id="prEditNumber" value="${esc(f.prNumber)}"></div>
+          </div>
+          <div class="grid2">
+            <div class="field-wrap"><label class="field">PO</label><input id="prEditPO" value="${esc(f.po)}"></div>
+            <div class="field-wrap"><label class="field">วันที่ออก PO</label><input type="date" id="prEditPODate" value="${esc(f.poDate)}"></div>
+          </div>
+          <div class="grid2">
+            <div class="field-wrap"><label class="field">ชื่องาน</label><input id="prEditJobName" value="${esc(f.jobName)}"></div>
+            <div class="field-wrap"><label class="field">เจ้าของงาน</label><input id="prEditJobOwner" value="${esc(f.jobOwner)}"></div>
+          </div>
+          <div class="field-wrap"><label class="field">เหตุผล/หมายเหตุ</label><textarea id="prEditReason" rows="2" style="width:100%;box-sizing:border-box;">${esc(f.reason)}</textarea></div>
+
+          <div class="field-wrap">
+            <label class="field">ลักษณะงาน</label>
+            <div class="pill-group">${PR_JOB_TYPES.map(val => `<button type="button" class="btn ${f.jobType===val?"btn-accent":"btn-ghost"}" data-edit-jobtype="${esc(val)}" style="padding:8px 14px;font-size:12.5px;">${esc(val)}</button>`).join("")}</div>
+            ${f.jobType === "โครงการ" ? `<input id="prEditJobTypeProjectName" value="${esc(f.jobTypeProjectName)}" placeholder="ชื่อโครงการ" style="margin-top:8px;">` : ""}
+          </div>
+
+          <div class="field-wrap">
+            <label class="field">ประเภท</label>
+            <div class="pill-group">${PR_CATEGORIES.map(opt => `<button type="button" class="btn ${f.category===opt.key?"btn-accent":"btn-ghost"}" data-edit-category="${esc(opt.key)}" style="padding:8px 14px;font-size:12.5px;">${esc(opt.label)}</button>`).join("")}</div>
+            ${(f.category === "A_IO" || f.category === "F_IO") ? `<input id="prEditCategoryIoNumber" value="${esc(f.categoryIoNumber)}" placeholder="เลข IO" style="margin-top:8px;">` : ""}
+          </div>
+
+          <div class="grid2">
+            <div class="field-wrap"><label class="field">CCA</label><input id="prEditCCA" value="${esc(f.cca)}"></div>
+            <div class="field-wrap"><label class="field">GL</label><input id="prEditGL" value="${esc(f.gl)}"></div>
+          </div>
+          <div class="grid2">
+            <div class="field-wrap"><label class="field">ผู้ขาย</label><input id="prEditVendor" value="${esc(f.vendor)}"></div>
+            <div class="field-wrap"><label class="field">วันที่รับสินค้า</label><input type="date" id="prEditReceiveDate" value="${esc(f.receiveDate)}"></div>
+          </div>
+          <div class="field-wrap">
+            <label class="field">สถานะ</label>
+            <select id="prEditStatus">
+              <option value="pending" ${f.status==="pending"?"selected":""}>รอตรวจสอบ</option>
+              <option value="approved" ${f.status==="approved"?"selected":""}>อนุมัติแล้ว</option>
+              <option value="rejected" ${f.status==="rejected"?"selected":""}>ถูกปฏิเสธ</option>
+            </select>
+          </div>
+
+          <div class="section-title" style="margin-top:16px;">รายการสินค้า</div>
+          <div class="pr-table-wrap">
+            <table class="pr-table">
+              <thead><tr>
+                <th>ลำดับ</th><th>Mat Code</th><th>รายการ</th><th>จำนวน</th><th>หน่วย</th><th>ราคา/หน่วย</th><th>จำนวนเงิน</th><th></th>
+              </tr></thead>
+              <tbody id="prEditRowsBody">
+                ${prEditRows.map((r, i) => prEditRowHtml(r, i)).join("")}
+              </tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+            <button type="button" class="btn btn-ghost" id="btnAddPREditRow"><i class="ti ti-plus" aria-hidden="true"></i> เพิ่มรายการ</button>
+            <div style="font-size:13px;">รวมเป็นเงิน <span class="mono" id="prEditTotalAmount" style="color:var(--accent);font-size:16px;">${prFormatMoney(total)}</span></div>
+          </div>
+
+          <div id="prEditErr" class="err-text" style="display:none;margin-top:14px;"></div>
+          <div style="display:flex;gap:8px;margin-top:14px;">
+            <button class="btn btn-accent" style="flex:1;justify-content:center;" id="btnSavePREdit" ${prEditSaving?"disabled":""}>${prEditSaving?"⏳ กำลังบันทึก...":"💾 บันทึกการแก้ไข"}</button>
+          </div>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -1856,6 +2068,38 @@ function bindEvents(){
     ev.stopPropagation();
     if (confirm("ยืนยันลบใบ PR นี้ทั้งหมด รวมไฟล์แนบ?")) deletePRRequest(el.dataset.deletePr);
   }));
+  document.querySelectorAll("[data-edit-pr]").forEach(el => el.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    const pr = prRequests.find(p => p.id === el.dataset.editPr);
+    if (pr) openPREdit(pr);
+  }));
+
+  /* ---- PR edit modal (admin) ---- */
+  document.getElementById("closePREdit")?.addEventListener("click", closePREdit);
+  document.getElementById("overlayPREdit")?.addEventListener("click", (ev) => {
+    if (ev.target.id === "overlayPREdit") closePREdit();
+  });
+  document.querySelectorAll("[data-edit-jobtype]").forEach(el => el.addEventListener("click", () => setPREditJobType(el.dataset.editJobtype)));
+  document.querySelectorAll("[data-edit-category]").forEach(el => el.addEventListener("click", () => setPREditCategory(el.dataset.editCategory)));
+  document.getElementById("btnAddPREditRow")?.addEventListener("click", addPREditRow);
+  document.querySelectorAll("[data-remove-edit-row]").forEach(el => el.addEventListener("click", () => removePREditRow(el.dataset.removeEditRow)));
+  document.querySelectorAll(".prEditRowQty, .prEditRowPrice").forEach(el => el.addEventListener("input", () => {
+    const rowId = el.dataset.row;
+    const qtyEl = document.getElementById(`prEditRow_${rowId}_qty`);
+    const priceEl = document.getElementById(`prEditRow_${rowId}_price`);
+    const amountEl = document.getElementById(`prEditRow_${rowId}_amount`);
+    const amount = (parseFloat(qtyEl?.value)||0) * (parseFloat(priceEl?.value)||0);
+    if (amountEl) amountEl.textContent = prFormatMoney(amount);
+    let sum = 0;
+    document.querySelectorAll(".prEditRowQty").forEach(qEl => {
+      const rid = qEl.dataset.row;
+      const pEl = document.getElementById(`prEditRow_${rid}_price`);
+      sum += (parseFloat(qEl.value)||0) * (parseFloat(pEl?.value)||0);
+    });
+    const totalEl = document.getElementById("prEditTotalAmount");
+    if (totalEl) totalEl.textContent = prFormatMoney(sum);
+  }));
+  document.getElementById("btnSavePREdit")?.addEventListener("click", savePREdit);
   document.querySelectorAll("[data-approve-pr]").forEach(el => el.addEventListener("click", (ev) => {
     ev.stopPropagation();
     if (confirm("ยืนยันอนุมัติใบ PR นี้?")) approvePRRequest(el.dataset.approvePr);
