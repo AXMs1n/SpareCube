@@ -260,6 +260,65 @@
       repeating-linear-gradient(90deg, rgba(45,212,191,0.05) 0, rgba(45,212,191,0.05) 1px, transparent 1px, transparent 42px),
       radial-gradient(rgba(45,212,191,0.16) 1px, transparent 1.2px) 0 0/26px 26px;
   }
+
+  /* ---------------- storage usage widget (draggable) ---------------- */
+  #storageWidget{
+    position:fixed; z-index:60; touch-action:none; user-select:none;
+    right:16px; bottom:22px;
+    display:flex; flex-direction:column; align-items:flex-end; gap:10px;
+  }
+  #storageWidget.dragging .sw-pill{ cursor:grabbing; box-shadow:0 8px 26px rgba(0,0,0,.55); }
+  .sw-pill{
+    display:flex; align-items:center; gap:9px; cursor:grab;
+    background:linear-gradient(160deg, var(--panel), var(--panelAlt));
+    border:1px solid var(--border); border-radius:999px;
+    padding:8px 14px 8px 10px; box-shadow:0 4px 16px rgba(0,0,0,.4);
+    transition:box-shadow .2s ease, transform .2s ease;
+  }
+  .sw-pill:active{ transform:scale(.97); }
+  .sw-ring{ position:relative; width:30px; height:30px; flex-shrink:0; }
+  .sw-ring svg{ width:100%; height:100%; transform:rotate(-90deg); display:block; }
+  .sw-ring circle{ fill:none; stroke-width:4; }
+  .sw-ring .sw-ring-bg{ stroke:var(--border); }
+  .sw-ring .sw-ring-fg{ stroke:var(--accent); stroke-linecap:round; transition:stroke-dashoffset .5s cubic-bezier(.22,1,.36,1), stroke .3s ease; }
+  .sw-pill-label{ font-size:11px; color:var(--muted); font-weight:600; line-height:1.25; white-space:nowrap; }
+  .sw-pill-label b{ color:var(--text); font-size:12.5px; }
+  .sw-panel{
+    width:260px; max-width:calc(100vw - 32px);
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    box-shadow:0 12px 34px rgba(0,0,0,.5); padding:16px;
+    opacity:0; transform:translateY(10px) scale(.96); pointer-events:none;
+    transition:opacity .2s ease, transform .2s cubic-bezier(.22,1,.36,1);
+  }
+  #storageWidget.open .sw-panel{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+  .sw-panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .sw-panel-title{ font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; }
+  .sw-panel-title i{ color:var(--accent); }
+  .sw-refresh{ background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; border-radius:6px; display:flex; }
+  .sw-refresh:hover{ color:var(--accent); background:var(--panelAlt); }
+  .sw-refresh.spin i{ animation:spin 1s linear infinite; }
+  .sw-row{ margin-bottom:14px; }
+  .sw-row:last-of-type{ margin-bottom:4px; }
+  .sw-row-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+  .sw-row-name{ font-size:11.5px; color:var(--muted); font-weight:600; display:flex; align-items:center; gap:5px; }
+  .sw-row-name i{ font-size:12px; }
+  .sw-row-val{ font-size:11px; color:var(--mutedFaint); font-family:'Prompt',sans-serif; }
+  .sw-bar{ background:var(--panelAlt); height:7px; border-radius:4px; overflow:hidden; }
+  .sw-bar-fill{ height:100%; border-radius:4px; width:0%; transition:width .6s cubic-bezier(.22,1,.36,1), background .3s ease; position:relative; overflow:hidden; }
+  .sw-bar-fill::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+    animation:swShimmer 2.2s ease-in-out infinite;
+  }
+  @keyframes swShimmer{
+    0%{ transform:translateX(-100%); }
+    100%{ transform:translateX(220%); }
+  }
+  .sw-note{ font-size:10.5px; color:var(--mutedFaint); line-height:1.5; margin-top:2px; }
+  .sw-drive-off{ font-size:11px; color:var(--mutedFaint); background:var(--panelAlt); border:1px dashed var(--border); border-radius:8px; padding:8px 10px; }
+  @media(max-width:480px){
+    #storageWidget{ right:12px; bottom:16px; }
+  }
 </style>
 </head>
 <body>
@@ -318,7 +377,7 @@ const ADMIN_PIN = "1234";
 /* ======================================================
    บัญชีผู้อนุมัติ (Approve role) — ใช้ username/password คงที่ ไม่ใช่พิมพ์ชื่ออะไรก็ได้แบบ User
    ====================================================== */
-const APPROVER_USERNAME = "Chanwit.Par";
+const APPROVER_USERNAME = "Chanwit.par";
 const APPROVER_PASSWORD = "30190";
 
 /* ======================================================
@@ -383,22 +442,223 @@ resetPRForm();
 onSnapshot(collection(db, "parts"), (snap) => {
   parts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   render();
+  updateStorageWidget();
 }, (err) => showToast("โหลดคลังไม่สำเร็จ: " + err.message));
 
 onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(200)), (snap) => {
   history = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   render();
+  updateStorageWidget();
 }, (err) => showToast("โหลดประวัติไม่สำเร็จ: " + err.message));
 
 onSnapshot(query(collection(db, "machines"), orderBy("name")), (snap) => {
   machines = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   render();
+  updateStorageWidget();
 }, (err) => showToast("โหลดรายชื่อเครื่องจักรไม่สำเร็จ: " + err.message));
 
 onSnapshot(query(collection(db, "pr_requests"), orderBy("createdAt", "desc"), limit(300)), (snap) => {
   prRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   render();
+  updateStorageWidget();
 }, (err) => showToast("โหลดรายการ PR ไม่สำเร็จ: " + err.message));
+
+/* ======================================================
+   หลอดแสดงความจุที่ใช้ไป (Storage widget)
+   - Firestore: ไม่มี API สาธารณะให้เช็คขนาดจริงแบบเรียลไทม์จากฝั่ง client
+     (ต้องใช้ Cloud Monitoring API + service account ซึ่งไม่ปลอดภัยถ้าฝังไว้ในเว็บสาธารณะ)
+     จึงใช้วิธี "ประมาณการ" จากขนาดข้อมูลจริงที่ sync เข้ามาแบบเรียลไทม์อยู่แล้ว (parts/history/machines/pr_requests)
+     เทียบกับโควตาฟรีของ Firestore (Spark plan) = 1 GiB
+   - Google Drive: ดึงโควตาจริงผ่าน Google Apps Script เดิมที่ใช้อัปโหลดไฟล์ PR อยู่แล้ว
+     (ต้องเพิ่ม action "quota" ในสคริปต์ฝั่ง Apps Script — ดูคำแนะนำท้ายไฟล์ README ที่แนบมา)
+   ====================================================== */
+const FIRESTORE_FREE_LIMIT_BYTES = 1 * 1024 * 1024 * 1024; // 1 GiB (Spark/free plan)
+let driveQuota = null;      // { used, limit, usageInDrive } from Apps Script, or null if not wired up / failed
+let driveQuotaErr = false;
+let storageWidgetOpen = false;
+let storageWidgetRefreshing = false;
+
+function formatBytes(bytes){
+  if (!isFinite(bytes) || bytes < 0) return "0 B";
+  const units = ["B","KB","MB","GB","TB"];
+  let i = 0, v = bytes;
+  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+  return `${v < 10 && i > 0 ? v.toFixed(1) : Math.round(v)} ${units[i]}`;
+}
+
+function estimateFirestoreBytes(){
+  try {
+    const payload = JSON.stringify(parts) + JSON.stringify(history) + JSON.stringify(machines) + JSON.stringify(prRequests);
+    return new Blob([payload]).size;
+  } catch { return 0; }
+}
+
+async function refreshDriveQuota(){
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("วางลิงก์")) { driveQuota = null; driveQuotaErr = false; return; }
+  storageWidgetRefreshing = true; updateStorageWidget();
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "quota" }),
+    });
+    const json = await resp.json();
+    if (!json.success) throw new Error(json.error || "quota failed");
+    driveQuota = { used: Number(json.used || 0), limit: Number(json.limit || 0), usageInDrive: Number(json.usageInDrive || 0) };
+    driveQuotaErr = false;
+  } catch (e) {
+    driveQuotaErr = true;
+  } finally {
+    storageWidgetRefreshing = false;
+    updateStorageWidget();
+  }
+}
+
+function swLevelColor(pct){
+  if (pct >= 90) return "var(--danger)";
+  if (pct >= 70) return "var(--warn)";
+  return "var(--accent)";
+}
+
+function updateStorageWidget(){
+  const ring = document.getElementById("swRingFg");
+  const pillPct = document.getElementById("swPillPct");
+  const fsFill = document.getElementById("swFsFill");
+  const fsVal = document.getElementById("swFsVal");
+  const drFill = document.getElementById("swDrFill");
+  const drVal = document.getElementById("swDrRow");
+  const drOff = document.getElementById("swDrOff");
+  const refreshBtn = document.getElementById("swRefreshBtn");
+  if (!ring) return; // widget not mounted yet
+
+  const fsBytes = estimateFirestoreBytes();
+  const fsPct = Math.min(100, (fsBytes / FIRESTORE_FREE_LIMIT_BYTES) * 100);
+  fsFill.style.width = fsPct.toFixed(1) + "%";
+  fsFill.style.background = swLevelColor(fsPct);
+  fsVal.textContent = `${formatBytes(fsBytes)} / ${formatBytes(FIRESTORE_FREE_LIMIT_BYTES)} (${fsPct.toFixed(1)}%)`;
+
+  let combinedPct = fsPct;
+  if (driveQuota && driveQuota.limit > 0) {
+    const drPct = Math.min(100, (driveQuota.used / driveQuota.limit) * 100);
+    drFill.style.width = drPct.toFixed(1) + "%";
+    drFill.style.background = swLevelColor(drPct);
+    drVal.style.display = "block";
+    drOff.style.display = "none";
+    document.getElementById("swDrValTxt").textContent = `${formatBytes(driveQuota.used)} / ${formatBytes(driveQuota.limit)} (${drPct.toFixed(1)}%)`;
+    combinedPct = Math.max(fsPct, drPct);
+  } else {
+    drVal.style.display = "none";
+    drOff.style.display = "block";
+    drOff.textContent = driveQuotaErr
+      ? "ดึงโควตา Google Drive ไม่สำเร็จ — เช็คว่า Apps Script รองรับ action \"quota\" แล้ว"
+      : "ยังไม่ได้เชื่อมต่อ Google Drive quota";
+  }
+
+  const circumference = 2 * Math.PI * 11; // r=11 in the svg below
+  const offset = circumference - (combinedPct / 100) * circumference;
+  ring.style.strokeDasharray = circumference.toFixed(2);
+  ring.style.strokeDashoffset = offset.toFixed(2);
+  ring.style.stroke = swLevelColor(combinedPct);
+  pillPct.textContent = combinedPct.toFixed(0) + "%";
+
+  if (refreshBtn) refreshBtn.classList.toggle("spin", storageWidgetRefreshing);
+}
+
+function mountStorageWidget(){
+  if (document.getElementById("storageWidget")) return;
+  const el = document.createElement("div");
+  el.id = "storageWidget";
+  el.innerHTML = `
+    <div class="sw-panel" id="swPanel">
+      <div class="sw-panel-head">
+        <div class="sw-panel-title"><i class="ti ti-server-2"></i>ความจุที่ใช้ไป</div>
+        <button class="sw-refresh" id="swRefreshBtn" title="รีเฟรชโควตา Google Drive"><i class="ti ti-refresh"></i></button>
+      </div>
+      <div class="sw-row">
+        <div class="sw-row-top">
+          <span class="sw-row-name"><i class="ti ti-database"></i>Firestore (ข้อมูลรายการ)</span>
+        </div>
+        <div class="sw-bar"><div class="sw-bar-fill" id="swFsFill"></div></div>
+        <div class="sw-row-val" id="swFsVal">–</div>
+      </div>
+      <div class="sw-row">
+        <div class="sw-row-top">
+          <span class="sw-row-name"><i class="ti ti-brand-google-drive"></i>Google Drive (ไฟล์แนบ PR)</span>
+        </div>
+        <div id="swDrRow">
+          <div class="sw-bar"><div class="sw-bar-fill" id="swDrFill"></div></div>
+          <div class="sw-row-val" id="swDrValTxt">–</div>
+        </div>
+        <div class="sw-drive-off" id="swDrOff" style="display:none;"></div>
+      </div>
+      <div class="sw-note">Firestore เป็นค่าประมาณจากขนาดข้อมูลจริง เทียบกับโควตาฟรี 1 GiB · Drive อัปเดตทุก ~5 นาที</div>
+    </div>
+    <div class="sw-pill" id="swPill">
+      <div class="sw-ring">
+        <svg viewBox="0 0 28 28">
+          <circle class="sw-ring-bg" cx="14" cy="14" r="11"></circle>
+          <circle class="sw-ring-fg" id="swRingFg" cx="14" cy="14" r="11"></circle>
+        </svg>
+      </div>
+      <div class="sw-pill-label">พื้นที่ใช้ไป<br><b id="swPillPct">–</b></div>
+    </div>
+  `;
+  document.body.appendChild(el);
+
+  // restore saved position
+  try {
+    const pos = JSON.parse(localStorage.getItem("wk_storageWidgetPos") || "null");
+    if (pos && typeof pos.right === "number" && typeof pos.bottom === "number") {
+      el.style.right = pos.right + "px";
+      el.style.bottom = pos.bottom + "px";
+    }
+  } catch {}
+
+  const pill = document.getElementById("swPill");
+  let dragging = false, moved = false, startX = 0, startY = 0, startRight = 0, startBottom = 0;
+
+  function toPx(v){ return parseFloat(v) || 0; }
+
+  pill.addEventListener("pointerdown", (e) => {
+    dragging = true; moved = false;
+    startX = e.clientX; startY = e.clientY;
+    startRight = toPx(getComputedStyle(el).right);
+    startBottom = toPx(getComputedStyle(el).bottom);
+    pill.setPointerCapture(e.pointerId);
+    el.classList.add("dragging");
+  });
+  pill.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+    if (!moved) return;
+    let right = Math.max(4, Math.min(window.innerWidth - 40, startRight - dx));
+    let bottom = Math.max(4, Math.min(window.innerHeight - 40, startBottom - dy));
+    el.style.right = right + "px";
+    el.style.bottom = bottom + "px";
+  });
+  pill.addEventListener("pointerup", (e) => {
+    dragging = false;
+    el.classList.remove("dragging");
+    if (moved) {
+      localStorage.setItem("wk_storageWidgetPos", JSON.stringify({
+        right: toPx(getComputedStyle(el).right), bottom: toPx(getComputedStyle(el).bottom)
+      }));
+    } else {
+      storageWidgetOpen = !storageWidgetOpen;
+      el.classList.toggle("open", storageWidgetOpen);
+    }
+  });
+
+  document.getElementById("swRefreshBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    refreshDriveQuota();
+  });
+
+  updateStorageWidget();
+  refreshDriveQuota();
+  setInterval(refreshDriveQuota, 5 * 60 * 1000); // refresh Drive quota every 5 min
+}
 
 /* ---------------- helpers ---------------- */
 function getPartZones(p){
@@ -2322,6 +2582,7 @@ function initWarehouseDoor(){
 render();
 initBgParticles();
 initWarehouseDoor();
+mountStorageWidget();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
