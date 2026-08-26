@@ -319,6 +319,59 @@
   @media(max-width:480px){
     #storageWidget{ right:12px; bottom:16px; }
   }
+
+  /* ---------------- custom confirm modal ---------------- */
+  #confirmOverlay{
+    position:fixed; inset:0; z-index:200;
+    background:rgba(10,11,13,0);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    opacity:0; pointer-events:none;
+    transition:opacity .22s ease, background .22s ease;
+  }
+  #confirmOverlay.open{
+    opacity:1; pointer-events:auto;
+    background:rgba(10,11,13,.62); backdrop-filter:blur(3px);
+  }
+  .confirm-card{
+    width:100%; max-width:360px;
+    background:linear-gradient(165deg, var(--panel), var(--panelAlt));
+    border:1px solid var(--border); border-radius:18px;
+    box-shadow:0 20px 60px rgba(0,0,0,.55);
+    padding:26px 24px 22px;
+    text-align:center;
+    transform:translateY(18px) scale(.94); opacity:0;
+    transition:transform .32s cubic-bezier(.22,1.15,.36,1), opacity .28s ease;
+    position:relative; overflow:hidden;
+  }
+  #confirmOverlay.open .confirm-card{ transform:translateY(0) scale(1); opacity:1; }
+  .confirm-card::before{
+    content:""; position:absolute; top:-60%; left:50%; width:220%; aspect-ratio:1;
+    transform:translateX(-50%);
+    background:radial-gradient(circle, rgba(45,212,191,0.14), transparent 62%);
+    pointer-events:none;
+  }
+  .confirm-icon{
+    width:56px; height:56px; margin:0 auto 16px;
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:24px; position:relative; z-index:1;
+    background:var(--accentDim); color:var(--accent);
+    box-shadow:0 0 0 6px rgba(45,212,191,0.08);
+    animation:confirmIconPop .38s cubic-bezier(.22,1.4,.36,1) .05s both;
+  }
+  .confirm-icon.danger{ background:var(--dangerDim); color:var(--danger); box-shadow:0 0 0 6px rgba(240,71,62,0.08); }
+  @keyframes confirmIconPop{
+    0%{ transform:scale(.4) rotate(-12deg); opacity:0; }
+    100%{ transform:scale(1) rotate(0); opacity:1; }
+  }
+  .confirm-title{ font-size:16px; font-weight:700; margin-bottom:6px; position:relative; z-index:1; }
+  .confirm-msg{ font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:22px; position:relative; z-index:1; }
+  .confirm-actions{ display:flex; gap:10px; position:relative; z-index:1; }
+  .confirm-actions .btn{ flex:1; justify-content:center; padding:11px 14px; font-size:13.5px; }
+  .btn-confirm-primary{ background:var(--accent); color:#0B1614; }
+  .btn-confirm-primary:hover{ filter:brightness(1.08); }
+  .btn-confirm-danger{ background:var(--danger); color:#fff; }
+  .btn-confirm-danger:hover{ filter:brightness(1.08); }
 </style>
 </head>
 <body>
@@ -712,6 +765,57 @@ function showToast(msg){
   el.textContent = msg;
   el.style.display = "block";
   toastTimer = setTimeout(() => { el.style.display = "none"; }, 2600);
+}
+
+/* ---------------- custom confirm modal (replaces native confirm()) ---------------- */
+function showConfirm(opts){
+  const {
+    title = "ยืนยันการทำรายการ",
+    message = "",
+    confirmText = "ยืนยัน",
+    cancelText = "ยกเลิก",
+    danger = false,
+    icon = "ti-help-circle",
+  } = typeof opts === "string" ? { message: opts } : opts;
+
+  return new Promise((resolve) => {
+    let overlay = document.getElementById("confirmOverlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "confirmOverlay";
+      document.body.appendChild(overlay);
+    }
+    overlay.innerHTML = `
+      <div class="confirm-card">
+        <div class="confirm-icon${danger ? " danger" : ""}"><i class="ti ${icon}"></i></div>
+        <div class="confirm-title">${esc(title)}</div>
+        <div class="confirm-msg">${esc(message)}</div>
+        <div class="confirm-actions">
+          <button class="btn btn-ghost" id="confirmCancelBtn">${esc(cancelText)}</button>
+          <button class="btn ${danger ? "btn-confirm-danger" : "btn-confirm-primary"}" id="confirmOkBtn">${esc(confirmText)}</button>
+        </div>
+      </div>
+    `;
+
+    const close = (result) => {
+      overlay.classList.remove("open");
+      document.removeEventListener("keydown", onKey);
+      setTimeout(() => { if (overlay.parentNode) overlay.innerHTML = ""; }, 220);
+      resolve(result);
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") close(false);
+      if (e.key === "Enter") close(true);
+    };
+
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(false); }, { once: true });
+    document.addEventListener("keydown", onKey);
+    document.getElementById("confirmCancelBtn").addEventListener("click", () => close(false));
+    document.getElementById("confirmOkBtn").addEventListener("click", () => close(true));
+
+    requestAnimationFrame(() => overlay.classList.add("open"));
+    setTimeout(() => document.getElementById("confirmOkBtn")?.focus(), 60);
+  });
 }
 
 /* ---------------- data actions ---------------- */
@@ -2245,8 +2349,16 @@ function attemptLogin(role){
 let pendingPhotoBlob = null, pendingPhotoPreview = null;
 
 function bindEvents(){
-  document.getElementById("btnLogout")?.addEventListener("click", () => {
-    if (confirm("ออกจากระบบ / สลับผู้ใช้?")) {
+  document.getElementById("btnLogout")?.addEventListener("click", async () => {
+    const ok = await showConfirm({
+      title: "ออกจากระบบ?",
+      message: "คุณกำลังจะออกจากระบบ หรือสลับผู้ใช้งาน ต้องการดำเนินการต่อหรือไม่?",
+      confirmText: "ออกจากระบบ",
+      cancelText: "อยู่ต่อ",
+      icon: "ti-logout",
+      danger: true,
+    });
+    if (ok) {
       localStorage.removeItem("wk_role");
       currentRole = null; render();
     }
@@ -2259,9 +2371,11 @@ function bindEvents(){
   document.querySelectorAll("[data-edit]").forEach(el => el.addEventListener("click", () => {
     editPart = parts.find(p => p.id === el.dataset.edit); pendingPhotoBlob=null; pendingPhotoPreview=null; showNewMachineInput=false; render();
   }));
-  document.querySelectorAll("[data-del-hist]").forEach(el => el.addEventListener("click", (ev) => {
+  document.querySelectorAll("[data-del-hist]").forEach(el => el.addEventListener("click", async (ev) => {
     ev.stopPropagation();
-    if (confirm("ยืนยันลบประวัติรายการนี้? (จะไม่คืนยอดของกลับเข้าคลัง)")) deleteHistory(el.dataset.delHist);
+    const id = el.dataset.delHist;
+    const ok = await showConfirm({ title:"ลบประวัติรายการนี้?", message:"จะไม่คืนยอดของกลับเข้าคลัง การลบนี้ไม่สามารถย้อนกลับได้", confirmText:"ลบรายการ", icon:"ti-trash", danger:true });
+    if (ok) deleteHistory(id);
   }));
   document.querySelectorAll(".zoomable").forEach(el => el.addEventListener("click", (ev) => {
     ev.stopPropagation();
@@ -2320,13 +2434,17 @@ function bindEvents(){
   document.getElementById("overlayPRViewer")?.addEventListener("click", (ev) => {
     if (ev.target.id === "overlayPRViewer") { prViewerFile = null; render(); }
   });
-  document.querySelectorAll("[data-delete-attachment]").forEach(el => el.addEventListener("click", (ev) => {
+  document.querySelectorAll("[data-delete-attachment]").forEach(el => el.addEventListener("click", async (ev) => {
     ev.stopPropagation();
-    if (confirm("ยืนยันลบไฟล์นี้?")) deletePRAttachment(el.dataset.deleteAttachmentPr, el.dataset.deleteAttachment);
+    const pr = el.dataset.deleteAttachmentPr, file = el.dataset.deleteAttachment;
+    const ok = await showConfirm({ title:"ลบไฟล์นี้?", message:"ไฟล์แนบนี้จะถูกลบออกจาก Google Drive ถาวร", confirmText:"ลบไฟล์", icon:"ti-file-x", danger:true });
+    if (ok) deletePRAttachment(pr, file);
   }));
-  document.querySelectorAll("[data-delete-pr]").forEach(el => el.addEventListener("click", (ev) => {
+  document.querySelectorAll("[data-delete-pr]").forEach(el => el.addEventListener("click", async (ev) => {
     ev.stopPropagation();
-    if (confirm("ยืนยันลบใบ PR นี้ทั้งหมด รวมไฟล์แนบ?")) deletePRRequest(el.dataset.deletePr);
+    const id = el.dataset.deletePr;
+    const ok = await showConfirm({ title:"ลบใบ PR นี้ทั้งหมด?", message:"รวมถึงไฟล์แนบทุกไฟล์ใน Google Drive การลบนี้ไม่สามารถย้อนกลับได้", confirmText:"ลบทั้งหมด", icon:"ti-trash", danger:true });
+    if (ok) deletePRRequest(id);
   }));
   document.querySelectorAll("[data-edit-pr]").forEach(el => el.addEventListener("click", (ev) => {
     ev.stopPropagation();
@@ -2360,9 +2478,11 @@ function bindEvents(){
     if (totalEl) totalEl.textContent = prFormatMoney(sum);
   }));
   document.getElementById("btnSavePREdit")?.addEventListener("click", savePREdit);
-  document.querySelectorAll("[data-approve-pr]").forEach(el => el.addEventListener("click", (ev) => {
+  document.querySelectorAll("[data-approve-pr]").forEach(el => el.addEventListener("click", async (ev) => {
     ev.stopPropagation();
-    if (confirm("ยืนยันอนุมัติใบ PR นี้?")) approvePRRequest(el.dataset.approvePr);
+    const id = el.dataset.approvePr;
+    const ok = await showConfirm({ title:"อนุมัติใบ PR นี้?", message:"สถานะจะเปลี่ยนเป็นอนุมัติแล้วทันที", confirmText:"อนุมัติ", icon:"ti-circle-check" });
+    if (ok) approvePRRequest(id);
   }));
   document.querySelectorAll("[data-reject-pr]").forEach(el => el.addEventListener("click", (ev) => {
     ev.stopPropagation();
@@ -2389,8 +2509,10 @@ function bindEvents(){
       input.value = "";
     }
   });
-  document.querySelectorAll("[data-del-machine]").forEach(el => el.addEventListener("click", () => {
-    if (confirm("ยืนยันลบเครื่องจักรนี้? (อะไหล่ที่เคยผูกไว้จะยังแสดงชื่อเดิม)")) deleteMachine(el.dataset.delMachine);
+  document.querySelectorAll("[data-del-machine]").forEach(el => el.addEventListener("click", async () => {
+    const id = el.dataset.delMachine;
+    const ok = await showConfirm({ title:"ลบเครื่องจักรนี้?", message:"อะไหล่ที่เคยผูกไว้กับเครื่องนี้จะยังแสดงชื่อเดิมอยู่ ไม่ได้ถูกลบตาม", confirmText:"ลบเครื่องจักร", icon:"ti-trash", danger:true });
+    if (ok) deleteMachine(id);
   }));
   document.querySelectorAll("[data-edit-machine]").forEach(el => el.addEventListener("click", () => {
     editingMachineId = el.dataset.editMachine; render();
@@ -2497,8 +2619,10 @@ function bindEvents(){
     showNewMachineInput = false;
     await savePart({ id: editPart?.id, name, zones, code, unit, qty, min, max, machine, photo });
   });
-  document.getElementById("btnDeletePart")?.addEventListener("click", () => {
-    if (confirm("ยืนยันลบอะไหล่นี้?")) deletePart(editPart.id);
+  document.getElementById("btnDeletePart")?.addEventListener("click", async () => {
+    const id = editPart?.id;
+    const ok = await showConfirm({ title:"ลบอะไหล่นี้?", message:"ข้อมูลอะไหล่และรูปที่แนบไว้จะถูกลบออกจากคลังถาวร", confirmText:"ลบอะไหล่", icon:"ti-trash", danger:true });
+    if (ok) deletePart(id);
   });
 
   // withdraw form

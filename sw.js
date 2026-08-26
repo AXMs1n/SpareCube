@@ -3,7 +3,7 @@
 // can open even with no internet connection. Live data (Firestore) still
 // needs a connection to sync — this only makes the app itself load offline.
 
-const CACHE_NAME = "sparecube-shell-v13";
+const CACHE_NAME = "sparecube-shell-v14";
 
 const APP_SHELL = [
   "./",
