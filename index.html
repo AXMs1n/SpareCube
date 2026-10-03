@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
   :root{
     --bg:#14161A; --panel:#1B1E23; --panelAlt:#22262C; --border:#2C3139;
@@ -2309,6 +2309,10 @@ let mcStatusChartInstance = null;
 function bindMaintCostCharts(){
   const canvas = document.getElementById("mcStatusChart");
   if (!canvas || !maintAgg) return;
+  if (typeof Chart === "undefined") {
+    canvas.closest(".mc-chart-box").innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--mutedFaint);font-size:11.5px;">โหลดไลบรารีกราฟไม่สำเร็จ ลองรีเฟรชหน้าเว็บ</div>`;
+    return;
+  }
   if (mcStatusChartInstance) { mcStatusChartInstance.destroy(); mcStatusChartInstance = null; }
   const colors = { "Complete":"#2DD4BF","รอส่งมอบงาน":"#F5A623","รอส่งอะไหล่":"#F0473E","Partial":"#3B82F6","รอวางบิล":"#A78BFA","อื่นๆ":"#5B6068" };
   const data = maintAgg.statusSummary;
