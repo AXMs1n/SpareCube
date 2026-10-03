@@ -3,7 +3,7 @@
 // can open even with no internet connection. Live data (Firestore) still
 // needs a connection to sync — this only makes the app itself load offline.
 
-const CACHE_NAME = "sparecube-shell-v18";
+const CACHE_NAME = "sparecube-shell-v19";
 
 const APP_SHELL = [
   "./",
@@ -42,7 +42,8 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
   const isFirestore = url.hostname.includes("firestore") || url.hostname.includes("googleapis");
-  if (isFirestore) return;
+  const isAppsScript = url.hostname.includes("script.google.com") || url.hostname.includes("script.googleusercontent.com");
+  if (isFirestore || isAppsScript) return; // live data (Maintenance Cost, Drive quota) must never be served from cache
 
   event.respondWith(
     caches.match(req).then((cached) => {
