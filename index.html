@@ -17,8 +17,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
   :root{
     --bg:#14161A; --panel:#1B1E23; --panelAlt:#22262C; --border:#2C3139;
@@ -27,8 +25,7 @@
     --danger:#F0473E; --dangerDim:#4A1613; --machine:#3B82F6; --machineDim:#152A4A;
   }
   *{box-sizing:border-box;}
-  html{overscroll-behavior:none;}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:'Prompt',sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Prompt',sans-serif;-webkit-font-smoothing:antialiased;}
   #bgParticles{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;}
 
   #doorLightBurst{
@@ -375,179 +372,6 @@
   .btn-confirm-primary:hover{ filter:brightness(1.08); }
   .btn-confirm-danger{ background:var(--danger); color:#fff; }
   .btn-confirm-danger:hover{ filter:brightness(1.08); }
-
-  /* ---------------- AI part scanner ---------------- */
-  #aiScanFab{
-    position:fixed; z-index:59; left:16px; bottom:22px;
-    display:flex; align-items:center; gap:9px; cursor:pointer;
-    background:linear-gradient(135deg, var(--accent), #14b8a6);
-    color:#0B1614; border:none; border-radius:999px;
-    padding:12px 18px 12px 14px; font-weight:700; font-size:13px;
-    box-shadow:0 6px 20px rgba(45,212,191,.35);
-    transition:transform .18s ease, box-shadow .18s ease;
-  }
-  #aiScanFab:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(45,212,191,.45); }
-  #aiScanFab:active{ transform:scale(.96); }
-  #aiScanFab i{ font-size:18px; }
-  #aiScanFab .fab-pulse{
-    position:absolute; inset:-4px; border-radius:999px;
-    border:2px solid var(--accent); opacity:0;
-    animation:fabPulse 2.6s ease-out infinite;
-  }
-  @keyframes fabPulse{
-    0%{ opacity:.55; transform:scale(1); }
-    100%{ opacity:0; transform:scale(1.18); }
-  }
-  @media(max-width:480px){
-    #aiScanFab{ left:12px; bottom:16px; padding:12px; }
-    #aiScanFab .fab-label{ display:none; }
-  }
-
-  #aiScanOverlay{
-    position:fixed; inset:0; z-index:210;
-    background:rgba(8,9,11,0);
-    display:flex; align-items:center; justify-content:center; padding:16px;
-    opacity:0; pointer-events:none;
-    transition:opacity .22s ease, background .22s ease;
-  }
-  #aiScanOverlay.open{ opacity:1; pointer-events:auto; background:rgba(8,9,11,.72); backdrop-filter:blur(4px); }
-  .ai-scan-card{
-    width:100%; max-width:420px; max-height:92vh; overflow:auto;
-    background:linear-gradient(165deg, var(--panel), var(--panelAlt));
-    border:1px solid var(--border); border-radius:18px;
-    box-shadow:0 20px 60px rgba(0,0,0,.55);
-    transform:translateY(16px) scale(.96); opacity:0;
-    transition:transform .3s cubic-bezier(.22,1.1,.36,1), opacity .25s ease;
-  }
-  #aiScanOverlay.open .ai-scan-card{ transform:translateY(0) scale(1); opacity:1; }
-  .ai-scan-head{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:16px 18px; border-bottom:1px solid var(--border);
-  }
-  .ai-scan-title{ font-size:14.5px; font-weight:700; display:flex; align-items:center; gap:7px; }
-  .ai-scan-title i{ color:var(--accent); }
-  .ai-scan-body{ padding:16px 18px 18px; }
-  .ai-scan-stage{
-    position:relative; width:100%; aspect-ratio:1/1; border-radius:14px; overflow:hidden;
-    background:#0a0c0e; border:1px solid var(--border);
-    display:flex; align-items:center; justify-content:center;
-  }
-  .ai-scan-stage video, .ai-scan-stage img, .ai-scan-stage canvas{
-    width:100%; height:100%; object-fit:cover; display:block;
-  }
-  .ai-scan-guide{ position:absolute; inset:0; pointer-events:none; }
-  .ai-scan-guide circle{ fill:none; stroke:rgba(45,212,191,.85); stroke-width:2.5; stroke-dasharray:10 8; animation:aiGuideSpin 10s linear infinite; }
-  @keyframes aiGuideSpin{ to{ stroke-dashoffset:-500; } }
-  .ai-scan-hint{
-    position:absolute; left:0; right:0; bottom:10px; text-align:center;
-    font-size:11.5px; color:#e6f7f4; text-shadow:0 1px 3px rgba(0,0,0,.7);
-    pointer-events:none;
-  }
-  .ai-scan-placeholder{ color:var(--mutedFaint); font-size:12.5px; text-align:center; padding:0 20px; }
-  .ai-scan-placeholder i{ font-size:34px; display:block; margin:0 auto 10px; color:var(--muted); }
-  .ai-scan-controls{ display:flex; gap:9px; margin-top:14px; }
-  .ai-scan-controls .btn{ flex:1; justify-content:center; padding:11px 10px; font-size:12.5px; }
-  .btn-ai-capture{ background:var(--accent); color:#0B1614; }
-  .btn-ai-capture:hover{ filter:brightness(1.08); }
-  .btn-ai-capture:disabled{ opacity:.5; cursor:not-allowed; filter:none; }
-  #aiFileInput{ display:none; }
-
-  .ai-scan-loading{ display:flex; flex-direction:column; align-items:center; gap:10px; padding:26px 0; }
-  .ai-spinner{ width:34px; height:34px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:spin 0.8s linear infinite; }
-  .ai-scan-loading span{ font-size:12.5px; color:var(--muted); }
-
-  .ai-result{ margin-top:16px; }
-  .ai-result-top{
-    display:flex; align-items:center; gap:14px;
-    background:var(--panelAlt); border:1px solid var(--border); border-radius:14px;
-    padding:14px;
-  }
-  .ai-result-ring{ position:relative; width:56px; height:56px; flex-shrink:0; }
-  .ai-result-ring svg{ width:100%; height:100%; transform:rotate(-90deg); }
-  .ai-result-ring circle{ fill:none; stroke-width:5; }
-  .ai-result-ring .bg{ stroke:var(--border); }
-  .ai-result-ring .fg{ stroke:var(--accent); stroke-linecap:round; transition:stroke-dashoffset .6s cubic-bezier(.22,1,.36,1); }
-  .ai-result-ring .pct{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    font-size:11.5px; font-weight:700;
-  }
-  .ai-result-name{ font-size:15px; font-weight:700; margin-bottom:2px; }
-  .ai-result-sub{ font-size:11px; color:var(--muted); }
-  .ai-result-list{ margin-top:12px; display:flex; flex-direction:column; gap:8px; }
-  .ai-result-row{ display:flex; align-items:center; gap:9px; font-size:11.5px; }
-  .ai-result-row .name{ width:40%; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .ai-result-row .bar{ flex:1; height:6px; border-radius:4px; background:var(--border); overflow:hidden; }
-  .ai-result-row .bar > div{ height:100%; background:var(--accent); border-radius:4px; transition:width .5s ease; }
-  .ai-result-row .val{ width:38px; text-align:right; color:var(--mutedFaint); font-family:'Prompt',sans-serif; }
-  .ai-low-conf{
-    margin-top:10px; font-size:11px; color:var(--warn);
-    background:rgba(245,180,60,.1); border:1px solid rgba(245,180,60,.25);
-    border-radius:8px; padding:8px 10px;
-  }
-  .ai-result-actions{ display:flex; gap:9px; margin-top:14px; }
-  .ai-result-actions .btn{ flex:1; justify-content:center; padding:10px; font-size:12.5px; }
-
-  /* ---------------- Maintenance Cost dashboard ---------------- */
-  .mc-kpi-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
-  @media(max-width:860px){ .mc-kpi-grid{ grid-template-columns:repeat(2,1fr);} }
-  .mc-kpi-card{ background:linear-gradient(160deg,var(--panel),var(--panelAlt)); border:1px solid var(--border); border-radius:14px; padding:16px; }
-  .mc-kpi-label{ font-size:11px; color:var(--muted); display:flex; align-items:center; gap:6px; margin-bottom:8px;}
-  .mc-kpi-value{ font-size:22px; font-weight:700; }
-  .mc-kpi-sub{ font-size:10.5px; color:var(--mutedFaint); margin-top:4px; }
-  .mc-kpi-card.ok .mc-kpi-value{ color:var(--accent); }
-  .mc-kpi-card.warn .mc-kpi-value{ color:var(--warn); }
-
-  .mc-alert{ display:flex; align-items:center; gap:12px; background:var(--dangerDim); border:1px solid rgba(240,71,62,.35); border-radius:12px; padding:13px 16px; margin-bottom:18px; font-size:12.5px; }
-  .mc-alert b{ color:#fff; }
-  .mc-alert-dot{ width:8px; height:8px; border-radius:50%; background:var(--danger); flex-shrink:0; animation:mcPulse 1.6s ease-in-out infinite; }
-  @keyframes mcPulse{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
-
-  .mc-panel{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:14px; }
-  .mc-panel h3{ font-size:13px; margin:0 0 12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
-  .mc-panel h3 span.hint{ font-size:10.5px; color:var(--mutedFaint); font-weight:400; }
-  .mc-chart-box{ position:relative; height:220px; }
-
-  .mc-section-title{ font-size:14px; margin:22px 0 12px; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
-  .mc-section-title span{ font-size:11px; color:var(--mutedFaint); font-weight:400; }
-
-  .mc-owner-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
-  @media(max-width:900px){ .mc-owner-grid{ grid-template-columns:1fr; } }
-  .mc-owner-card{ background:linear-gradient(160deg,var(--panel),var(--panelAlt)); border:1px solid var(--border); border-radius:16px; padding:16px 16px 14px; }
-  .mc-owner-head{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
-  .mc-owner-avatar{ width:38px; height:38px; border-radius:50%; flex-shrink:0; background:var(--accentDim); color:var(--accent); font-weight:700; font-size:15px; display:flex; align-items:center; justify-content:center; }
-  .mc-owner-name{ font-size:14.5px; font-weight:700; }
-  .mc-owner-count{ font-size:10.5px; color:var(--mutedFaint); }
-  .mc-owner-bar{ height:9px; border-radius:6px; background:var(--border); overflow:hidden; display:flex; margin-bottom:10px; }
-  .mc-owner-bar .done{ background:var(--accent); height:100%; }
-  .mc-owner-bar .pending{ background:var(--warn); height:100%; }
-  .mc-owner-stats{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
-  .mc-owner-stat{ background:var(--panelAlt); border:1px solid var(--border); border-radius:10px; padding:9px 11px; }
-  .mc-owner-stat .lbl{ font-size:10px; color:var(--muted); display:flex; align-items:center; gap:5px; margin-bottom:3px;}
-  .mc-owner-stat .dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-  .mc-owner-stat .val{ font-size:15px; font-weight:700; }
-  .mc-owner-stat.done .val{ color:var(--accent); }
-  .mc-owner-stat.pending .val{ color:var(--warn); }
-  .mc-owner-jobs-label{ font-size:10.5px; color:var(--mutedFaint); margin-bottom:7px; display:flex; align-items:center; justify-content:space-between; }
-  .mc-owner-jobs{ display:flex; flex-direction:column; gap:7px; max-height:220px; overflow-y:auto; padding-right:2px; }
-  .mc-owner-job-row{ background:var(--panelAlt); border:1px solid var(--border); border-radius:9px; padding:8px 10px; font-size:11.5px; }
-  .mc-owner-job-row .jname{ display:block; margin-bottom:4px; line-height:1.35; }
-  .mc-owner-job-row .jmeta{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .mc-job-pill{ font-size:9.5px; padding:2px 7px; border-radius:999px; background:var(--warnDim); color:var(--warn); white-space:nowrap; }
-  .mc-job-pill.cancel{ background:var(--dangerDim); color:#ff8a82; }
-  .mc-jval{ font-size:11px; color:var(--mutedFaint); font-weight:600; white-space:nowrap; }
-  .mc-owner-empty{ font-size:11px; color:var(--mutedFaint); text-align:center; padding:14px 0; }
-
-  .mc-table{ width:100%; border-collapse:collapse; font-size:12px; }
-  .mc-table th{ text-align:left; color:var(--muted); font-weight:600; font-size:10.5px; padding:6px 8px; border-bottom:1px solid var(--border); }
-  .mc-table td{ padding:8px; border-bottom:1px solid var(--border); }
-  .mc-table tr:last-child td{ border-bottom:none; }
-  .mc-bar-mini{ height:6px; border-radius:4px; background:var(--border); overflow:hidden; margin-top:4px;}
-  .mc-bar-mini > div{ height:100%; background:var(--accent); border-radius:4px; }
-
-  .mc-loading{ display:flex; flex-direction:column; align-items:center; gap:12px; padding:60px 0; color:var(--muted); font-size:12.5px; }
-  .mc-refresh-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
-  .mc-refresh-row .meta{ font-size:11px; color:var(--mutedFaint); }
-  .spin{ display:inline-block; animation:spin 1s linear infinite; }
 </style>
 </head>
 <body>
@@ -613,7 +437,7 @@ const APPROVER_PASSWORD = "30190";
    วางลิงก์ Google Apps Script Web App ตรงนี้ (สำหรับระบบ PR + Google Drive)
    ดูวิธีสร้างในไฟล์ PR-SETUP.md ที่แนบมาด้วย
    ====================================================== */
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw16_aqSru0RxUwbGcerA4H6iK9GIaZUHBs1z2kCmtgQSHu8CIjBZlKQLs_0LMABhog/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2adHp60orT0x5gWrV-yl-zHmmSf03ScdWtbU7Vb8HyptU3WYG7tKVgJqeIlQnNeJ8/exec";
 
 /* ---------------- state ---------------- */
 let parts = [];
@@ -630,15 +454,6 @@ let savingMachine = false;
 let lightboxImg = null;
 let currentRole = localStorage.getItem("wk_role") || null; // "admin" | "user"
 let currentName = localStorage.getItem("wk_name") || "";
-
-/* ---------------- Maintenance Cost tab state ---------------- */
-const MAINT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-RZjHXgsm4-GVfy-RNGOZwVUBDxEV22OZHArLvD06fjwttnhjIKVXaF_KMNyhdZYG/exec";
-let maintStatus = "idle"; // idle | loading | ready | error
-let maintRaw = null;      // { poMaster, costLedger, generatedAt, yearsAvailable }
-let maintSelectedYear = null; // ปีที่กำลังดูอยู่ (เลือกจาก dropdown)
-let maintAggView = null;  // ผลคำนวณล่าสุดของปีที่เลือก (ใช้โดย bindMaintCostCharts)
-let maintLoadedAt = null;
-let maintRefreshing = false;
 let loginErr = "";
 let loginShowPin = false;
 let loginShowApprovePass = false;
@@ -1001,296 +816,6 @@ function showConfirm(opts){
     requestAnimationFrame(() => overlay.classList.add("open"));
     setTimeout(() => document.getElementById("confirmOkBtn")?.focus(), 60);
   });
-}
-
-/* ======================================================
-   AI Part Scanner — ถ่าย/เลือกรูปอะไหล่ แล้วให้โมเดลที่เทรนไว้ทาย
-   - โหลดโมเดลผ่าน models/manifest.json (เปลี่ยนเวอร์ชันโมเดลในอนาคตได้
-     แค่แก้ manifest ไม่ต้องแก้โค้ดหน้านี้เลย)
-   - รองรับทั้งกล้อง (live preview + วงไกด์) และเลือกไฟล์จากเครื่อง
-   ====================================================== */
-const AI_MANIFEST_URL = "./models/manifest.json";
-let aiModel = null, aiClassNames = null, aiModelConfig = null;
-let aiModelStatus = "idle"; // idle | loading | ready | error | unconfigured
-let aiModelLoadPromise = null;
-
-let aiScanCallback = null;
-let aiScanStream = null;
-let aiScanImageSrc = null;   // captured/selected image as dataURL
-let aiScanStage = "camera";  // camera | loading | result
-let aiScanResults = null;    // [{name, pct}]
-
-async function ensureAiModelLoaded(){
-  if (aiModelStatus === "ready") return true;
-  if (aiModelLoadPromise) return aiModelLoadPromise;
-  aiModelStatus = "loading";
-  aiModelLoadPromise = (async () => {
-    try {
-      const manifestResp = await fetch(AI_MANIFEST_URL, { cache: "no-store" });
-      if (!manifestResp.ok) throw new Error("no manifest");
-      const manifest = await manifestResp.json();
-      const key = manifest.current;
-      const cfg = manifest.versions?.[key];
-      if (!cfg) throw new Error("no active version in manifest");
-      aiModelConfig = {
-        inputSize: cfg.inputSize || 224,
-        preprocess: cfg.preprocess || "rescale",
-        topK: cfg.topK || 3,
-        minConfidence: cfg.minConfidence ?? 0.5,
-        label: cfg.label || key,
-      };
-      const [model, namesResp] = await Promise.all([
-        tf.loadLayersModel(cfg.modelUrl),
-        fetch(cfg.classNamesUrl, { cache: "no-store" }),
-      ]);
-      const namesJson = await namesResp.json();
-      aiClassNames = Array.isArray(namesJson)
-        ? namesJson
-        : Object.keys(namesJson).sort((a, b) => Number(a) - Number(b)).map(k => namesJson[k]);
-      aiModel = model;
-      aiModelStatus = "ready";
-      return true;
-    } catch (err) {
-      aiModelStatus = manifestErrIsMissing(err) ? "unconfigured" : "error";
-      return false;
-    }
-  })();
-  return aiModelLoadPromise;
-}
-function manifestErrIsMissing(err){
-  return /no manifest|no active version/.test(String(err?.message || err));
-}
-
-async function runAiInference(imgEl){
-  const cfg = aiModelConfig;
-  const input = tf.tidy(() => {
-    let img = tf.browser.fromPixels(imgEl).toFloat();
-    img = tf.image.resizeBilinear(img, [cfg.inputSize, cfg.inputSize]);
-    if (cfg.preprocess === "rescale") img = img.div(255);
-    else if (cfg.preprocess === "mobilenet") img = img.div(127.5).sub(1);
-    return img.expandDims(0);
-  });
-  const output = aiModel.predict(input);
-  let values = Array.from(await output.data());
-  tf.dispose([input, output]);
-
-  const sum = values.reduce((a, b) => a + b, 0);
-  if (Math.abs(sum - 1) > 0.05) { // looks like raw logits, not softmax — normalize
-    const exps = values.map(v => Math.exp(v));
-    const expSum = exps.reduce((a, b) => a + b, 0);
-    values = exps.map(v => v / expSum);
-  }
-
-  const ranked = values
-    .map((v, i) => ({ name: aiClassNames[i] || `คลาส ${i}`, pct: v * 100 }))
-    .sort((a, b) => b.pct - a.pct)
-    .slice(0, cfg.topK);
-  return ranked;
-}
-
-function openAiScan(onPick){
-  aiScanCallback = onPick || null;
-  aiScanImageSrc = null;
-  aiScanResults = null;
-  aiScanStage = "camera";
-  mountAiScanFab(); // ensure DOM exists
-  const overlay = document.getElementById("aiScanOverlay");
-  overlay.classList.add("open");
-  ensureAiModelLoaded();
-  renderAiScanBody();
-  startAiCamera();
-}
-
-function closeAiScan(){
-  const overlay = document.getElementById("aiScanOverlay");
-  overlay?.classList.remove("open");
-  stopAiCamera();
-}
-
-async function startAiCamera(){
-  stopAiCamera();
-  try {
-    aiScanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
-    const video = document.getElementById("aiScanVideo");
-    if (video) { video.srcObject = aiScanStream; await video.play().catch(() => {}); }
-  } catch {
-    aiScanStream = null; // no camera access — user can still pick a file
-  }
-}
-function stopAiCamera(){
-  aiScanStream?.getTracks().forEach(t => t.stop());
-  aiScanStream = null;
-}
-
-function captureAiPhoto(){
-  const video = document.getElementById("aiScanVideo");
-  if (!video || !video.videoWidth) return;
-  const canvas = document.createElement("canvas");
-  const size = Math.min(video.videoWidth, video.videoHeight);
-  canvas.width = size; canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, (video.videoWidth - size) / 2, (video.videoHeight - size) / 2, size, size, 0, 0, size, size);
-  aiScanImageSrc = canvas.toDataURL("image/jpeg", 0.9);
-  stopAiCamera();
-  runAiScanOnCurrentImage();
-}
-
-function handleAiFile(file){
-  const reader = new FileReader();
-  reader.onload = () => {
-    aiScanImageSrc = reader.result;
-    stopAiCamera();
-    runAiScanOnCurrentImage();
-  };
-  reader.readAsDataURL(file);
-}
-
-async function runAiScanOnCurrentImage(){
-  aiScanStage = "loading";
-  renderAiScanBody();
-
-  const ok = await ensureAiModelLoaded();
-  if (!ok || aiModelStatus !== "ready") {
-    aiScanStage = "camera"; // bounce back with an inline message
-    renderAiScanBody();
-    return;
-  }
-
-  const imgEl = document.createElement("img");
-  imgEl.src = aiScanImageSrc;
-  await new Promise((res) => { imgEl.onload = res; });
-  try {
-    aiScanResults = await runAiInference(imgEl);
-  } catch {
-    aiScanResults = null;
-  }
-  aiScanStage = "result";
-  renderAiScanBody();
-}
-
-function retakeAiPhoto(){
-  aiScanImageSrc = null;
-  aiScanResults = null;
-  aiScanStage = "camera";
-  renderAiScanBody();
-  startAiCamera();
-}
-
-function renderAiScanBody(){
-  const body = document.getElementById("aiScanBody");
-  if (!body) return;
-
-  let stageHtml = "";
-  if (aiScanStage === "camera") {
-    stageHtml = `
-      <div class="ai-scan-stage">
-        <video id="aiScanVideo" playsinline muted autoplay></video>
-        <svg class="ai-scan-guide" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <circle cx="50" cy="50" r="30" vector-effect="non-scaling-stroke"></circle>
-        </svg>
-        <div class="ai-scan-hint">จัดอะไหล่ให้อยู่กลางวงกลม แล้วถ่ายภาพ</div>
-      </div>
-      ${aiModelStatus === "unconfigured" ? `<div class="ai-low-conf">⚠️ ยังไม่ได้ตั้งค่าโมเดล AI (ไม่พบ models/manifest.json) — ดูวิธีตั้งค่าจากไฟล์ที่แนบให้</div>` : ""}
-      ${aiModelStatus === "error" ? `<div class="ai-low-conf">⚠️ โหลดโมเดล AI ไม่สำเร็จ ลองรีเฟรชหน้าเว็บใหม่</div>` : ""}
-      <div class="ai-scan-controls">
-        <button class="btn btn-ai-capture" id="btnAiCapture"><i class="ti ti-camera"></i> ถ่ายรูป</button>
-        <button class="btn btn-ghost" id="btnAiPickFile"><i class="ti ti-photo"></i> เลือกจากคลังภาพ</button>
-      </div>
-      <input type="file" accept="image/*" id="aiFileInput">
-    `;
-  } else if (aiScanStage === "loading") {
-    stageHtml = `
-      <div class="ai-scan-stage"><img src="${aiScanImageSrc}"></div>
-      <div class="ai-scan-loading"><div class="ai-spinner"></div><span>กำลังวิเคราะห์รูปภาพ...</span></div>
-    `;
-  } else if (aiScanStage === "result") {
-    const top = aiScanResults?.[0];
-    const lowConf = !top || top.pct < (aiModelConfig?.minConfidence ?? 0.5) * 100;
-    const circumference = 2 * Math.PI * 25;
-    const offset = top ? circumference - (top.pct / 100) * circumference : circumference;
-    stageHtml = `
-      <div class="ai-scan-stage"><img src="${aiScanImageSrc}"></div>
-      ${top ? `
-        <div class="ai-result">
-          <div class="ai-result-top">
-            <div class="ai-result-ring">
-              <svg viewBox="0 0 60 60">
-                <circle class="bg" cx="30" cy="30" r="25"></circle>
-                <circle class="fg" cx="30" cy="30" r="25" style="stroke-dasharray:${circumference.toFixed(1)};stroke-dashoffset:${offset.toFixed(1)}"></circle>
-              </svg>
-              <div class="pct">${top.pct.toFixed(0)}%</div>
-            </div>
-            <div>
-              <div class="ai-result-name">${esc(top.name)}</div>
-              <div class="ai-result-sub">ความมั่นใจของโมเดล (${esc(aiModelConfig.label)})</div>
-            </div>
-          </div>
-          ${aiScanResults.length > 1 ? `
-            <div class="ai-result-list">
-              ${aiScanResults.map(r => `
-                <div class="ai-result-row">
-                  <span class="name">${esc(r.name)}</span>
-                  <span class="bar"><div style="width:${r.pct.toFixed(1)}%"></div></span>
-                  <span class="val">${r.pct.toFixed(0)}%</span>
-                </div>`).join("")}
-            </div>` : ""}
-          ${lowConf ? `<div class="ai-low-conf">ความมั่นใจค่อนข้างต่ำ ลองถ่ายใหม่ให้ชัดขึ้น หรือเลือกชื่อเองก็ได้</div>` : ""}
-          <div class="ai-result-actions">
-            <button class="btn btn-ghost" id="btnAiRetake"><i class="ti ti-refresh"></i> ถ่ายใหม่</button>
-            <button class="btn btn-ai-capture" id="btnAiUseResult"><i class="ti ti-check"></i> ใช้ชื่อนี้</button>
-          </div>
-        </div>
-      ` : `<div class="ai-low-conf">วิเคราะห์รูปไม่สำเร็จ ลองอีกครั้ง</div>
-        <div class="ai-scan-controls"><button class="btn btn-ai-capture" id="btnAiRetake" style="width:100%;">ถ่ายใหม่</button></div>`}
-    `;
-  }
-
-  body.innerHTML = stageHtml;
-  wireAiScanBodyEvents();
-  if (aiScanStage === "camera" && aiScanStream) {
-    const video = document.getElementById("aiScanVideo");
-    if (video) video.srcObject = aiScanStream;
-  }
-}
-
-function wireAiScanBodyEvents(){
-  document.getElementById("btnAiCapture")?.addEventListener("click", captureAiPhoto);
-  document.getElementById("btnAiPickFile")?.addEventListener("click", () => document.getElementById("aiFileInput")?.click());
-  document.getElementById("aiFileInput")?.addEventListener("change", (e) => {
-    const file = e.target.files?.[0]; if (file) handleAiFile(file);
-  });
-  document.getElementById("btnAiRetake")?.addEventListener("click", retakeAiPhoto);
-  document.getElementById("btnAiUseResult")?.addEventListener("click", () => {
-    const name = aiScanResults?.[0]?.name;
-    if (name && aiScanCallback) aiScanCallback(name);
-    closeAiScan();
-    showToast(`เติมชื่อ "${name}" ให้แล้ว ตรวจสอบอีกครั้งก่อนบันทึก`);
-  });
-}
-
-function mountAiScanFab(){
-  if (document.getElementById("aiScanFab")) return;
-
-  const fab = document.createElement("button");
-  fab.id = "aiScanFab";
-  fab.innerHTML = `<span class="fab-pulse"></span><i class="ti ti-scan"></i><span class="fab-label">สแกน AI</span>`;
-  fab.addEventListener("click", () => openAiScan(null));
-  document.body.appendChild(fab);
-
-  const overlay = document.createElement("div");
-  overlay.id = "aiScanOverlay";
-  overlay.innerHTML = `
-    <div class="ai-scan-card">
-      <div class="ai-scan-head">
-        <div class="ai-scan-title"><i class="ti ti-scan"></i>สแกนอะไหล่ด้วย AI</div>
-        <button class="close-btn" id="btnAiScanClose">✕</button>
-      </div>
-      <div class="ai-scan-body" id="aiScanBody"></div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) closeAiScan(); });
-  document.getElementById("btnAiScanClose").addEventListener("click", closeAiScan);
 }
 
 /* ---------------- data actions ---------------- */
@@ -1810,7 +1335,6 @@ function render(){
           ${(isAdmin || isApprove) ? tabBtn("prlist","รายการ PR") : ""}
           ${isAdmin ? tabBtn("dashboard","ภาพรวม",low.length) : ""}
           ${isAdmin ? tabBtn("history","ประวัติ") : ""}
-          ${isAdmin ? tabBtn("maintcost","Maintenance Cost") : ""}
           ${isAdmin ? tabBtn("settings","ตั้งค่า") : ""}
         </div>
       </div>
@@ -1822,7 +1346,6 @@ function render(){
       ${view === "settings" ? renderSettings(low.length) : ""}
       ${view === "openpr" ? renderOpenPR() : ""}
       ${view === "prlist" ? renderPRList() : ""}
-      ${view === "maintcost" ? renderMaintCost() : ""}
     </div>
     ${(addOpen || editPart) ? renderPartForm() : ""}
     ${withdrawPart ? renderWithdrawForm() : ""}
@@ -2108,287 +1631,6 @@ function prRowHtml(row, idx){
       <td><button type="button" data-remove-row="${row.id}" style="background:none;border:none;color:var(--mutedFaint);cursor:pointer;"><i class="ti ti-trash" aria-hidden="true"></i></button></td>
     </tr>
   `;
-}
-
-/* ======================================================
-   Maintenance Cost tab — ดึงจาก Google Sheet ผ่าน Apps Script
-   แล้วคำนวณ/จับคู่ฝั่งนี้ (client-side) เหมือนที่ตรวจทานไว้แล้ว
-   ====================================================== */
-let maintDebug = null; // ข้อมูลวินิจฉัย แสดงในหน้าเว็บเองเวลามีปัญหา ไม่ต้องเปิด DevTools
-async function ensureMaintDataLoaded(force){
-  if (maintStatus === "loading") return;
-  if (maintStatus === "ready" && !force) return;
-  maintStatus = "loading";
-  if (view === "maintcost") render();
-  try {
-    // กันแคชทุกชั้น (browser / CDN / ตัวกลางใดๆ) ด้วยการแปะ query แบบสุ่มทุกครั้ง
-    const bustUrl = MAINT_SCRIPT_URL + (MAINT_SCRIPT_URL.includes("?") ? "&" : "?") + "_=" + Date.now();
-    const resp = await fetch(bustUrl, { cache: "no-store" });
-    const rawText = await resp.text();
-    let json;
-    try { json = JSON.parse(rawText); }
-    catch { throw new Error("ไม่ใช่ JSON: " + rawText.slice(0,200)); }
-
-    maintDebug = {
-      url: bustUrl,
-      httpStatus: resp.status,
-      hasYearsAvailable: Array.isArray(json.yearsAvailable),
-      yearsAvailableRaw: json.yearsAvailable,
-      poMasterLen: Array.isArray(json.poMaster) ? json.poMaster.length : null,
-      firstRowYear: Array.isArray(json.poMaster) && json.poMaster[0] ? json.poMaster[0].year : null,
-      generatedAt: json.generatedAt,
-      fetchedAt: new Date().toISOString(),
-    };
-
-    if (!json.success) throw new Error(json.error || "load failed");
-    maintRaw = json;
-    const years = (json.yearsAvailable && json.yearsAvailable.length)
-      ? json.yearsAvailable
-      : [...new Set((json.poMaster||[]).map(r=>r.year))].filter(y=>y!==undefined && y!==null).sort((a,b)=>b-a);
-    if (!maintSelectedYear || !years.includes(maintSelectedYear)) {
-      maintSelectedYear = years[0] || null; // ค่าเริ่มต้น = ปีล่าสุด
-    }
-    maintLoadedAt = new Date();
-    maintStatus = "ready";
-  } catch (err) {
-    maintDebug = { ...(maintDebug||{}), error: String(err && err.message || err) };
-    maintStatus = "error";
-  }
-  maintRefreshing = false;
-  if (view === "maintcost") render();
-}
-
-function normPOStr(v){
-  if (v === null || v === undefined || v === "") return null;
-  const n = Number(v);
-  if (!isNaN(n) && isFinite(n)) return String(Math.round(n));
-  return String(v).trim();
-}
-
-function computeMaintAggregates(poMaster, costLedger){
-  const MAIN_STATUSES = ["Complete","รอส่งมอบงาน","รอส่งอะไหล่","Partial","รอวางบิล"];
-  const billedPOs = new Set(costLedger.map(c => normPOStr(c.po)).filter(Boolean));
-
-  let totalValue = 0, completeValue = 0, completeCount = 0, pendingValue = 0, pendingCount = 0;
-  const statusMap = {};
-  const ownerMap = {};
-  let completeNoEN = 0;
-  const issueByOwner = {};
-
-  poMaster.forEach(row => {
-    const status = (row.status || "ไม่ระบุสถานะ").trim() || "ไม่ระบุสถานะ";
-    const owner = (row.owner || "").trim();
-    const val = Number(row.priceVat) || 0;
-    const group = MAIN_STATUSES.includes(status) ? status : "อื่นๆ";
-
-    totalValue += val;
-    if (!statusMap[group]) statusMap[group] = { count:0, value:0 };
-    statusMap[group].count++; statusMap[group].value += val;
-
-    if (status === "Complete") {
-      completeValue += val; completeCount++;
-      if (row.enFilled === false) { // false = มีคอลัมน์ติดตามแต่ยังว่าง; null = ปีนี้ไม่มีข้อมูลติดตามเลย ไม่นับว่า "ขาด"
-        completeNoEN++;
-        if (owner) issueByOwner[owner] = (issueByOwner[owner]||0) + 1;
-      }
-    } else {
-      pendingValue += val; pendingCount++;
-    }
-
-    if (owner) {
-      if (!ownerMap[owner]) ownerMap[owner] = { total_count:0, total_value:0, complete_count:0, complete_value:0, pending_count:0, pending_value:0, pending_jobs:[] };
-      const o = ownerMap[owner];
-      o.total_count++; o.total_value += val;
-      if (status === "Complete") { o.complete_count++; o.complete_value += val; }
-      else { o.pending_count++; o.pending_value += val; o.pending_jobs.push({ name: row.item || "(ไม่มีชื่อรายการ)", po: row.po || "-", status, value: val }); }
-    }
-  });
-
-  Object.values(ownerMap).forEach(o => o.pending_jobs.sort((a,b)=>b.value-a.value));
-  const ownerBreakdown = Object.fromEntries(Object.entries(ownerMap).sort((a,b)=>b[1].total_value-a[1].total_value));
-
-  const matchedRows = poMaster.filter(row => billedPOs.has(normPOStr(row.po)));
-  const billedCount = new Set(matchedRows.map(r=>normPOStr(r.po))).size;
-
-  const statusSummary = Object.entries(statusMap).map(([label,d]) => ({ label, ...d }));
-  const issueList = Object.entries(issueByOwner).map(([label,count])=>({label,count})).sort((a,b)=>b.count-a.count);
-
-  const hasENTracking = poMaster.some(r => r.enFilled !== null);
-  const usesVat = poMaster.length ? poMaster[0].priceSource === "vat" : true;
-
-  return {
-    kpi: { totalValue, totalCount: poMaster.length, completeValue, completeCount, pendingValue, pendingCount, completeNoEN, billedCount },
-    statusSummary, ownerBreakdown, issueList, hasENTracking, usesVat,
-  };
-}
-
-function fmtMoneyMc(n){
-  if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(2) + " ลบ.";
-  return Math.round(n).toLocaleString('th-TH') + " บ.";
-}
-
-function renderMaintCost(){
-  if (maintStatus === "idle") { ensureMaintDataLoaded(false); }
-
-  if (maintStatus === "loading" && !maintRaw) {
-    return `<div class="mc-loading"><div class="ai-spinner"></div><div>กำลังดึงข้อมูลจาก Google Sheet...</div></div>`;
-  }
-  if (maintStatus === "error" && !maintRaw) {
-    return `<div class="mc-panel"><div class="mc-alert" style="margin:0;"><span class="mc-alert-dot"></span>โหลดข้อมูลไม่สำเร็จ เช็คว่า Apps Script ยัง Deploy อยู่ และลิงก์ยังใช้งานได้ <button class="btn btn-ghost" id="btnMcRetry" style="margin-left:auto;">ลองใหม่</button></div></div>`;
-  }
-
-  const years = (maintRaw.yearsAvailable && maintRaw.yearsAvailable.length)
-    ? maintRaw.yearsAvailable
-    : [...new Set(maintRaw.poMaster.map(r=>r.year))].filter(y=>y!==undefined && y!==null).sort((a,b)=>b-a);
-
-  const debugHtml = maintDebug ? `
-    <details style="margin-bottom:14px;font-size:10.5px;color:var(--mutedFaint);" ${(!years.length || years.includes(undefined)) ? "open" : ""}>
-      <summary style="cursor:pointer;color:var(--muted);">🔧 ข้อมูลวินิจฉัย (เปิดดูได้ถ้าตัวเลขดูผิดปกติ ไม่ต้องเปิด DevTools)</summary>
-      <div style="background:var(--panelAlt);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:6px;line-height:1.8;word-break:break-all;">
-        URL ที่เรียก: ${esc(maintDebug.url || "-")}<br>
-        HTTP status: ${maintDebug.httpStatus ?? "-"}<br>
-        generatedAt (จากฝั่ง Apps Script): ${esc(maintDebug.generatedAt || "-")}<br>
-        เวลาที่เว็บดึงจริง: ${esc(maintDebug.fetchedAt || "-")}<br>
-        yearsAvailable ที่ได้รับ: ${JSON.stringify(maintDebug.yearsAvailableRaw)}<br>
-        จำนวนแถว poMaster: ${maintDebug.poMasterLen ?? "-"}<br>
-        year ของแถวแรก: ${JSON.stringify(maintDebug.firstRowYear)}
-        ${maintDebug.error ? `<br><span style="color:var(--danger);">error: ${esc(maintDebug.error)}</span>` : ""}
-      </div>
-    </details>
-  ` : "";
-
-  if (!years.length) {
-    return debugHtml + `<div class="mc-panel">ไม่พบชีท "PO ปี ..." ที่อ่านโครงสร้างได้ (ตั้งแต่ปี 67 ขึ้นไป)</div>`;
-  }
-  if (!maintSelectedYear || !years.includes(maintSelectedYear)) maintSelectedYear = years[0];
-
-  const filteredPO = maintRaw.poMaster.filter(r => r.year === maintSelectedYear);
-  const agg = computeMaintAggregates(filteredPO, maintRaw.costLedger);
-  maintAggView = agg; // ให้ bindMaintCostCharts() อ่านต่อได้
-  const { kpi, statusSummary, ownerBreakdown, issueList, hasENTracking, usesVat } = agg;
-  const maxIssue = Math.max(1, ...issueList.map(d=>d.count));
-
-  return `
-    <div class="mc-refresh-row">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <select id="mcYearSelect" class="btn btn-ghost" style="font-size:12.5px;padding:7px 12px;cursor:pointer;">
-          ${years.map(y => `<option value="${y}" ${y===maintSelectedYear?"selected":""}>ข้อมูลปี ${y}</option>`).join("")}
-        </select>
-        <div class="meta">${maintLoadedAt ? `อัปเดตล่าสุด ${maintLoadedAt.toLocaleTimeString('th-TH')}` : ""}</div>
-      </div>
-      <button class="btn btn-ghost" id="btnMcRefresh" style="font-size:11.5px;padding:7px 12px;"><i class="ti ti-refresh${maintRefreshing?" spin":""}" aria-hidden="true"></i> รีเฟรชข้อมูล</button>
-    </div>
-
-    ${!usesVat ? `<div class="mc-alert" style="background:var(--warnDim);border-color:rgba(245,166,35,.3);"><span class="mc-alert-dot" style="background:var(--warn);"></span><div>ปี ${maintSelectedYear} ไม่มีคอลัมน์ "ราคารวม Vat 7%" แยกไว้ ตัวเลขด้านล่างจึงใช้คอลัมน์ "ราคา" แทน (ไม่รวม VAT)</div></div>` : ""}
-
-    ${hasENTracking && kpi.completeNoEN > 0 ? `
-      <div class="mc-alert">
-        <span class="mc-alert-dot"></span>
-        <div><b>${kpi.completeNoEN} งาน</b> สถานะ Complete แล้ว แต่ยังไม่มีการกรอก EN รับส่งมอบงาน</div>
-      </div>` : ""}
-
-    <div class="mc-kpi-grid">
-      <div class="mc-kpi-card">
-        <div class="mc-kpi-label">💰 มูลค่า PO รวม</div>
-        <div class="mc-kpi-value">${fmtMoneyMc(kpi.totalValue)}</div>
-        <div class="mc-kpi-sub">${kpi.totalCount} PO ทั้งหมด</div>
-      </div>
-      <div class="mc-kpi-card ok">
-        <div class="mc-kpi-label">✅ วางบิลแล้ว (Complete)</div>
-        <div class="mc-kpi-value">${fmtMoneyMc(kpi.completeValue)}</div>
-        <div class="mc-kpi-sub">${kpi.completeCount} PO</div>
-      </div>
-      <div class="mc-kpi-card warn">
-        <div class="mc-kpi-label">⏳ ยังไม่เสร็จ/ค้างดำเนินการ</div>
-        <div class="mc-kpi-value">${fmtMoneyMc(kpi.pendingValue)}</div>
-        <div class="mc-kpi-sub">${kpi.pendingCount} PO</div>
-      </div>
-      <div class="mc-kpi-card">
-        <div class="mc-kpi-label">🧾 PO ที่พบในไฟล์ค่าใช้จ่าย</div>
-        <div class="mc-kpi-value">${kpi.billedCount} PO</div>
-        <div class="mc-kpi-sub">จับคู่จากชีทค่าซ่อมวิศวกรรม</div>
-      </div>
-    </div>
-
-    <div class="mc-panel">
-      <h3>สัดส่วนสถานะ PO ภาพรวม <span class="hint">ตามจำนวน</span></h3>
-      <div class="mc-chart-box" style="height:200px;"><canvas id="mcStatusChart"></canvas></div>
-    </div>
-
-    <h2 class="mc-section-title">งบประมาณแยกตามเจ้าของงาน <span>ใช้ไปเท่าไหร่ เหลือเท่าไหร่ ติดงานไหน</span></h2>
-    <div class="mc-owner-grid">
-      ${Object.entries(ownerBreakdown).map(([name,d]) => {
-        const donePct = d.total_value > 0 ? (d.complete_value/d.total_value*100) : 0;
-        const pendPct = 100 - donePct;
-        const jobsHtml = d.pending_jobs.length
-          ? d.pending_jobs.slice(0,8).map(j => `
-              <div class="mc-owner-job-row">
-                <span class="jname">${esc(j.name)}</span>
-                <div class="jmeta">
-                  <span class="mc-job-pill${j.status.includes('ยกเลิก')?' cancel':''}">${esc(j.status)} · PO ${esc(j.po)}</span>
-                  <span class="mc-jval">${fmtMoneyMc(j.value)}</span>
-                </div>
-              </div>`).join("")
-          : `<div class="mc-owner-empty">✅ ไม่มีงานค้าง — เคลียร์หมดแล้ว</div>`;
-        return `
-          <div class="mc-owner-card">
-            <div class="mc-owner-head">
-              <div class="mc-owner-avatar">${esc(name.charAt(0))}</div>
-              <div>
-                <div class="mc-owner-name">${esc(name)}</div>
-                <div class="mc-owner-count">${d.total_count} งานทั้งหมด · ${d.complete_count} เสร็จแล้ว · ${d.pending_count} ค้างอยู่</div>
-              </div>
-            </div>
-            <div class="mc-owner-bar"><div class="done" style="width:${donePct.toFixed(1)}%"></div><div class="pending" style="width:${pendPct.toFixed(1)}%"></div></div>
-            <div class="mc-owner-stats">
-              <div class="mc-owner-stat done"><div class="lbl"><span class="dot" style="background:var(--accent);"></span>ใช้ไปแล้ว</div><div class="val">${fmtMoneyMc(d.complete_value)}</div></div>
-              <div class="mc-owner-stat pending"><div class="lbl"><span class="dot" style="background:var(--warn);"></span>เหลือ/ค้างจ่าย</div><div class="val">${fmtMoneyMc(d.pending_value)}</div></div>
-            </div>
-            <div class="mc-owner-jobs-label"><span>งานที่ยังติดอยู่</span><span>${d.pending_count} รายการ</span></div>
-            <div class="mc-owner-jobs">${jobsHtml}</div>
-          </div>
-        `;
-      }).join("")}
-    </div>
-
-    ${!hasENTracking ? `
-      <div class="mc-panel" style="margin-top:18px;">
-        <h3>ติดตามการส่งมอบงาน <span class="hint">ไม่มีข้อมูลสำหรับปีนี้</span></h3>
-        <div class="mc-owner-empty">ปี ${maintSelectedYear} ไม่มีคอลัมน์ "EN รับส่งมอบงาน" ในชีทต้นฉบับ จึงยังติดตามส่วนนี้ไม่ได้</div>
-      </div>` : issueList.length ? `
-      <div class="mc-panel" style="margin-top:18px;">
-        <h3>ติดตามการส่งมอบงาน (Complete แล้วแต่ยังไม่มี EN รับส่งมอบ) <span class="hint">แยกตามเจ้าของงาน</span></h3>
-        <table class="mc-table">
-          <thead><tr><th>เจ้าของงาน</th><th>จำนวนงานค้างส่งมอบ</th><th style="width:40%;">สัดส่วน</th></tr></thead>
-          <tbody>
-            ${issueList.map(d => `
-              <tr>
-                <td>${esc(d.label)}</td>
-                <td><span class="mc-job-pill cancel">${d.count} งาน</span></td>
-                <td><div class="mc-bar-mini"><div style="width:${(d.count/maxIssue*100).toFixed(0)}%;background:var(--danger);"></div></div></td>
-              </tr>`).join("")}
-          </tbody>
-        </table>
-      </div>` : ""}
-  `;
-}
-
-let mcStatusChartInstance = null;
-function bindMaintCostCharts(){
-  const canvas = document.getElementById("mcStatusChart");
-  if (!canvas || !maintAggView) return;
-  if (typeof Chart === "undefined") {
-    canvas.closest(".mc-chart-box").innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--mutedFaint);font-size:11.5px;">โหลดไลบรารีกราฟไม่สำเร็จ ลองรีเฟรชหน้าเว็บ</div>`;
-    return;
-  }
-  if (mcStatusChartInstance) { mcStatusChartInstance.destroy(); mcStatusChartInstance = null; }
-  const colors = { "Complete":"#2DD4BF","รอส่งมอบงาน":"#F5A623","รอส่งอะไหล่":"#F0473E","Partial":"#3B82F6","รอวางบิล":"#A78BFA","อื่นๆ":"#5B6068" };
-  const data = maintAggView.statusSummary;
-  mcStatusChartInstance = new Chart(canvas, {
-    type: 'doughnut',
-    data: { labels: data.map(s=>s.label), datasets: [{ data: data.map(s=>s.count), backgroundColor: data.map(s=>colors[s.label]||"#5B6068"), borderColor:"#1B1E23", borderWidth:3 }] },
-    options: { plugins:{ legend:{ position:'right', labels:{ boxWidth:10, font:{size:10.5}, color:"#878D97" } } }, cutout:'62%', maintainAspectRatio:false }
-  });
 }
 
 function renderOpenPR(){
@@ -2824,9 +2066,6 @@ function renderPartForm(){
             <input type="file" accept="image/*" id="photoInput" style="display:none;">
           </label>
           <div id="photoErr" class="err-text" style="display:none;text-align:center;"></div>
-          <button type="button" class="btn btn-ghost" id="btnAiScanInForm" style="width:100%;justify-content:center;margin-top:8px;font-size:12.5px;">
-            <i class="ti ti-scan" aria-hidden="true"></i> สแกนอะไหล่ด้วย AI (เติมชื่ออัตโนมัติ)
-          </button>
 
           <div class="field-wrap"><label class="field">ชื่ออะไหล่</label><input id="fName" value="${esc(p?.name||"")}" placeholder="เช่น สายพานราวลิ้น"></div>
           <div class="field-wrap">
@@ -3126,10 +2365,6 @@ function bindEvents(){
   });
   document.getElementById("btnAdd")?.addEventListener("click", () => { addOpen = true; pendingPhotoBlob=null; pendingPhotoPreview=null; showNewMachineInput=false; render(); });
   document.querySelectorAll("[data-tab]").forEach(el => el.addEventListener("click", () => { view = el.dataset.tab; search=""; render(); }));
-  document.getElementById("btnMcRefresh")?.addEventListener("click", () => { maintRefreshing = true; ensureMaintDataLoaded(true); });
-  document.getElementById("btnMcRetry")?.addEventListener("click", () => { ensureMaintDataLoaded(true); });
-  document.getElementById("mcYearSelect")?.addEventListener("change", (e) => { maintSelectedYear = Number(e.target.value); render(); });
-  if (view === "maintcost") bindMaintCostCharts();
   document.querySelectorAll("[data-withdraw]").forEach(el => el.addEventListener("click", () => {
     withdrawPart = parts.find(p => p.id === el.dataset.withdraw); render();
   }));
@@ -3358,12 +2593,6 @@ function bindEvents(){
       if (errEl) { errEl.textContent = "อัปโหลดรูปไม่สำเร็จ ลองรูปอื่น"; errEl.style.display = "block"; }
     }
   });
-  document.getElementById("btnAiScanInForm")?.addEventListener("click", () => {
-    openAiScan((predictedName) => {
-      const nameInput = document.getElementById("fName");
-      if (nameInput) { nameInput.value = predictedName; nameInput.focus(); }
-    });
-  });
   document.getElementById("btnSavePart")?.addEventListener("click", async () => {
     const name = document.getElementById("fName").value.trim();
     const isAllZones = document.getElementById("fZoneAll")?.checked;
@@ -3413,16 +2642,71 @@ function bindEvents(){
 
 /* ---------------- roll-up warehouse door entrance ---------------- */
 function initWarehouseDoor(){
-  // ปิดหน้าประตูทางเข้าถาวร — เข้าแอปตรงได้เลยไม่ต้องลาก/กดอะไรก่อน
   const door = document.getElementById("warehouseDoor");
-  if (door) door.classList.add("hidden");
+  const burst = document.getElementById("doorLightBurst");
+  if (!door) return;
+
+  let dragging = false;
+  let startY = 0;
+  let currentDelta = 0;
+  let opened = false;
+
+  function openThreshold(){ return Math.min(window.innerHeight * 0.28, 220); }
+
+  function onPointerDown(e){
+    if (opened) return;
+    dragging = true;
+    startY = e.clientY;
+    door.classList.remove("snapping", "opening");
+    door.classList.add("dragging");
+  }
+
+  function onPointerMove(e){
+    if (!dragging || opened) return;
+    const rawDelta = startY - e.clientY;
+    currentDelta = Math.max(0, Math.min(rawDelta, window.innerHeight));
+    door.style.transform = `translateY(-${currentDelta}px)`;
+  }
+
+  function onPointerUp(){
+    if (!dragging || opened) return;
+    dragging = false;
+    door.classList.remove("dragging");
+
+    if (currentDelta > openThreshold()) {
+      completeOpen();
+    } else if (currentDelta > 4) {
+      snapClosed();
+    } else {
+      door.classList.add("shake");
+      setTimeout(() => door.classList.remove("shake"), 480);
+    }
+    currentDelta = 0;
+  }
+
+  function snapClosed(){
+    door.classList.add("snapping");
+    door.style.transform = "translateY(0)";
+  }
+
+  function completeOpen(){
+    opened = true;
+    door.classList.add("opening");
+    door.style.transform = "translateY(-115%)";
+    if (burst) burst.classList.add("burst");
+    setTimeout(() => { door.classList.add("hidden"); }, 680);
+  }
+
+  door.addEventListener("pointerdown", onPointerDown);
+  window.addEventListener("pointermove", onPointerMove);
+  window.addEventListener("pointerup", onPointerUp);
+  window.addEventListener("pointercancel", onPointerUp);
 }
 
 render();
 initBgParticles();
 initWarehouseDoor();
 mountStorageWidget();
-mountAiScanFab();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
