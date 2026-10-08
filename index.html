@@ -550,6 +550,70 @@
   .mc-refresh-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
   .mc-refresh-row .meta{ font-size:11px; color:var(--mutedFaint); }
   .spin{ display:inline-block; animation:spin 1s linear infinite; }
+
+/* ======================= รอบเปลี่ยนอะไหล่ (Maintenance Plan Countdown) ======================= */
+.tabs{overflow-x:auto;scrollbar-width:none;padding-top:4px;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{white-space:nowrap;flex-shrink:0;}
+.mp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+@media(max-width:560px){.mp-stats{grid-template-columns:repeat(2,1fr);}}
+.mp-stat{position:relative;overflow:hidden;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 14px 12px;}
+.mp-stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mpc,var(--muted));}
+.mp-stat .lbl{color:var(--muted);font-size:11px;display:flex;align-items:center;gap:5px;}
+.mp-stat .val{font-size:28px;font-weight:700;margin-top:4px;line-height:1.1;color:var(--mpc,var(--text));font-variant-numeric:tabular-nums;}
+.mp-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.mp-chips-row{display:flex;gap:6px;flex-wrap:wrap;}
+.mp-filter{background:var(--panel);border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;font-family:'Prompt',sans-serif;cursor:pointer;transition:all .2s ease;}
+.mp-filter.active{background:var(--accentDim);border-color:var(--accent);color:var(--accent);}
+.mp-actions-row{display:flex;gap:8px;flex-wrap:wrap;}
+.mp-notice{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;margin-bottom:16px;font-size:12.5px;line-height:1.5;background:linear-gradient(90deg,var(--dangerDim),transparent);border:1px solid #F0473E44;color:#FFB4AF;}
+.mp-notice i{font-size:20px;color:var(--danger);}
+.mp-group{margin-bottom:26px;}
+.mp-group-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 12px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--machine);border-radius:10px;}
+.mp-group-icon{width:34px;height:34px;border-radius:9px;background:var(--machineDim);color:var(--machine);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.mp-group-name{font-size:15px;font-weight:700;}
+.mp-group-sub{font-size:11px;color:var(--muted);}
+.mp-dots{display:flex;gap:5px;margin-left:auto;}
+.mp-dot{width:9px;height:9px;border-radius:50%;background:var(--mpc);box-shadow:0 0 8px var(--mpc);}
+.mp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;}
+.mp-ok{--mpc:var(--accent);--mpcDim:var(--accentDim);}
+.mp-soon{--mpc:var(--warn);--mpcDim:var(--warnDim);}
+.mp-today{--mpc:#FF8A3D;--mpcDim:#4A2410;}
+.mp-overdue{--mpc:var(--danger);--mpcDim:var(--dangerDim);}
+.mp-card{position:relative;overflow:hidden;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:14px;animation:mpIn .45s cubic-bezier(.22,1,.36,1) both;transition:transform .2s ease,border-color .2s ease;}
+@supports (background:color-mix(in srgb,red 10%,blue)){
+  .mp-card{background:radial-gradient(120% 90% at 0% 0%, color-mix(in srgb,var(--mpc) 14%,transparent), transparent 60%), var(--panel);border-color:color-mix(in srgb,var(--mpc) 30%,var(--border));}
+}
+.mp-card:hover{transform:translateY(-2px);}
+.mp-card.mp-overdue,.mp-card.mp-today{animation:mpIn .45s cubic-bezier(.22,1,.36,1) both, mpAlert 2s ease-in-out infinite .5s;}
+@keyframes mpIn{from{opacity:0;transform:translateY(10px) scale(.98);}to{opacity:1;transform:none;}}
+@keyframes mpAlert{0%,100%{box-shadow:0 0 0 0 transparent;}50%{box-shadow:0 0 22px -4px var(--mpc);}}
+.mp-top{display:flex;gap:14px;align-items:center;}
+.mp-ring{position:relative;width:84px;height:84px;flex-shrink:0;}
+.mp-ring svg{width:84px;height:84px;transform:rotate(-90deg);}
+.mp-ring .trk{fill:none;stroke:var(--panelAlt);stroke-width:7;}
+.mp-ring .arc{fill:none;stroke:var(--mpc);stroke-width:7;stroke-linecap:round;filter:drop-shadow(0 0 5px var(--mpc));transition:stroke-dasharray .9s cubic-bezier(.22,1,.36,1);}
+.mp-ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;}
+.mp-ring-n{font-size:22px;font-weight:700;color:var(--mpc);font-variant-numeric:tabular-nums;}
+.mp-ring-u{font-size:10px;color:var(--muted);margin-top:3px;}
+.mp-name{font-size:15px;font-weight:600;line-height:1.3;word-break:break-word;}
+.mp-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
+.mp-chip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--muted);background:var(--panelAlt);border:1px solid var(--border);border-radius:999px;padding:3px 8px;}
+.mp-chip.warn{color:var(--warn);}
+.mp-state{display:flex;align-items:center;justify-content:space-between;margin:12px 0 8px;font-size:11.5px;font-weight:600;color:var(--mpc);}
+.mp-state span:last-child{color:var(--muted);font-weight:500;}
+.mp-tick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.mp-tick > div{background:var(--panelAlt);border:1px solid var(--border);border-radius:10px;padding:8px 0 6px;text-align:center;}
+.mp-tick b{display:block;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15;color:var(--text);}
+.mp-tick small{font-size:9.5px;color:var(--mutedFaint);}
+.mp-tick > div:last-child b{color:var(--mpc);}
+.mp-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;font-size:10.5px;color:var(--mutedFaint);}
+.mp-btns{display:flex;gap:6px;}
+.mp-btns .btn{padding:6px 9px;font-size:11.5px;}
+.mp-empty{text-align:center;padding:50px 20px;color:var(--muted);border:1px dashed var(--border);border-radius:16px;}
+.mp-empty i{font-size:44px;color:var(--accent);display:block;margin-bottom:10px;}
+.mp-presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.mp-preview{margin:4px 0 16px;padding:12px;border-radius:10px;background:var(--accentDim);border:1px solid #2DD4BF44;color:#9FF0E3;font-size:12.5px;line-height:1.7;}
 </style>
 </head>
 <body>
@@ -1776,8 +1840,8 @@ function render(){
   const allowedViews = isAdmin
     ? null // admin: no restriction
     : isApprove
-      ? ["inventory", "openpr", "prlist"]
-      : ["inventory", "openpr"];
+      ? ["inventory", "openpr", "prlist", "maintplan"]
+      : ["inventory", "openpr", "maintplan"];
   if (allowedViews && !allowedViews.includes(view)) view = "inventory";
   const low = lowStockParts();
   const today = new Date().toDateString();
@@ -1803,12 +1867,13 @@ function render(){
               <div style="font-size:10px;color:${isAdmin?'var(--warn)':(isApprove?'#C09EFC':'var(--muted)')};">${isAdmin?"Admin":(isApprove?"Approve":"User")}</div>
             </div>
             <button class="btn btn-ghost" id="btnLogout" title="ออกจากระบบ / สลับผู้ใช้" style="padding:8px;"><i class="ti ti-logout" aria-hidden="true"></i></button>
-            ${isAdmin ? `<button class="btn btn-accent" id="btnAdd">+ เพิ่มอะไหล่</button>` : ""}
+            ${isAdmin && view !== "maintplan" ? `<button class="btn btn-accent" id="btnAdd">+ เพิ่มอะไหล่</button>` : ""}
           </div>
         </div>
         <div class="tabs">
           ${tabBtn("inventory","คลัง")}
           ${tabBtn("openpr","เปิด PR")}
+          ${tabBtn("maintplan","รอบเปลี่ยนอะไหล่", mpAlertCount())}
           ${(isAdmin || isApprove) ? tabBtn("prlist","รายการ PR") : ""}
           ${isAdmin ? tabBtn("dashboard","ภาพรวม",low.length) : ""}
           ${isAdmin ? tabBtn("history","ประวัติ") : ""}
@@ -1825,12 +1890,14 @@ function render(){
       ${view === "openpr" ? renderOpenPR() : ""}
       ${view === "prlist" ? renderPRList() : ""}
       ${view === "maintcost" ? renderMaintCost() : ""}
+      ${view === "maintplan" ? renderMaintPlan() : ""}
     </div>
     ${(addOpen || editPart) ? renderPartForm() : ""}
     ${withdrawPart ? renderWithdrawForm() : ""}
     ${lightboxImg ? renderLightbox() : ""}
     ${prViewerFile ? renderPRViewerModal() : ""}
     ${editingPR ? renderPREditModal() : ""}
+    ${mpFormOpen && mpForm ? renderMpForm() : ""}
   `;
   bindEvents();
 }
@@ -3328,6 +3395,7 @@ function bindEvents(){
   document.getElementById("btnReconcileApply")?.addEventListener("click", applyReconcile);
   document.getElementById("btnReconcileCancel")?.addEventListener("click", () => { reconcileResults = null; reconcileStatus = "idle"; render(); });
   if (view === "maintcost") bindMaintCostCharts();
+  if (view === "maintplan") bindMaintPlanEvents();
   document.querySelectorAll("[data-withdraw]").forEach(el => el.addEventListener("click", () => {
     withdrawPart = parts.find(p => p.id === el.dataset.withdraw); render();
   }));
@@ -3608,6 +3676,421 @@ function bindEvents(){
     withdraw(withdrawPart, qty, machine, by, note);
   });
 }
+
+/* ======================================================
+   รอบเปลี่ยนอะไหล่ — นับถอยหลัง (Maintenance Plan Countdown)
+   - Firestore collection: "maint_plans"
+   - ทุกสิทธิ์ (User / Admin / Approve) เปิดดูแท็บนี้ได้
+   - เพิ่ม/แก้ไข/ลบ/กด "เปลี่ยนแล้ว" ทำได้ตามฟังก์ชัน mpCanManage() (ตอนนี้ = Admin)
+   ====================================================== */
+function mpCanManage(){ return currentRole === "admin"; }
+
+let mpPlans = [];
+let mpLoaded = false;
+let mpFilter = "all"; // all | alert | ok
+let mpFormOpen = false;
+let mpEditingId = null;
+let mpForm = null;
+let mpSaving = false;
+let mpToastShown = false;
+let mpSig = "";
+const MP_DAY = 86400000;
+const MP_UNITS = { day: { label: "วัน", days: 1 }, week: { label: "สัปดาห์", days: 7 }, month: { label: "เดือน", days: 30 } };
+
+onSnapshot(collection(db, "maint_plans"), (snap) => {
+  mpPlans = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  mpLoaded = true;
+  mpSig = mpSignature();
+  render();
+  mpNotifyCheck();
+}, (err) => showToast("โหลดรอบเปลี่ยนอะไหล่ไม่สำเร็จ: " + err.message));
+
+/* ---------- date helpers ---------- */
+function mpParseDate(s){ if (!s) return null; const [y, m, d] = String(s).split("-").map(Number); return new Date(y, m - 1, d); }
+function mpISO(d){ return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function mpThai(d){ return d.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }); }
+function mpAddInterval(date, value, unit){
+  const d = new Date(date.getTime());
+  if (unit === "month") {
+    const day = d.getDate();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + value);
+    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, last));
+  } else {
+    d.setDate(d.getDate() + value * (unit === "week" ? 7 : 1));
+  }
+  return d;
+}
+function mpIntervalText(p){ return `ทุก ${p.intervalValue} ${(MP_UNITS[p.intervalUnit] || MP_UNITS.month).label}`; }
+function mpNotifyText(p){
+  const v = Number(p.notifyValue) || 0;
+  return v > 0 ? `เตือนก่อน ${v} ${(MP_UNITS[p.notifyUnit] || MP_UNITS.day).label}` : "ไม่เตือนล่วงหน้า";
+}
+
+/* ---------- core calculation ---------- */
+function mpCompute(p){
+  const last = mpParseDate(p.lastDone) || new Date();
+  const due = mpAddInterval(last, Math.max(1, Number(p.intervalValue) || 1), p.intervalUnit || "month");
+  const dueEnd = new Date(due.getFullYear(), due.getMonth(), due.getDate(), 23, 59, 59, 999);
+  const now = new Date();
+  const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const daysLeft = Math.round((due - todayMid) / MP_DAY);
+  const notifyDays = (Number(p.notifyValue) || 0) * ((MP_UNITS[p.notifyUnit] || MP_UNITS.day).days);
+  let status = "ok";
+  if (daysLeft < 0) status = "overdue";
+  else if (daysLeft === 0) status = "today";
+  else if (notifyDays > 0 && daysLeft <= notifyDays) status = "soon";
+  const total = Math.max(dueEnd - last, 1);
+  const remainFrac = status === "overdue" ? 0 : Math.min(1, Math.max(0, (dueEnd - now) / total));
+  return { last, due, dueEnd, daysLeft, notifyDays, status, remainFrac };
+}
+function mpTickParts(c){
+  const now = Date.now();
+  const ms = Math.max(0, c.status === "overdue" ? now - c.due.getTime() : c.dueEnd.getTime() - now);
+  const s = Math.floor(ms / 1000);
+  return { d: Math.floor(s / 86400), h: Math.floor((s % 86400) / 3600), m: Math.floor((s % 3600) / 60), s: s % 60 };
+}
+function mpAlertCount(){ return mpPlans.filter(p => mpCompute(p).status !== "ok").length; }
+function mpSignature(){ return mpPlans.map(p => p.id + ":" + mpCompute(p).status).join("|"); }
+const MP_STATUS_LABEL = { ok: "ปกติ", soon: "ใกล้ถึงกำหนด", today: "ครบกำหนดวันนี้", overdue: "เกินกำหนด" };
+
+/* ---------- render ---------- */
+function renderMaintPlan(){
+  const items = mpPlans.map(p => ({ p, c: mpCompute(p) }));
+  const cnt = { all: items.length, ok: 0, soon: 0, overdue: 0 };
+  items.forEach(({ c }) => {
+    if (c.status === "ok") cnt.ok++;
+    else if (c.status === "overdue") cnt.overdue++;
+    else cnt.soon++;
+  });
+  const alertN = cnt.soon + cnt.overdue;
+  const shown = items.filter(({ c }) => mpFilter === "all" ? true : mpFilter === "alert" ? c.status !== "ok" : c.status === "ok");
+
+  const groups = {};
+  shown.forEach(it => {
+    const key = (it.p.machine || "").trim() || "ไม่ระบุเครื่องจักร";
+    (groups[key] = groups[key] || []).push(it);
+  });
+  const keys = Object.keys(groups).sort((a, b) => a.localeCompare(b, "th"));
+
+  const canNotify = "Notification" in window;
+  const perm = canNotify ? Notification.permission : "denied";
+
+  const urgent = items.filter(({ c }) => c.status === "overdue" || c.status === "today");
+
+  return `
+    <div class="mp-stats">
+      <div class="mp-stat" style="--mpc:var(--machine);"><div class="lbl"><i class="ti ti-list-details"></i> ทั้งหมด</div><div class="val">${cnt.all}</div></div>
+      <div class="mp-stat mp-ok"><div class="lbl"><i class="ti ti-circle-check"></i> ปกติ</div><div class="val">${cnt.ok}</div></div>
+      <div class="mp-stat mp-soon"><div class="lbl"><i class="ti ti-bell-ringing"></i> ใกล้ถึงกำหนด</div><div class="val">${cnt.soon}</div></div>
+      <div class="mp-stat mp-overdue"><div class="lbl"><i class="ti ti-alert-triangle"></i> เกินกำหนด</div><div class="val">${cnt.overdue}</div></div>
+    </div>
+
+    ${urgent.length ? `
+      <div class="mp-notice">
+        <i class="ti ti-alarm"></i>
+        <div><b>ถึงรอบเปลี่ยนแล้ว ${urgent.length} รายการ</b><br>${urgent.slice(0, 4).map(({ p }) => esc(p.part) + (p.machine ? ` (${esc(p.machine)})` : "")).join(" · ")}${urgent.length > 4 ? " ..." : ""}</div>
+      </div>` : ""}
+
+    <div class="mp-bar">
+      <div class="mp-chips-row">
+        <button class="mp-filter ${mpFilter === "all" ? "active" : ""}" data-mpf="all">ทั้งหมด ${cnt.all}</button>
+        <button class="mp-filter ${mpFilter === "alert" ? "active" : ""}" data-mpf="alert">ต้องเตรียมเปลี่ยน ${alertN}</button>
+        <button class="mp-filter ${mpFilter === "ok" ? "active" : ""}" data-mpf="ok">ปกติ ${cnt.ok}</button>
+      </div>
+      <div class="mp-actions-row">
+        ${canNotify && perm === "default" ? `<button class="btn btn-ghost" id="btnMpNotify"><i class="ti ti-bell-plus"></i> เปิดแจ้งเตือนในเครื่องนี้</button>` : ""}
+        ${canNotify && perm === "granted" ? `<span class="mp-chip" style="padding:7px 10px;"><i class="ti ti-bell-check" style="color:var(--accent);"></i> แจ้งเตือนเครื่องนี้เปิดอยู่</span>` : ""}
+        ${mpCanManage() ? `<button class="btn btn-accent" id="btnMpAdd"><i class="ti ti-plus"></i> เพิ่มรายการ</button>` : ""}
+      </div>
+    </div>
+
+    ${!mpLoaded ? `<div class="mp-empty"><i class="ti ti-loader-2 spin"></i>กำลังโหลด...</div>` :
+      !keys.length ? `
+        <div class="mp-empty">
+          <i class="ti ti-hourglass-empty"></i>
+          ${items.length ? "ไม่มีรายการในหมวดนี้" : "ยังไม่มีรายการนับถอยหลัง"}
+          ${mpCanManage() && !items.length ? `<div style="font-size:12px;margin-top:6px;color:var(--mutedFaint);">กด “+ เพิ่มรายการ” เพื่อเริ่มตั้งรอบเปลี่ยนอะไหล่</div>` : ""}
+        </div>` :
+      keys.map(k => {
+        const list = groups[k].sort((a, b) => a.c.dueEnd - b.c.dueEnd);
+        return `
+          <div class="mp-group">
+            <div class="mp-group-head">
+              <div class="mp-group-icon"><i class="ti ti-engine"></i></div>
+              <div>
+                <div class="mp-group-name">${esc(k)}</div>
+                <div class="mp-group-sub">${list.length} รายการ</div>
+              </div>
+              <div class="mp-dots">${list.map(({ c }) => `<span class="mp-dot mp-${c.status}"></span>`).join("")}</div>
+            </div>
+            <div class="mp-grid">${list.map(({ p, c }, i) => mpCardHtml(p, c, i)).join("")}</div>
+          </div>`;
+      }).join("")}
+  `;
+}
+
+function mpCardHtml(p, c, i){
+  const R = 36, C = 2 * Math.PI * R;
+  const dash = (c.remainFrac * C).toFixed(1);
+  const big = c.status === "overdue" ? Math.abs(c.daysLeft) : c.daysLeft;
+  const small = c.status === "overdue" ? "วันที่เกิน" : c.status === "today" ? "วันนี้" : "วัน";
+  const t = mpTickParts(c);
+  const pad = n => String(n).padStart(2, "0");
+  const notifyOn = (Number(p.notifyValue) || 0) > 0;
+  return `
+    <div class="mp-card mp-${c.status}" style="animation-delay:${Math.min(i, 8) * 50}ms;">
+      <div class="mp-top">
+        <div class="mp-ring">
+          <svg viewBox="0 0 84 84"><circle class="trk" cx="42" cy="42" r="${R}"/><circle class="arc" cx="42" cy="42" r="${R}" stroke-dasharray="${dash} ${C.toFixed(1)}"/></svg>
+          <div class="mp-ring-c"><div class="mp-ring-n">${big}</div><div class="mp-ring-u">${small}</div></div>
+        </div>
+        <div class="grow">
+          <div class="mp-name">${esc(p.part)}</div>
+          <div class="mp-chips">
+            <span class="mp-chip"><i class="ti ti-refresh"></i> ${esc(mpIntervalText(p))}</span>
+            <span class="mp-chip"><i class="ti ti-calendar-event"></i> ครบ ${mpThai(c.due)}</span>
+            <span class="mp-chip ${notifyOn ? "warn" : ""}"><i class="ti ${notifyOn ? "ti-bell" : "ti-bell-off"}"></i> ${esc(mpNotifyText(p))}</span>
+          </div>
+        </div>
+      </div>
+      <div class="mp-state"><span>${MP_STATUS_LABEL[c.status]}</span><span>${c.status === "overdue" ? "เกินมาแล้ว" : "เหลืออีก"}</span></div>
+      <div class="mp-tick" data-id="${p.id}">
+        <div><b data-u="d">${t.d}</b><small>วัน</small></div>
+        <div><b data-u="h">${pad(t.h)}</b><small>ชั่วโมง</small></div>
+        <div><b data-u="m">${pad(t.m)}</b><small>นาที</small></div>
+        <div><b data-u="s">${pad(t.s)}</b><small>วินาที</small></div>
+      </div>
+      <div class="mp-foot">
+        <span class="truncate">เปลี่ยนล่าสุด ${mpThai(c.last)}${p.note ? " · " + esc(p.note) : ""}</span>
+        ${mpCanManage() ? `
+          <div class="mp-btns">
+            <button class="btn btn-accent" data-mp-done="${p.id}" title="บันทึกว่าเปลี่ยนแล้ว เริ่มนับรอบใหม่"><i class="ti ti-circle-check"></i> เปลี่ยนแล้ว</button>
+            <button class="btn btn-ghost" data-mp-edit="${p.id}" title="แก้ไข"><i class="ti ti-pencil"></i></button>
+            <button class="btn btn-danger" data-mp-del="${p.id}" title="ลบ"><i class="ti ti-trash"></i></button>
+          </div>` : ""}
+      </div>
+    </div>`;
+}
+
+function renderMpForm(){
+  const f = mpForm;
+  const unitOpts = (sel) => Object.entries(MP_UNITS).map(([k, u]) => `<option value="${k}" ${sel === k ? "selected" : ""}>${u.label}</option>`).join("");
+  const machineNames = [...new Set([...machines.map(m => m.name), ...mpPlans.map(p => p.machine)].filter(Boolean))];
+  return `
+    <div class="overlay" id="overlayMp">
+      <div class="modal">
+        <div class="modal-head">
+          <span class="head" style="font-size:16px;font-weight:600;">${mpEditingId ? "แก้ไขรายการ" : "เพิ่มรายการนับถอยหลัง"}</span>
+          <button class="close-btn" id="closeMp">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="field-wrap"><label class="field">รายการที่เปลี่ยน *</label><input id="mpPart" value="${esc(f.part)}" placeholder="เช่น น้ำมันเกียร์, สายพาน, ลูกปืน"></div>
+          <div class="field-wrap">
+            <label class="field">ชื่อเครื่องจักร *</label>
+            <input id="mpMachine" list="mpMachineList" value="${esc(f.machine)}" placeholder="เลือกหรือพิมพ์ชื่อเครื่อง">
+            <datalist id="mpMachineList">${machineNames.map(n => `<option value="${esc(n)}">`).join("")}</datalist>
+          </div>
+          <div class="field-wrap">
+            <label class="field">รอบการเปลี่ยน (ทุกกี่...) *</label>
+            <div class="grid2">
+              <input type="number" id="mpIntV" min="1" value="${f.intervalValue}">
+              <select id="mpIntU">${unitOpts(f.intervalUnit)}</select>
+            </div>
+            <div class="mp-presets">
+              ${[["1", "month", "1 เดือน"], ["3", "month", "3 เดือน"], ["4", "month", "4 เดือน"], ["6", "month", "6 เดือน"], ["12", "month", "1 ปี"]].map(([v, u, l]) => `<button type="button" class="mp-filter" data-mp-preset="${v}:${u}">${l}</button>`).join("")}
+            </div>
+          </div>
+          <div class="field-wrap"><label class="field">วันที่เปลี่ยนล่าสุด / วันที่เริ่มนับ *</label><input type="date" id="mpLast" value="${esc(f.lastDone)}"></div>
+          <div class="field-wrap">
+            <label class="field">แจ้งเตือนล่วงหน้า (ใส่ 0 = ไม่เตือนล่วงหน้า)</label>
+            <div class="grid2">
+              <input type="number" id="mpNotV" min="0" value="${f.notifyValue}">
+              <select id="mpNotU">${unitOpts(f.notifyUnit)}</select>
+            </div>
+          </div>
+          <div class="field-wrap"><label class="field">หมายเหตุ (ถ้ามี)</label><input id="mpNote" value="${esc(f.note)}" placeholder="เช่น เบอร์อะไหล่ / ผู้รับผิดชอบ"></div>
+          <div class="mp-preview" id="mpPreview"></div>
+          <div id="mpErr" class="err-text" style="display:none;"></div>
+          <button class="btn btn-accent" style="width:100%;justify-content:center;" id="btnMpSave" ${mpSaving ? "disabled" : ""}>${mpSaving ? "⏳ กำลังบันทึก..." : `<i class="ti ti-device-floppy"></i> บันทึก`}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ---------- actions ---------- */
+function mpOpenForm(id){
+  mpEditingId = id;
+  const p = id ? mpPlans.find(x => x.id === id) : null;
+  mpForm = p ? {
+    part: p.part || "", machine: p.machine || "", intervalValue: p.intervalValue || 1, intervalUnit: p.intervalUnit || "month",
+    lastDone: p.lastDone || mpISO(new Date()), notifyValue: p.notifyValue ?? 0, notifyUnit: p.notifyUnit || "day", note: p.note || "",
+  } : {
+    part: "", machine: "", intervalValue: 3, intervalUnit: "month", lastDone: mpISO(new Date()),
+    notifyValue: 1, notifyUnit: "week", note: "",
+  };
+  mpFormOpen = true;
+  render();
+}
+function mpCloseForm(){ mpFormOpen = false; mpEditingId = null; mpForm = null; mpSaving = false; render(); }
+
+function mpUpdatePreview(){
+  const el = document.getElementById("mpPreview");
+  if (!el || !mpForm) return;
+  const v = Number(mpForm.intervalValue) || 0;
+  const last = mpParseDate(mpForm.lastDone);
+  if (v < 1 || !last) { el.textContent = "กรอกรอบการเปลี่ยนและวันที่เริ่มนับ เพื่อดูวันครบกำหนด"; return; }
+  const c = mpCompute({ ...mpForm, intervalValue: v });
+  const nv = Number(mpForm.notifyValue) || 0;
+  let txt = `📅 ครบกำหนดเปลี่ยน: <b>${mpThai(c.due)}</b> ${c.daysLeft >= 0 ? `(อีก ${c.daysLeft} วัน)` : `(เกินมา ${Math.abs(c.daysLeft)} วัน)`}`;
+  if (nv > 0) {
+    const nd = new Date(c.due.getTime() - c.notifyDays * MP_DAY);
+    txt += `<br>🔔 เริ่มแจ้งเตือนตั้งแต่: <b>${mpThai(nd)}</b>`;
+  } else txt += `<br>🔕 ไม่ตั้งแจ้งเตือนล่วงหน้า`;
+  el.innerHTML = txt;
+}
+
+async function mpSave(){
+  const f = mpForm, errEl = document.getElementById("mpErr");
+  const fail = (m) => { errEl.textContent = m; errEl.style.display = "block"; };
+  if (!f.part.trim()) return fail("กรอกชื่อรายการที่เปลี่ยน");
+  if (!f.machine.trim()) return fail("กรอกชื่อเครื่องจักร");
+  if (!(Number(f.intervalValue) >= 1)) return fail("รอบการเปลี่ยนต้องอย่างน้อย 1");
+  if (!mpParseDate(f.lastDone)) return fail("เลือกวันที่เริ่มนับ");
+  mpSaving = true; render();
+  const data = {
+    part: f.part.trim(), machine: f.machine.trim(),
+    intervalValue: Number(f.intervalValue), intervalUnit: f.intervalUnit,
+    lastDone: f.lastDone,
+    notifyValue: Math.max(0, Number(f.notifyValue) || 0), notifyUnit: f.notifyUnit,
+    note: f.note.trim(), updatedBy: currentName || "", updatedAt: serverTimestamp(),
+  };
+  try {
+    if (mpEditingId) await updateDoc(doc(db, "maint_plans", mpEditingId), data);
+    else await addDoc(collection(db, "maint_plans"), { ...data, doneLog: [], createdBy: currentName || "", createdAt: serverTimestamp() });
+    showToast("✅ บันทึกแล้ว");
+    mpCloseForm();
+  } catch (e) {
+    mpSaving = false; render();
+    showToast("บันทึกไม่สำเร็จ: " + e.message);
+  }
+}
+
+async function mpMarkDone(id){
+  const p = mpPlans.find(x => x.id === id); if (!p) return;
+  const ok = await showConfirm({
+    title: "บันทึกว่าเปลี่ยนแล้ว?",
+    message: `“${p.part}” ของ ${p.machine || "-"} จะเริ่มนับรอบใหม่จากวันนี้ (${mpThai(new Date())})`,
+    confirmText: "เปลี่ยนแล้ว", cancelText: "ยกเลิก", icon: "ti-circle-check",
+  });
+  if (!ok) return;
+  const today = mpISO(new Date());
+  const log = [{ date: today, by: currentName || "" }, ...(Array.isArray(p.doneLog) ? p.doneLog : [])].slice(0, 12);
+  try {
+    await updateDoc(doc(db, "maint_plans", id), { lastDone: today, doneLog: log, updatedBy: currentName || "", updatedAt: serverTimestamp() });
+    showToast("✅ เริ่มนับรอบใหม่แล้ว");
+  } catch (e) { showToast("บันทึกไม่สำเร็จ: " + e.message); }
+}
+
+async function mpDelete(id){
+  const p = mpPlans.find(x => x.id === id); if (!p) return;
+  const ok = await showConfirm({
+    title: "ลบรายการนี้?", message: `ลบ “${p.part}” (${p.machine || "-"}) ออกจากรายการนับถอยหลัง`,
+    confirmText: "ลบ", cancelText: "ยกเลิก", icon: "ti-trash", danger: true,
+  });
+  if (!ok) return;
+  try { await deleteDoc(doc(db, "maint_plans", id)); showToast("ลบแล้ว"); }
+  catch (e) { showToast("ลบไม่สำเร็จ: " + e.message); }
+}
+
+/* ---------- events ---------- */
+function bindMaintPlanEvents(){
+  document.querySelectorAll("[data-mpf]").forEach(el => el.addEventListener("click", () => { mpFilter = el.dataset.mpf; render(); }));
+  document.getElementById("btnMpAdd")?.addEventListener("click", () => mpOpenForm(null));
+  document.getElementById("btnMpNotify")?.addEventListener("click", async () => {
+    try { await Notification.requestPermission(); } catch (e) {}
+    mpNotifyCheck(); render();
+  });
+  document.querySelectorAll("[data-mp-done]").forEach(el => el.addEventListener("click", () => mpMarkDone(el.dataset.mpDone)));
+  document.querySelectorAll("[data-mp-edit]").forEach(el => el.addEventListener("click", () => mpOpenForm(el.dataset.mpEdit)));
+  document.querySelectorAll("[data-mp-del]").forEach(el => el.addEventListener("click", () => mpDelete(el.dataset.mpDel)));
+
+  if (!mpFormOpen || !mpForm) return;
+  const overlay = document.getElementById("overlayMp");
+  overlay?.addEventListener("click", (e) => { if (e.target === overlay) mpCloseForm(); });
+  document.getElementById("closeMp")?.addEventListener("click", mpCloseForm);
+  document.getElementById("btnMpSave")?.addEventListener("click", mpSave);
+  const bind = (id, key) => document.getElementById(id)?.addEventListener("input", (e) => { mpForm[key] = e.target.value; mpUpdatePreview(); });
+  bind("mpPart", "part"); bind("mpMachine", "machine"); bind("mpIntV", "intervalValue"); bind("mpLast", "lastDone");
+  bind("mpNotV", "notifyValue"); bind("mpNote", "note");
+  document.getElementById("mpIntU")?.addEventListener("change", (e) => { mpForm.intervalUnit = e.target.value; mpUpdatePreview(); });
+  document.getElementById("mpNotU")?.addEventListener("change", (e) => { mpForm.notifyUnit = e.target.value; mpUpdatePreview(); });
+  document.querySelectorAll("[data-mp-preset]").forEach(el => el.addEventListener("click", () => {
+    const [v, u] = el.dataset.mpPreset.split(":");
+    mpForm.intervalValue = Number(v); mpForm.intervalUnit = u;
+    document.getElementById("mpIntV").value = v;
+    document.getElementById("mpIntU").value = u;
+    mpUpdatePreview();
+  }));
+  mpUpdatePreview();
+}
+
+/* ---------- live ticker (ทุก 1 วินาที) + ตรวจสถานะเปลี่ยน (ทุก 30 วินาที) ---------- */
+setInterval(() => {
+  if (view !== "maintplan") return;
+  document.querySelectorAll(".mp-tick[data-id]").forEach(el => {
+    const p = mpPlans.find(x => x.id === el.dataset.id); if (!p) return;
+    const t = mpTickParts(mpCompute(p));
+    ["d", "h", "m", "s"].forEach(u => {
+      const n = el.querySelector(`[data-u="${u}"]`); if (!n) return;
+      const v = u === "d" ? String(t[u]) : String(t[u]).padStart(2, "0");
+      if (n.textContent !== v) n.textContent = v;
+    });
+  });
+}, 1000);
+
+setInterval(() => {
+  if (!mpLoaded) return;
+  const sig = mpSignature();
+  if (sig !== mpSig) {
+    mpSig = sig;
+    if (view === "maintplan" && !mpFormOpen) render(); else if (currentRole) render();
+    mpNotifyCheck();
+  }
+}, 30000);
+
+/* ---------- แจ้งเตือน (แจ้งเตือนในแอป + แจ้งเตือนของเครื่องเมื่อเปิดแอปอยู่/เปิดแอปขึ้นมา) ---------- */
+function mpShowNotif(title, body, id){
+  const opts = { body, icon: "icon-192.png", badge: "icon-192.png", tag: "mp-" + id };
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.ready.then(reg => reg.showNotification(title, opts)).catch(() => { try { new Notification(title, opts); } catch (e) {} });
+  } else { try { new Notification(title, opts); } catch (e) {} }
+}
+function mpNotifyCheck(){
+  if (!mpLoaded || !currentRole) return;
+  const due = mpPlans.map(p => ({ p, c: mpCompute(p) })).filter(x => x.c.status !== "ok");
+  if (!due.length) return;
+  if (!mpToastShown) {
+    mpToastShown = true;
+    const over = due.filter(x => x.c.status === "overdue").length;
+    showToast(`⏰ รอบเปลี่ยนอะไหล่: ใกล้ถึง/ถึงกำหนด ${due.length} รายการ${over ? ` (เกินกำหนด ${over})` : ""}`);
+  }
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  const today = mpISO(new Date());
+  try {
+    Object.keys(localStorage).filter(k => k.startsWith("mp_notified_") && !k.includes("_" + today + "_")).forEach(k => localStorage.removeItem(k));
+  } catch (e) {}
+  due.forEach(({ p, c }) => {
+    const key = `mp_notified_${p.id}_${today}_${c.status}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, "1");
+    const when = c.status === "overdue" ? `เกินกำหนดมา ${Math.abs(c.daysLeft)} วัน` : c.status === "today" ? "ครบกำหนดเปลี่ยนวันนี้" : `อีก ${c.daysLeft} วันถึงรอบเปลี่ยน`;
+    mpShowNotif(`${p.part} • ${p.machine || ""}`, when + ` (${mpThai(c.due)})`, p.id);
+  });
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") mpNotifyCheck(); });
+setInterval(mpNotifyCheck, 60 * 60 * 1000);
 
 /* ---------------- roll-up warehouse door entrance ---------------- */
 function initWarehouseDoor(){
