@@ -2357,8 +2357,7 @@ function parsePostMonth(s){ // รับ "17.08.2026" หรือ "2026-08-17" 
 function monthLabelTh(key){ const [y, mo] = key.split("-"); return TH_MONTHS[+mo - 1] + " " + (+y + 543); }
 
 function fmtMoneyMc(n){
-  if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(2) + " ลบ.";
-  return Math.round(n).toLocaleString('th-TH') + " บ.";
+  return (Number(n)||0).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2}) + " บาท"; // แสดงค่าจริง ไม่ปัดเป็นล้าน
 }
 
 function renderMaintCost(){
@@ -2396,7 +2395,7 @@ function renderMaintCost(){
   }
   if (!maintSelectedYear || !years.includes(maintSelectedYear)) maintSelectedYear = years[0];
 
-  const yearPO = maintRaw.poMaster.filter(r => r.year === maintSelectedYear);
+  const yearPO = maintRaw.poMaster.filter(r => r.year === maintSelectedYear && r.po); // ตัดแถวที่ไม่มีเลข PO (เช่นแถว "รวมทั้งหมด") ออก
   const yearPOSet = new Set(yearPO.map(r => normPOStr(r.po)).filter(Boolean));
   const monthKeys = new Set();
   maintRaw.costLedger.forEach(c => {
