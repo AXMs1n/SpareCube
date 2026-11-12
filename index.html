@@ -18,7 +18,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
   :root{
     --bg:#14161A; --panel:#1B1E23; --panelAlt:#22262C; --border:#2C3139;
@@ -161,6 +160,15 @@
   .tab{background:none;border:none;color:var(--muted);padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;transform:scale(1);transform-origin:center;transition:color .25s ease, transform .25s cubic-bezier(.34,1.56,.64,1), border-color .25s ease;}
   .tab.active{color:var(--accent);border-bottom-color:var(--accent);transform:scale(1.1);}
   .badge{background:var(--danger);color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;font-family:'Prompt',sans-serif;}
+  .tabs{gap:6px;padding:6px;margin:10px 0 6px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01));overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tabs .tab{flex:0 0 auto;padding:9px 15px;border:none;border-radius:11px;font-size:13.5px;gap:7px;transform:none;transition:background .2s ease,color .2s ease,box-shadow .2s ease;}
+  .tabs .tab i{font-size:17px;}
+  .tabs .tab:hover{color:var(--text);background:rgba(255,255,255,.06);}
+  .tabs .tab:active{transform:scale(.96);}
+  .tabs .tab.active{color:#0B1614;background:linear-gradient(135deg,var(--accent),#14b8a6);box-shadow:0 4px 16px rgba(45,212,191,.32);transform:none;animation:tabPop .3s cubic-bezier(.22,1.3,.36,1);}
+  .tabs .tab .badge{margin-left:2px;box-shadow:0 0 0 2px var(--panel);}
+  @keyframes tabPop{from{transform:scale(.9);}to{transform:scale(1);}}
   .content{padding-top:20px;}
   .view-enter{animation:viewEnter .34s cubic-bezier(.22,1,.36,1);}
   @keyframes viewEnter{
@@ -1813,7 +1821,7 @@ function render(){
           ${(isAdmin || isApprove) ? tabBtn("prlist","รายการ PR") : ""}
           ${isAdmin ? tabBtn("dashboard","ภาพรวม",low.length) : ""}
           ${isAdmin ? tabBtn("history","ประวัติ") : ""}
-          ${isAdmin ? tabBtn("maintcost","Maintenance Cost") : ""}
+          
           ${isAdmin ? tabBtn("settings","ตั้งค่า") : ""}
         </div>
       </div>
@@ -1825,7 +1833,7 @@ function render(){
       ${view === "settings" ? renderSettings(low.length) : ""}
       ${view === "openpr" ? renderOpenPR() : ""}
       ${view === "prlist" ? renderPRList() : ""}
-      ${view === "maintcost" ? renderMaintCost() : ""}
+      
     </div>
     ${(addOpen || editPart) ? renderPartForm() : ""}
     ${withdrawPart ? renderWithdrawForm() : ""}
@@ -1877,7 +1885,8 @@ function renderLogin(){
 }
 
 function tabBtn(key, label, count){
-  return `<button class="tab ${view===key?"active":""}" data-tab="${key}">${label}${count ? `<span class="badge">${count}</span>`:""}</button>`;
+  const ic = {inventory:"building-warehouse", openpr:"file-plus", prlist:"list-details", dashboard:"layout-dashboard", history:"history", settings:"settings"}[key];
+  return `<button class="tab ${view===key?"active":""}" data-tab="${key}">${ic ? `<i class="ti ti-${ic}" aria-hidden="true"></i>` : ""}${label}${count ? `<span class="badge">${count}</span>`:""}</button>`;
 }
 
 function lowStockCardHtml(p){
@@ -2396,26 +2405,21 @@ function renderMaintCost(){
   if (!maintSelectedYear || !years.includes(maintSelectedYear)) maintSelectedYear = years[0];
 
   const yearPO = maintRaw.poMaster.filter(r => r.year === maintSelectedYear && r.po); // ตัดแถวที่ไม่มีเลข PO (เช่นแถว "รวมทั้งหมด") ออก
-  const yearPOSet = new Set(yearPO.map(r => normPOStr(r.po)).filter(Boolean));
+  const hasGR = maintRaw.poMaster.some(r => "grDate" in r);
   const monthKeys = new Set();
-  maintRaw.costLedger.forEach(c => {
-    const po = normPOStr(c.po), mk = parsePostMonth(c.postDate);
-    if (po && mk && yearPOSet.has(po)) monthKeys.add(mk);
-  });
+  yearPO.forEach(r => { const mk = parsePostMonth(r.grDate); if (mk) monthKeys.add(mk); });
   const monthOptions = [...monthKeys].sort().reverse();
   if (maintSelectedMonth !== "all" && !monthOptions.includes(maintSelectedMonth)) maintSelectedMonth = "all";
   let filteredPO = yearPO, ledgerForAgg = maintRaw.costLedger;
   if (maintSelectedMonth !== "all") {
-    ledgerForAgg = maintRaw.costLedger.filter(c => parsePostMonth(c.postDate) === maintSelectedMonth);
-    const monthPOSet = new Set(ledgerForAgg.map(c => normPOStr(c.po)).filter(Boolean));
-    filteredPO = yearPO.filter(r => monthPOSet.has(normPOStr(r.po)));
+    filteredPO = yearPO.filter(r => parsePostMonth(r.grDate) === maintSelectedMonth); // เดือนตามวันที่ GR Update ในชีท PO
   }
   const periodLabel = maintSelectedMonth === "all" ? "" : " · " + monthLabelTh(maintSelectedMonth);
   const monthSelectHtml = `<select id="mcMonthSelect" class="btn btn-ghost" style="font-size:12.5px;padding:7px 12px;cursor:pointer;">
     <option value="all">ทุกเดือน</option>
     ${monthOptions.map(m => `<option value="${m}" ${m===maintSelectedMonth?"selected":""}>${monthLabelTh(m)}</option>`).join("")}
   </select>`;
-  const monthNote = maintSelectedMonth === "all" ? "" : `<div class="meta" style="flex-basis:100%;">แสดงเฉพาะ PO ที่ลงบัญชีใน${monthLabelTh(maintSelectedMonth)} (อ้างอิงคอลัมน์ PoSTFd on) · เลือก "ทุกเดือน" เพื่อดูทั้งปี</div>`;
+  const monthNote = !hasGR ? `<div class="meta" style="flex-basis:100%;color:var(--warn);">ตัวกรองเดือนใช้ข้อมูลคอลัมน์ GR Update — ให้วางโค้ด Apps Script เวอร์ชันล่าสุดแล้ว Deploy ก่อน</div>` : maintSelectedMonth === "all" ? "" : `<div class="meta" style="flex-basis:100%;">แสดงเฉพาะ PO ที่มี GR Update ใน${monthLabelTh(maintSelectedMonth)} (ตรงกับตัวกรองในชีท) · PO ที่ยังไม่มีวันที่ GR Update จะไม่แสดง · เลือก "ทุกเดือน" เพื่อดูทั้งปี</div>`;
   const agg = computeMaintAggregates(filteredPO, ledgerForAgg);
   maintAggView = agg; // ให้ bindMaintCostCharts() อ่านต่อได้
   const { kpi, statusSummary, ownerBreakdown, issueList, hasENTracking, costLedgerSummary, costLedgerTotal } = agg;
