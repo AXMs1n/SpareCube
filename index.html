@@ -586,9 +586,13 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc,
+  getFirestore, collection, doc, getDoc, setDoc, getDocs, onSnapshot, addDoc, updateDoc, deleteDoc,
   runTransaction, serverTimestamp, query, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+  setPersistence, browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 /* หมายเหตุ: ไม่ใช้ Firebase Storage เพราะ Google เปลี่ยนนโยบายให้ต้องผูกบัตรเครดิต (Blaze plan)
    ถึงจะใช้ได้แล้ว เราเลยเก็บรูปเป็น base64 ไว้ในเอกสาร Firestore แทน ยังฟรี 100% ไม่ต้องผูกบัตร */
 
@@ -609,15 +613,17 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 /* ======================================================
-   ตั้งรหัสผ่านสำหรับสิทธิ์ Admin ตรงนี้ (เปลี่ยนเป็นรหัสของคุณเองได้เลย)
+   🔐 Authentication — Google Sign-in + สิทธิ์จาก Firestore
+   สิทธิ์ของแต่ละคนเก็บที่  users/{uid}  =  { role, name, email, active }
+     role: "admin" | "approve" | "user"
+   ไม่มีรหัสผ่านในโค้ดอีกต่อไป — ตรวจสิทธิ์ที่ Firestore Rules ฝั่งเซิร์ฟเวอร์
    ====================================================== */
-const ADMIN_PIN = "1234";
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: "select_account" });
 
-/* ======================================================
-   บัญชีผู้อนุมัติ (Approve role) — ใช้ username/password คงที่ ไม่ใช่พิมพ์ชื่ออะไรก็ได้แบบ User
-   ====================================================== */
-const APPROVER_USERNAME = "Chanwit.par";
-const APPROVER_PASSWORD = "30190";
+const ROLE_LABEL = { admin: "Admin", approve: "Approve", user: "User" };
+const VALID_ROLES = ["admin", "approve", "user"];
 
 /* ======================================================
    วางลิงก์ Google Apps Script Web App ตรงนี้ (สำหรับระบบ PR + Google Drive)
@@ -638,8 +644,16 @@ let showNewMachineInput = false;
 let editingMachineId = null;
 let savingMachine = false;
 let lightboxImg = null;
-let currentRole = localStorage.getItem("wk_role") || null; // "admin" | "user"
-let currentName = localStorage.getItem("wk_name") || "";
+let currentRole = null;   // "admin" | "approve" | "user" — มาจาก users/{uid} เท่านั้น (ไม่ใช่ localStorage)
+let currentName = "";     // ชื่อที่ใช้แสดงและบันทึกในประวัติการเบิก
+let authUser = null;      // Firebase Auth user
+let userProfile = null;   // ข้อมูลสิทธิ์จาก users/{uid}
+let authReady = false;    // false = กำลังตรวจสอบสถานะ login
+let authBusy = false;     // กำลังเปิด popup login
+let authError = "";       // ข้อความ error หน้า login
+let usersList = [];       // แคชรายชื่อผู้ใช้ (สำหรับ admin)
+let usersLoaded = false;
+let usersLoading = false;
 
 /* ---------------- Maintenance Cost tab state ---------------- */
 const MAINT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-RZjHXgsm4-GVfy-RNGOZwVUBDxEV22OZHArLvD06fjwttnhjIKVXaF_KMNyhdZYG/exec";
@@ -650,9 +664,7 @@ let maintSelectedMonth = "all"; // เดือนที่กรอง (yyyy-MM
 let maintAggView = null;  // ผลคำนวณล่าสุดของปีที่เลือก (ใช้โดย bindMaintCostCharts)
 let maintLoadedAt = null;
 let maintRefreshing = false;
-let loginErr = "";
-let loginShowPin = false;
-let loginShowApprovePass = false;
+/* (login แบบ PIN ถูกถอดออกแล้ว — ดูระบบ Google Sign-in ด้านล่าง) */
 
 /* ---------------- PR (purchase request) state ---------------- */
 let prRequests = [];
@@ -1775,9 +1787,19 @@ function lowStockParts(){ return parts.filter(p => p.qty <= p.min); }
 
 function render(){
   const app = document.getElementById("app");
-  if (!currentRole) {
+  if (!authReady) {
+    app.innerHTML = `<div class="login-screen"><div class="wrap" style="max-width:380px;padding-top:150px;text-align:center;color:var(--muted);font-size:13px;">
+      <div class="ai-spinner" style="margin:0 auto 16px;"></div>กำลังตรวจสอบสิทธิ์...</div></div>`;
+    return;
+  }
+  if (!authUser) {
     app.innerHTML = renderLogin();
     bindLoginEvents();
+    return;
+  }
+  if (!userProfile) {
+    app.innerHTML = renderNoAccess();
+    bindNoAccessEvents();
     return;
   }
   const isAdmin = currentRole === "admin";
@@ -1822,6 +1844,7 @@ function render(){
           ${isAdmin ? tabBtn("dashboard","ภาพรวม",low.length) : ""}
           ${isAdmin ? tabBtn("history","ประวัติ") : ""}
           
+          ${isAdmin ? tabBtn("users","ผู้ใช้") : ""}
           ${isAdmin ? tabBtn("settings","ตั้งค่า") : ""}
         </div>
       </div>
@@ -1833,6 +1856,7 @@ function render(){
       ${view === "settings" ? renderSettings(low.length) : ""}
       ${view === "openpr" ? renderOpenPR() : ""}
       ${view === "prlist" ? renderPRList() : ""}
+      ${view === "users" ? renderUsers() : ""}
       
     </div>
     ${(addOpen || editPart) ? renderPartForm() : ""}
@@ -1847,8 +1871,8 @@ function render(){
 function renderLogin(){
   return `
     <div class="login-screen">
-    <div class="wrap" style="max-width:380px;padding-top:80px;position:relative;">
-      <div style="text-align:center;margin-bottom:28px;">
+    <div class="wrap" style="max-width:390px;padding-top:80px;position:relative;">
+      <div style="text-align:center;margin-bottom:30px;">
         <span class="brand-icon-wrap" style="border-radius:22px;">
           <img src="icon-192.png" alt="SpareCube" style="width:96px;height:96px;border-radius:22px;">
         </span>
@@ -1857,27 +1881,64 @@ function renderLogin(){
         </div>
         <div style="color:var(--muted);font-size:12.5px;margin-top:4px;">เข้าสู่ระบบเพื่อใช้งาน</div>
       </div>
-      <div class="field-wrap"><label class="field">ชื่อของคุณ</label><input id="loginName" placeholder="เช่น สมชาย" value="${esc(currentName)}"></div>
-      <div class="field-wrap">
-        <label class="field">สิทธิ์การใช้งาน</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-          <button class="btn btn-ghost" id="roleUser" style="justify-content:center;padding:12px 4px;font-size:12.5px;"><i class="ti ti-users" aria-hidden="true"></i> User</button>
-          <button class="btn btn-ghost" id="roleAdmin" style="justify-content:center;padding:12px 4px;font-size:12.5px;"><i class="ti ti-shield-lock" aria-hidden="true"></i> Admin</button>
-          <button class="btn btn-ghost" id="roleApprove" style="justify-content:center;padding:12px 4px;font-size:12.5px;"><i class="ti ti-stamp" aria-hidden="true"></i> Approve</button>
+
+      <button id="btnGoogleLogin" ${authBusy ? "disabled" : ""}
+        style="width:100%;display:flex;align-items:center;justify-content:center;gap:11px;cursor:pointer;
+               background:#FFFFFF;color:#1F1F1F;border:none;border-radius:10px;padding:14px 12px;
+               font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;
+               box-shadow:0 4px 16px rgba(0,0,0,.35);transition:transform .15s ease, box-shadow .15s ease;
+               ${authBusy ? "opacity:.6;" : ""}">
+        <svg width="19" height="19" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.2 17.6 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.5c-.5 2.9-2.2 5.4-4.7 7l7.6 5.9c4.4-4.1 6.7-10.1 6.7-17.4z"/>
+          <path fill="#FBBC05" d="M10.4 28.7c-.5-1.4-.8-2.9-.8-4.7s.3-3.3.8-4.7l-7.8-6.1C1 16.4 0 20.1 0 24s1 7.6 2.6 10.8l7.8-6.1z"/>
+          <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.8 2.3-8.3 2.3-6.4 0-11.7-3.7-13.6-8.9l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/>
+        </svg>
+        ${authBusy ? "กำลังเข้าสู่ระบบ..." : "Continue with Google"}
+      </button>
+
+      ${authError ? `<div class="err-text" style="text-align:center;margin-top:14px;line-height:1.6;">${esc(authError)}</div>` : ""}
+
+      <div style="color:var(--mutedFaint);font-size:11px;text-align:center;margin-top:20px;line-height:1.8;">
+        ใช้บัญชี Google ของบริษัท หรือ Gmail ส่วนตัวก็ได้<br>
+        สิทธิ์ (User / Approve / Admin) ถูกกำหนดโดยผู้ดูแลระบบ
+      </div>
+    </div>
+    </div>
+  `;
+}
+
+function renderNoAccess(){
+  const email = (authUser && authUser.email) || "-";
+  return `
+    <div class="login-screen">
+    <div class="wrap" style="max-width:430px;padding-top:64px;position:relative;">
+      <div style="text-align:center;margin-bottom:22px;">
+        <div style="width:64px;height:64px;margin:0 auto 14px;border-radius:50%;background:var(--warnDim);color:var(--warn);display:flex;align-items:center;justify-content:center;font-size:28px;">
+          <i class="ti ti-lock-access" aria-hidden="true"></i>
+        </div>
+        <div class="head" style="font-size:20px;font-weight:700;">บัญชีนี้ยังไม่ได้รับสิทธิ์</div>
+        <div style="color:var(--muted);font-size:12.5px;margin-top:8px;line-height:1.8;">
+          ล็อกอินสำเร็จแล้วในชื่อ<br><b style="color:var(--text);">${esc(email)}</b><br>
+          แต่ยังไม่ถูกเพิ่มเข้าในระบบ SpareCube
         </div>
       </div>
-      <div class="field-wrap" id="pinWrap" style="display:${loginShowPin?"block":"none"};">
-        <label class="field">รหัสผ่าน Admin</label>
-        <input id="loginPin" type="password" placeholder="••••" inputmode="numeric">
+
+      <div class="notice" style="background:var(--panelAlt);border-color:var(--border);color:var(--muted);line-height:1.7;">
+        ส่ง <b>User ID</b> ด้านล่างให้ผู้ดูแลระบบ เพื่อเปิดสิทธิ์ให้บัญชีนี้
       </div>
-      <div class="field-wrap" id="approvePassWrap" style="display:${loginShowApprovePass?"block":"none"};">
-        <label class="field">รหัสผ่าน Approve</label>
-        <input id="loginApprovePassword" type="password" placeholder="••••••">
+
+      <div class="field-wrap">
+        <label class="field">User ID (สำหรับ Admin)</label>
+        <div style="display:flex;gap:8px;">
+          <input id="noAccessUid" readonly value="${esc((authUser && authUser.uid) || "")}" style="font-family:ui-monospace,monospace;font-size:11.5px;">
+          <button class="btn btn-ghost" id="btnCopyUid" style="white-space:nowrap;"><i class="ti ti-copy" aria-hidden="true"></i> คัดลอก</button>
+        </div>
       </div>
-      ${loginErr ? `<div class="err-text">${esc(loginErr)}</div>` : ""}
-      <button class="btn btn-accent" id="btnLogin" style="width:100%;justify-content:center;margin-top:4px;">เข้าใช้งาน</button>
-      <div style="color:var(--mutedFaint);font-size:11px;text-align:center;margin-top:16px;line-height:1.6;">
-        User เลือกได้เลยไม่ต้องใส่รหัส · Admin/Approve ต้องใส่รหัสผ่าน
+
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn btn-ghost" id="btnRetryAccess" style="flex:1;justify-content:center;"><i class="ti ti-refresh" aria-hidden="true"></i> ตรวจสอบอีกครั้ง</button>
+        <button class="btn btn-danger" id="btnNoAccessLogout" style="justify-content:center;"><i class="ti ti-logout" aria-hidden="true"></i> ออก</button>
       </div>
     </div>
     </div>
@@ -1885,7 +1946,7 @@ function renderLogin(){
 }
 
 function tabBtn(key, label, count){
-  const ic = {inventory:"building-warehouse", openpr:"file-plus", prlist:"list-details", dashboard:"layout-dashboard", history:"history", settings:"settings"}[key];
+  const ic = {inventory:"building-warehouse", openpr:"file-plus", prlist:"list-details", dashboard:"layout-dashboard", history:"history", users:"users-group", settings:"settings"}[key];
   return `<button class="tab ${view===key?"active":""}" data-tab="${key}">${ic ? `<i class="ti ti-${ic}" aria-hidden="true"></i>` : ""}${label}${count ? `<span class="badge">${count}</span>`:""}</button>`;
 }
 
@@ -3036,8 +3097,9 @@ function renderSettings(lowCount){
     </div>`}
     ${isAdmin ? `
     <div style="margin-top:28px;padding-top:16px;border-top:1px solid var(--border);color:var(--mutedFaint);font-size:11px;line-height:1.7;">
-      🔑 คุณกำลังใช้งานสิทธิ์ Admin — เห็นและแก้ไขได้ทุกอย่าง เปลี่ยนรหัสผ่าน Admin ได้จากตัวแปร <span class="mono">ADMIN_PIN</span> ในไฟล์ index.html<br>
-      หมายเหตุ: ระบบสิทธิ์นี้เป็นการ "ซ่อนปุ่ม" ในหน้าเว็บเท่านั้น ยังไม่ใช่การล็อกจากฐานข้อมูลจริง เหมาะกับทีมที่ไว้ใจกันและไม่แชร์ลิงก์ออกนอกบริษัท
+      🔑 คุณเข้าสู่ระบบด้วย <span class="mono">${esc((authUser && authUser.email) || "-")}</span> และมีสิทธิ์ Admin<br>
+      สิทธิ์ถูกบังคับใช้ที่ Firestore Rules ฝั่งเซิร์ฟเวอร์ — ถึงแก้โค้ดในเบราว์เซอร์ก็ยังเขียนข้อมูลแทนคนอื่นไม่ได้<br>
+      จัดการสิทธิ์คนอื่นได้ที่แท็บ <b>"ผู้ใช้"</b>
     </div>` : ""}
   `;
 }
@@ -3287,56 +3349,221 @@ function initBgParticles(){
   requestAnimationFrame(frame);
 }
 
-/* ---------------- login events ---------------- */
-function bindLoginEvents(){
-  document.getElementById("roleUser")?.addEventListener("click", () => {
-    loginShowPin = false; loginShowApprovePass = false;
-    attemptLogin("user");
-  });
-  document.getElementById("roleAdmin")?.addEventListener("click", () => {
-    const nameEl = document.getElementById("loginName");
-    if (nameEl) currentName = nameEl.value; // keep typed name before re-render shows the pin field
-    loginShowPin = true; loginShowApprovePass = false; loginErr="";
-    render();
-    document.getElementById("loginPin")?.focus();
-  });
-  document.getElementById("roleApprove")?.addEventListener("click", () => {
-    const nameEl = document.getElementById("loginName");
-    if (nameEl) currentName = nameEl.value;
-    loginShowApprovePass = true; loginShowPin = false; loginErr="";
-    render();
-    document.getElementById("loginApprovePassword")?.focus();
-  });
-  document.getElementById("btnLogin")?.addEventListener("click", () => {
-    const role = loginShowApprovePass ? "approve" : (loginShowPin ? "admin" : "user");
-    attemptLogin(role);
-  });
-  document.getElementById("loginPin")?.addEventListener("keydown", (e) => { if (e.key === "Enter") attemptLogin("admin"); });
-  document.getElementById("loginApprovePassword")?.addEventListener("keydown", (e) => { if (e.key === "Enter") attemptLogin("approve"); });
-  document.getElementById("loginName")?.addEventListener("keydown", (e) => { if (e.key === "Enter" && !loginShowPin && !loginShowApprovePass) attemptLogin("user"); });
+/* ======================================================
+   🔐 Authentication flow — Google Sign-in
+   ====================================================== */
+function friendlyAuthError(e){
+  const c = (e && e.code) ? e.code : "";
+  if (c === "auth/popup-blocked")            return "เบราว์เซอร์บล็อกหน้าต่าง Login — กดอนุญาต popup แล้วลองใหม่";
+  if (c === "auth/popup-closed-by-user")     return "ปิดหน้าต่าง Login ก่อนเข้าสู่ระบบเสร็จ — ลองอีกครั้ง";
+  if (c === "auth/cancelled-popup-request")  return "มีหน้าต่าง Login เปิดอยู่แล้ว";
+  if (c === "auth/operation-not-allowed")    return "ยังไม่ได้เปิด Google Sign-in ใน Firebase Console (Authentication → Sign-in method)";
+  if (c === "auth/unauthorized-domain")      return "โดเมนนี้ยังไม่ได้รับอนุญาต — เพิ่ม " + location.hostname + " ใน Authentication → Settings → Authorized domains";
+  if (c === "auth/network-request-failed")   return "เชื่อมต่ออินเทอร์เน็ตไม่ได้";
+  if (c === "auth/internal-error")           return "Firebase ตอบกลับผิดพลาด — ลองรีเฟรชหน้าเว็บ";
+  return "เข้าสู่ระบบไม่สำเร็จ: " + ((e && e.message) ? e.message : c);
 }
 
-function attemptLogin(role){
-  const nameEl = document.getElementById("loginName");
-  const name = nameEl ? nameEl.value.trim() : currentName;
-  if (nameEl) currentName = nameEl.value; // preserve whatever was typed across re-renders
-  if (!name) { loginErr = "กรุณากรอกชื่อของคุณ"; render(); document.getElementById("loginName")?.focus(); return; }
-  if (role === "admin") {
-    const pin = document.getElementById("loginPin")?.value || "";
-    if (pin !== ADMIN_PIN) { loginErr = "รหัสผ่าน Admin ไม่ถูกต้อง"; loginShowPin = true; render(); return; }
+function doGoogleLogin(){
+  if (authBusy) return;
+  authBusy = true; authError = ""; render();
+  signInWithPopup(auth, googleProvider)
+    .then(() => { authBusy = false; })
+    .catch((e) => { authBusy = false; authError = friendlyAuthError(e); render(); });
+}
+
+function bindLoginEvents(){
+  document.getElementById("btnGoogleLogin")?.addEventListener("click", doGoogleLogin);
+}
+
+function bindNoAccessEvents(){
+  document.getElementById("btnCopyUid")?.addEventListener("click", async () => {
+    const uid = (authUser && authUser.uid) || "";
+    try { await navigator.clipboard.writeText(uid); showToast("คัดลอก User ID แล้ว"); }
+    catch { showToast("คัดลอกอัตโนมัติไม่ได้ — เลือกข้อความแล้ว copy เอง"); }
+  });
+  document.getElementById("btnRetryAccess")?.addEventListener("click", async () => {
+    showToast("กำลังตรวจสอบสิทธิ์...");
+    await loadProfile(authUser);
+    if (userProfile) { showToast("ได้รับสิทธิ์แล้ว เข้าสู่ระบบ..."); view = "inventory"; }
+    else showToast("ยังไม่พบสิทธิ์ของบัญชีนี้");
+    render();
+  });
+  document.getElementById("btnNoAccessLogout")?.addEventListener("click", () => signOut(auth));
+}
+
+/* อ่านสิทธิ์จาก users/{uid} — ถ้าไม่มีเอกสาร = ยังไม่ได้รับอนุญาต */
+async function loadProfile(u){
+  authError = "";
+  if (!u) { userProfile = null; currentRole = null; currentName = ""; return; }
+  try {
+    const snap = await getDoc(doc(db, "users", u.uid));
+    if (!snap.exists()) { userProfile = null; return; }
+    const d = snap.data() || {};
+    if (d.active === false) { userProfile = null; return; }
+    const role = VALID_ROLES.includes(d.role) ? d.role : "user";
+    userProfile = { uid: u.uid, ...d, role, email: d.email || u.email || "" };
+    currentRole = role;
+    currentName = String(d.name || u.displayName || u.email || "").trim();
+    localStorage.setItem("wk_name", currentName);
+  } catch (e) {
+    userProfile = null;
+    authError = "อ่านสิทธิ์ไม่สำเร็จ: " + ((e && e.message) ? e.message : e);
   }
-  if (role === "approve") {
-    const pass = document.getElementById("loginApprovePassword")?.value || "";
-    if (name.toLowerCase() !== APPROVER_USERNAME.toLowerCase() || pass !== APPROVER_PASSWORD) {
-      loginErr = "ชื่อผู้ใช้หรือรหัสผ่าน Approve ไม่ถูกต้อง";
-      loginShowApprovePass = true; render(); return;
-    }
-  }
-  currentName = (role === "approve") ? APPROVER_USERNAME : name;
-  currentRole = role; loginErr = "";
-  localStorage.setItem("wk_name", currentName);
-  localStorage.setItem("wk_role", role);
+}
+
+setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+onAuthStateChanged(auth, async (u) => {
+  authUser = u || null;
+  authBusy = false;
+  if (u) await loadProfile(u);
+  else { userProfile = null; currentRole = null; currentName = ""; usersLoaded = false; usersList = []; }
+  authReady = true;
+  lastRenderedView = null;
   render();
+});
+
+/* ======================================================
+   👥 จัดการผู้ใช้ (เฉพาะ Admin) — แท็บ "ผู้ใช้"
+   ====================================================== */
+async function loadUsers(){
+  if (usersLoading) return;
+  usersLoading = true;
+  try {
+    const snap = await getDocs(collection(db, "users"));
+    usersList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    usersLoaded = true;
+  } catch (e) {
+    showToast("โหลดรายชื่อผู้ใช้ไม่สำเร็จ: " + ((e && e.message) ? e.message : e));
+  } finally {
+    usersLoading = false;
+    if (view === "users") render();
+  }
+}
+
+async function setUserRole(uid, role){
+  if (!VALID_ROLES.includes(role)) return;
+  try {
+    await updateDoc(doc(db, "users", uid), { role, updatedAt: serverTimestamp() });
+    showToast("เปลี่ยนสิทธิ์เป็น " + (ROLE_LABEL[role] || role) + " แล้ว");
+    await loadUsers();
+  } catch (e) {
+    showToast("เปลี่ยนสิทธิ์ไม่สำเร็จ: " + ((e && e.message) ? e.message : e));
+  }
+}
+
+async function toggleUserActive(uid, isActive){
+  try {
+    await updateDoc(doc(db, "users", uid), { active: !isActive, updatedAt: serverTimestamp() });
+    showToast(isActive ? "ปิดสิทธิ์บัญชีนี้แล้ว" : "เปิดสิทธิ์บัญชีนี้แล้ว");
+    await loadUsers();
+  } catch (e) {
+    showToast("อัปเดตไม่สำเร็จ: " + ((e && e.message) ? e.message : e));
+  }
+}
+
+async function addUserFromForm(){
+  const uid = (document.getElementById("newUserUid")?.value || "").trim();
+  const name = (document.getElementById("newUserName")?.value || "").trim();
+  const email = (document.getElementById("newUserEmail")?.value || "").trim();
+  const role = document.getElementById("newUserRole")?.value || "user";
+  if (!uid) { showToast("กรอก User ID ก่อน (ได้จากหน้าจอของพนักงาน)"); return; }
+  if (uid.length < 15) { showToast("User ID ไม่ถูกต้อง — ต้องเป็นชุดยาวๆ ที่คัดลอกมาจากหน้าจอพนักงาน"); return; }
+  try {
+    await setDoc(doc(db, "users", uid), {
+      name: name || email || "ผู้ใช้ใหม่",
+      email: email || "",
+      role,
+      active: true,
+      createdAt: serverTimestamp(),
+    }, { merge: true });
+    showToast("เพิ่มผู้ใช้แล้ว");
+    ["newUserUid","newUserName","newUserEmail"].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+    await loadUsers();
+  } catch (e) {
+    showToast("เพิ่มผู้ใช้ไม่สำเร็จ: " + ((e && e.message) ? e.message : e));
+  }
+}
+
+function bindUsersEvents(){
+  document.getElementById("btnRefreshUsers")?.addEventListener("click", loadUsers);
+  document.getElementById("btnAddUser")?.addEventListener("click", addUserFromForm);
+  document.querySelectorAll("[data-user-role]").forEach(el => el.addEventListener("click", () => {
+    setUserRole(el.dataset.userId, el.dataset.userRole);
+  }));
+  document.querySelectorAll("[data-user-toggle]").forEach(el => el.addEventListener("click", () => {
+    toggleUserActive(el.dataset.userToggle, el.dataset.userActive === "1");
+  }));
+}
+
+function renderUsers(){
+  if (!usersLoaded && !usersLoading) setTimeout(loadUsers, 0);
+
+  const sorted = usersList.slice().sort((a, b) => {
+    const rank = { admin: 0, approve: 1, user: 2 };
+    const ra = rank[a.role] ?? 3, rb = rank[b.role] ?? 3;
+    if (ra !== rb) return ra - rb;
+    return String(a.name || a.email || "").localeCompare(String(b.name || b.email || ""), "th");
+  });
+
+  const rows = sorted.map(u => {
+    const role = VALID_ROLES.includes(u.role) ? u.role : "user";
+    const active = u.active !== false;
+    const isMe = authUser && u.id === authUser.uid;
+    return `
+      <div class="low-card" style="background:var(--panel);border-color:var(--border);flex-wrap:wrap;gap:12px;${active ? "" : "opacity:.55;"}">
+        <div class="mc-owner-avatar" style="background:${role === "admin" ? "var(--warnDim)" : (role === "approve" ? "#2A1E4A" : "var(--accentDim)")};color:${role === "admin" ? "var(--warn)" : (role === "approve" ? "#C09EFC" : "var(--accent)")};">
+          ${esc(String((u.name || u.email || "?").charAt(0)).toUpperCase())}
+        </div>
+        <div class="grow" style="min-width:150px;">
+          <div class="truncate" style="font-size:13px;font-weight:600;">${esc(u.name || "(ไม่มีชื่อ)")}${isMe ? ` <span style="color:var(--accent);font-size:10.5px;font-weight:600;">(คุณ)</span>` : ""}</div>
+          <div class="truncate" style="color:var(--muted);font-size:11px;">${esc(u.email || "-")}</div>
+          <div class="truncate mono" style="color:var(--mutedFaint);font-size:10px;">uid: ${esc(u.id)}</div>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          ${VALID_ROLES.map(r => `<button data-user-role="${esc(r)}" data-user-id="${esc(u.id)}"
+             class="btn ${role === r ? "btn-accent" : "btn-ghost"}" style="padding:6px 10px;font-size:11.5px;">${ROLE_LABEL[r]}</button>`).join("")}
+        </div>
+        <button data-user-toggle="${esc(u.id)}" data-user-active="${active ? "1" : "0"}"
+          class="btn ${active ? "btn-danger" : "btn-ghost"}" style="padding:6px 10px;font-size:11.5px;" title="${active ? "ปิดสิทธิ์" : "เปิดสิทธิ์"}">
+          <i class="ti ${active ? "ti-lock" : "ti-lock-open"}" aria-hidden="true"></i> ${active ? "ปิดสิทธิ์" : "เปิดสิทธิ์"}
+        </button>
+      </div>`;
+  }).join("");
+
+  return `
+    <div class="notice" style="background:var(--panelAlt);border-color:var(--border);color:var(--muted);line-height:1.75;">
+      🔐 สิทธิ์ถูกตรวจที่ Firestore Rules ฝั่งเซิร์ฟเวอร์แล้ว — ไม่ใช่แค่ซ่อนปุ่มในหน้าเว็บ<br>
+      พนักงานใหม่: ให้เขาล็อกอินด้วย Google ก่อน → จะเห็นหน้า "ยังไม่ได้รับสิทธิ์" พร้อม <b>User ID</b> → คัดลอกมาวางด้านล่าง
+    </div>
+
+    <div class="section-title"><i class="ti ti-user-plus" aria-hidden="true"></i> เพิ่มผู้ใช้ใหม่</div>
+    <div class="field-wrap"><label class="field">User ID (จากหน้าจอของพนักงาน)</label><input id="newUserUid" placeholder="เช่น aB3dE9fGhIjKlMnOpQrS"></div>
+    <div class="grid2">
+      <div class="field-wrap"><label class="field">ชื่อที่แสดง</label><input id="newUserName" placeholder="เช่น สมชาย ก."></div>
+      <div class="field-wrap"><label class="field">อีเมล Google</label><input id="newUserEmail" placeholder="name@gmail.com"></div>
+    </div>
+    <div class="field-wrap"><label class="field">สิทธิ์</label>
+      <select id="newUserRole">
+        <option value="user">User — ดูคลัง + เบิกอะไหล่ + เปิด PR</option>
+        <option value="approve">Approve — เพิ่ม: อนุมัติ/ปฏิเสธ PR</option>
+        <option value="admin">Admin — เพิ่ม: เพิ่ม/แก้/ลบทุกอย่าง + จัดการผู้ใช้</option>
+      </select>
+    </div>
+    <button class="btn btn-accent" id="btnAddUser" style="width:100%;justify-content:center;margin-bottom:26px;">
+      <i class="ti ti-plus" aria-hidden="true"></i> เพิ่มผู้ใช้ / อัปเดตสิทธิ์
+    </button>
+
+    <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+      <span><i class="ti ti-users-group" aria-hidden="true"></i> ผู้ใช้ในระบบ (${usersList.length})</span>
+      <button class="btn btn-ghost" id="btnRefreshUsers" style="padding:6px 12px;font-size:11.5px;"><i class="ti ti-refresh" aria-hidden="true"></i> รีเฟรช</button>
+    </div>
+
+    ${usersLoading && usersList.length === 0 ? `<div class="mc-loading"><div class="ai-spinner"></div><div>กำลังโหลด...</div></div>`
+      : (usersList.length === 0 ? `<div class="empty">ยังไม่มีผู้ใช้ในระบบ<br><span style="font-size:11.5px;">เพิ่มตัวเองก่อนด้วย User ID ของคุณ แล้วรีเฟรชหน้าเว็บ</span></div>`
+      : `<div class="card-list">${rows}</div>`)}
+  `;
 }
 
 /* ---------------- events ---------------- */
@@ -3353,8 +3580,8 @@ function bindEvents(){
       danger: true,
     });
     if (ok) {
-      localStorage.removeItem("wk_role");
-      currentRole = null; render();
+      currentRole = null; userProfile = null; usersLoaded = false; usersList = [];
+      await signOut(auth);   // onAuthStateChanged จะ render หน้าล็อกอินให้เอง
     }
   });
   document.getElementById("btnAdd")?.addEventListener("click", () => { addOpen = true; pendingPhotoBlob=null; pendingPhotoPreview=null; showNewMachineInput=false; render(); });
@@ -3646,6 +3873,8 @@ function bindEvents(){
     errEl.style.display="none";
     withdraw(withdrawPart, qty, machine, by, note);
   });
+
+  if (view === "users") bindUsersEvents();
 }
 
 /* ---------------- roll-up warehouse door entrance ---------------- */
