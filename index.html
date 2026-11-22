@@ -633,8 +633,11 @@
 
   .lg-bg{
     position:absolute; inset:0; width:100%; height:100%;
-    z-index:0; pointer-events:none;
+    z-index:0; pointer-events:none; display:block;
     opacity:.85;
+    /* อยู่ในแผงซ้ายเท่านั้น — ขวาไม่แตะ */
+    mask-image:linear-gradient(90deg, #000 70%, transparent 100%);
+    -webkit-mask-image:linear-gradient(90deg, #000 70%, transparent 100%);
   }
   html[data-theme="light"] .lg-bg{ opacity:.55; }
 
@@ -652,7 +655,7 @@
     -webkit-mask-image:radial-gradient(ellipse at 30% 40%, #000 30%, transparent 75%);
   }
   .lg-brand{
-    position:relative; display:flex; align-items:center; gap:14px;
+    position:relative; z-index:1; display:flex; align-items:center; gap:14px;
     font-weight:700; font-size:23px; letter-spacing:-.4px;
     animation:lgRise .7s ease both;
   }
@@ -663,7 +666,7 @@
   }
   .lg-name{ display:inline-flex; align-items:baseline; }
   .lg-name .brand-spare{ color:var(--lg-ink); }
-  .lg-hero{ position:relative; }
+  .lg-hero{ position:relative; z-index:1; }
   .lg-headline{
     font-size:clamp(26px,3.1vw,38px); line-height:1.32; font-weight:500; letter-spacing:-.02em;
     max-width:460px; animation:lgRise .9s .1s ease both;
@@ -677,7 +680,7 @@
     height:2px; width:120px; margin-top:18px; background:var(--lg-accent);
     transform-origin:left; animation:lgDraw .9s .5s cubic-bezier(.2,.7,.2,1) both;
   }
-  .lg-list{ position:relative; font-size:13.5px; color:var(--lg-muted); font-weight:300; max-width:460px; }
+  .lg-list{ position:relative; z-index:1; font-size:13.5px; color:var(--lg-muted); font-weight:300; max-width:460px; }
   .lg-list div{
     padding:14px 0; border-top:1px solid var(--lg-line);
     display:flex; align-items:center; justify-content:space-between; gap:14px;
@@ -2226,6 +2229,7 @@ function startCircuitBg(canvas){
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (w < 40 || h < 40) { paths = []; return; }   /* แผงซ้ายถูกซ่อน (มือถือ) */
     const n = Math.max(7, Math.min(26, Math.round(w / 78)));
     paths = Array.from({ length: n }, makePath);
   }
@@ -2285,9 +2289,8 @@ function renderLogin(){
   const isFile = (location.protocol === "file:" || !location.hostname);
   return `
     <div class="lg-wrap">
-      <canvas class="lg-bg" id="lgCircuit" aria-hidden="true"></canvas>
-
       <section class="lg-left">
+        <canvas class="lg-bg" id="lgCircuit" aria-hidden="true"></canvas>
         <div class="lg-brand"><img src="icon-192.png" alt="SpareCube" class="lg-mark-img"><span class="lg-name"><span class="brand-spare">Spare</span><span class="brand-title-cube">Cube</span></span></div>
 
         <div class="lg-hero">
