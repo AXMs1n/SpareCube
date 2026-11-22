@@ -644,14 +644,17 @@
     -webkit-mask-image:radial-gradient(ellipse at 30% 40%, #000 30%, transparent 75%);
   }
   .lg-brand{
-    position:relative; display:flex; align-items:center; gap:12px;
-    font-weight:600; font-size:17px; animation:lgRise .7s ease both;
+    position:relative; display:flex; align-items:center; gap:14px;
+    font-weight:700; font-size:23px; letter-spacing:-.4px;
+    animation:lgRise .7s ease both;
   }
-  .lg-mark{
-    width:32px; height:32px; border-radius:9px; background:var(--lg-accent); color:#fff;
-    display:grid; place-items:center; font-size:15px;
+  .lg-mark-img{
+    width:44px; height:44px; border-radius:12px; object-fit:cover;
+    box-shadow:0 8px 22px rgba(0,0,0,.28);
     animation:lgFloat 5s ease-in-out infinite;
   }
+  .lg-name{ display:inline-flex; align-items:baseline; }
+  .lg-name .brand-spare{ color:var(--lg-ink); }
   .lg-hero{ position:relative; }
   .lg-headline{
     font-size:clamp(26px,3.1vw,38px); line-height:1.32; font-weight:500; letter-spacing:-.02em;
@@ -2115,42 +2118,42 @@ function renderLogin(){
   return `
     <div class="lg-wrap">
       <section class="lg-left">
-        <div class="lg-brand"><div class="lg-mark">◈</div>SpareCube</div>
+        <div class="lg-brand"><img src="icon-192.png" alt="SpareCube" class="lg-mark-img"><span class="lg-name"><span class="brand-spare">Spare</span><span class="brand-title-cube">Cube</span></span></div>
 
         <div class="lg-hero">
-          <div class="lg-headline">จัดการคลังอะไหล่ <span class="shine">อย่างเป็นระบบ</span> ทุกขั้นตอน</div>
+          <div class="lg-headline">Manage spare parts <span class="shine">with clarity</span>, every step of the way.</div>
           <div class="lg-underline"></div>
         </div>
 
         <div class="lg-list">
-          <div><span>สต็อกเรียลไทม์ พร้อมแจ้งเตือนเมื่อต่ำกว่า min</span></div>
-          <div><span>ใบขอซื้อ (PR) พร้อมสายอนุมัติที่ชัดเจน</span></div>
-          <div><span>สรุปค่าซ่อมบำรุงรายปีและรายเดือน</span></div>
+          <div><span>Real-time stock with low-level alerts</span></div>
+          <div><span>Purchase requests with clear approval chains</span></div>
+          <div><span>Yearly and monthly maintenance cost summaries</span></div>
         </div>
       </section>
 
       <section class="lg-right">
-        <button class="lg-theme" id="btnThemeLogin" title="สลับกลางวัน / กลางคืน">
+        <button class="lg-theme" id="btnThemeLogin" title="Toggle light / dark">
           <i class="ti ${themeIcon()}" aria-hidden="true"></i>
         </button>
 
         <div class="lg-panel">
-          <h2>เข้าสู่ระบบ</h2>
-          <p class="lg-sub">ใช้บัญชี Google ของบริษัท หรือ Gmail ส่วนตัว</p>
+          <h2>Sign in</h2>
+          <p class="lg-sub">Use your company Google account or personal Gmail.</p>
 
-          ${isFile ? `<div class="lg-warn"><b>เปิดจากไฟล์ในเครื่อง (file://)</b><br>Google Login ใช้ได้เฉพาะเว็บออนไลน์ กรุณาเปิด <b>https://axms1n.github.io/SpareCube/</b></div>` : ""}
+          ${isFile ? `<div class="lg-warn"><b>Opened from a local file (file://)</b><br>Google Login only works on the live website. Please open <b>https://axms1n.github.io/SpareCube/</b> instead.</div>` : ""}
 
           <button class="lg-btn" id="btnGoogleLogin" ${authBusy ? "disabled" : ""}>
             <span class="g"></span>
-            <span>${authBusy ? "กำลังเข้าสู่ระบบ..." : "Continue with Google"}</span>
+            <span>${authBusy ? "Signing in…" : "Continue with Google"}</span>
             <span class="arrow">→</span>
           </button>
 
-          <div class="lg-status ${authBusy ? "show" : ""}">กำลังพาไปหน้า Google…</div>
+          <div class="lg-status ${authBusy ? "show" : ""}">Redirecting to Google…</div>
 
           ${authError ? `<div class="lg-err">${esc(authError)}</div>` : ""}
 
-          <p class="lg-note"><b>ยังไม่มีสิทธิ์?</b> ล็อกอินก่อน แล้วส่ง User ID ให้ผู้ดูแลระบบ<br>ระบบไม่ใช้รหัสผ่าน — ยืนยันตัวตนผ่าน Google โดยตรง</p>
+          <p class="lg-note"><b>No access yet?</b> Sign in first, then send your User ID to the administrator.<br>No password is used. Identity is verified directly by Google.</p>
         </div>
       </section>
     </div>
@@ -3603,18 +3606,18 @@ function initBgParticles(){
    ====================================================== */
 function friendlyAuthError(e){
   const c = (e && e.code) ? e.code : "";
-  if (c === "auth/popup-blocked")            return "เบราว์เซอร์บล็อกหน้าต่าง Login — กดอนุญาต popup แล้วลองใหม่";
-  if (c === "auth/popup-closed-by-user")     return "ปิดหน้าต่าง Login ก่อนเข้าสู่ระบบเสร็จ — ลองอีกครั้ง";
-  if (c === "auth/cancelled-popup-request")  return "มีหน้าต่าง Login เปิดอยู่แล้ว";
-  if (c === "auth/operation-not-allowed")    return "ยังไม่ได้เปิด Google Sign-in ใน Firebase Console (Authentication → Sign-in method)";
+  if (c === "auth/popup-blocked")            return "Your browser blocked the sign-in popup. Allow popups for this site and try again.";
+  if (c === "auth/popup-closed-by-user")     return "The sign-in window was closed before finishing. Please try again.";
+  if (c === "auth/cancelled-popup-request")  return "A sign-in window is already open.";
+  if (c === "auth/operation-not-allowed")    return "Google sign-in is not enabled in the Firebase Console (Authentication → Sign-in method).";
   if (c === "auth/unauthorized-domain") {
     if (location.protocol === "file:" || !location.hostname)
-      return "คุณกำลังเปิดไฟล์จากเครื่อง (file://) — Google Login ใช้ได้เฉพาะเว็บออนไลน์ ให้เปิดที่ https://axms1n.github.io/SpareCube/";
-    return "โดเมนนี้ยังไม่ได้รับอนุญาต — เพิ่ม " + location.hostname + " ใน Authentication → Settings → Authorized domains";
+      return "This page is open from a local file (file://). Google Login only works on the live website — open https://axms1n.github.io/SpareCube/ instead.";
+    return "This domain is not authorized yet. Add " + location.hostname + " in Authentication → Settings → Authorized domains.";
   }
-  if (c === "auth/network-request-failed")   return "เชื่อมต่ออินเทอร์เน็ตไม่ได้";
-  if (c === "auth/internal-error")           return "Firebase ปฏิเสธคำขอ (auth/internal-error) — ถ้าเปิดแอปแบบติดตั้งไว้ ให้เปิดผ่านเบราว์เซอร์ปกติ (Chrome/Safari) ที่ https://axms1n.github.io/SpareCube/ แล้วล็อกอินอีกครั้ง";
-  return "เข้าสู่ระบบไม่สำเร็จ: " + ((e && e.message) ? e.message : "") + (c ? " (" + c + ")" : "");
+  if (c === "auth/network-request-failed")   return "No internet connection.";
+  if (c === "auth/internal-error")           return "Firebase rejected the request (auth/internal-error). If you opened the installed app, try a normal browser tab instead.";
+  return "Sign-in failed: " + ((e && e.message) ? e.message : "") + (c ? " (" + c + ")" : "");
 }
 
 /* อยู่ในโหมดแอปติดตั้ง (PWA) หรือไม่ — โหมดนี้ popup ใช้ไม่ได้ ต้องใช้ redirect */
