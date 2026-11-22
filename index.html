@@ -609,6 +609,7 @@
      LOGIN — editorial / minimal (อิงจากต้นแบบ)
      ===================================================================== */
   .lg-wrap{
+    position:relative;
     --lg-bg:#f7f6f3; --lg-ink:#1c1c1a; --lg-muted:#6b6a64; --lg-faint:#9a988f;
     --lg-line:#e4e2dc; --lg-accent:#0f766e; --lg-accent-soft:#5eead4;
     --lg-btn-bg:#1c1c1a; --lg-btn-fg:#f7f6f3; --lg-dot:#d6d3cb;
@@ -630,8 +631,15 @@
   @keyframes lgDrift  { to{transform:translate(26px,26px);} }
   @keyframes lgRipple { to{transform:scale(4);opacity:0;} }
 
+  .lg-bg{
+    position:absolute; inset:0; width:100%; height:100%;
+    z-index:0; pointer-events:none;
+    opacity:.85;
+  }
+  html[data-theme="light"] .lg-bg{ opacity:.55; }
+
   .lg-left{
-    position:relative; padding:56px;
+    position:relative; z-index:1; padding:56px;
     display:flex; flex-direction:column; justify-content:space-between;
     border-right:1px solid var(--lg-line); overflow:hidden;
   }
@@ -686,7 +694,7 @@
   .lg-list div:hover{ color:var(--lg-ink); padding-left:6px; }
   .lg-list div:hover::after{ opacity:1; transform:translateX(0); }
 
-  .lg-right{ position:relative; display:flex; align-items:center; justify-content:center; padding:44px; }
+  .lg-right{ position:relative; z-index:1; display:flex; align-items:center; justify-content:center; padding:44px; }
   .lg-panel{ width:100%; max-width:340px; animation:lgRise .8s .2s ease both; }
   .lg-panel h2{ font-size:24px; font-weight:500; letter-spacing:-.02em; margin:0; }
   .lg-sub{ margin-top:8px; font-size:13px; color:var(--lg-muted); font-weight:300; line-height:1.7; }
@@ -2081,6 +2089,7 @@ function render(){
   syncChromeVisibility();
   const app = document.getElementById("app");
   if (!authReady) {
+    stopCircuitBg();
     app.innerHTML = `<div class="login-screen"><div class="wrap" style="max-width:380px;padding-top:150px;text-align:center;color:var(--muted);font-size:13px;">
       <div class="ai-spinner" style="margin:0 auto 16px;"></div>กำลังตรวจสอบสิทธิ์...</div></div>`;
     return;
@@ -2088,13 +2097,17 @@ function render(){
   if (!authUser) {
     app.innerHTML = renderLogin();
     bindLoginEvents();
+    startCircuitBg(document.getElementById("lgCircuit"));
     return;
   }
   if (!userProfile) {
+    stopCircuitBg();
     app.innerHTML = renderNoAccess();
     bindNoAccessEvents();
     return;
   }
+  stopCircuitBg();
+
   const isAdmin = currentRole === "admin";
   const isApprove = currentRole === "approve";
   const allowedViews = isAdmin
@@ -2164,10 +2177,116 @@ function render(){
   bindEvents();
 }
 
+/* ======================================================
+   พื้นหลัง Circuit Flow (แบบที่ 2) — วาดเฉพาะหน้า login
+   หยุดเมื่อออกจากหน้า login / เคารพ prefers-reduced-motion
+   ====================================================== */
+let circuitRAF = null, circuitCanvasEl = null;
+
+function stopCircuitBg(){
+  if (circuitRAF) cancelAnimationFrame(circuitRAF);
+  circuitRAF = null; circuitCanvasEl = null;
+}
+
+function startCircuitBg(canvas){
+  if (!canvas || circuitCanvasEl === canvas) return;
+  stopCircuitBg();
+  circuitCanvasEl = canvas;
+
+  const ctx = canvas.getContext("2d");
+  const STEP = 34;
+  let w = 0, h = 0, paths = [], t0 = 0;
+  const light = (currentTheme === "light");
+  const TRACE = light ? "15,118,110" : "45,212,191";
+  const TRACE_A = light ? 0.18 : 0.15;
+  const DOT   = light ? "13,148,136" : "110,231,216";
+  const PACK  = light ? "13,148,136" : "110,231,216";
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  function makePath(){
+    let x = Math.floor(Math.random() * Math.max(1, w / STEP)) * STEP + STEP / 2;
+    let y = Math.floor(Math.random() * Math.max(1, h / STEP)) * STEP + STEP / 2;
+    let horiz = Math.random() < 0.5;
+    const segs = 3 + ((Math.random() * 4) | 0);
+    const pts = [{ x, y }];
+    for (let i = 0; i < segs; i++){
+      const len = (1 + ((Math.random() * 3) | 0)) * STEP * (Math.random() < 0.5 ? 1 : -1);
+      if (horiz) x = Math.max(6, Math.min(w - 6, x + len));
+      else       y = Math.max(6, Math.min(h - 6, y + len));
+      pts.push({ x, y });
+      horiz = !horiz;
+    }
+    return { pts, p: Math.random(), sp: 0.0016 + Math.random() * 0.004 };
+  }
+
+  function build(){
+    const r = canvas.getBoundingClientRect();
+    w = r.width; h = r.height;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.max(7, Math.min(26, Math.round(w / 78)));
+    paths = Array.from({ length: n }, makePath);
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, w, h);
+    for (const P of paths){
+      ctx.strokeStyle = `rgba(${TRACE},${TRACE_A})`;
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.moveTo(P.pts[0].x, P.pts[0].y);
+      for (let i = 1; i < P.pts.length; i++) ctx.lineTo(P.pts[i].x, P.pts[i].y);
+      ctx.stroke();
+
+      ctx.fillStyle = `rgba(${DOT},${light ? 0.45 : 0.40})`;
+      for (const pt of P.pts){ ctx.beginPath(); ctx.arc(pt.x, pt.y, 1.7, 0, 7); ctx.fill(); }
+
+      P.p += P.sp;
+      if (P.p > 1) P.p = 0;
+      const total = P.pts.length - 1;
+      const pos = P.p * total;
+      const i0 = Math.min(total - 1, Math.floor(pos));
+      const f = pos - i0;
+      const A = P.pts[i0], B = P.pts[i0 + 1];
+      const x = A.x + (B.x - A.x) * f, y = A.y + (B.y - A.y) * f;
+
+      const g = ctx.createRadialGradient(x, y, 0, x, y, 11);
+      g.addColorStop(0, `rgba(${PACK},${light ? 0.75 : 0.95})`);
+      g.addColorStop(0.4, `rgba(${TRACE},${light ? 0.22 : 0.30})`);
+      g.addColorStop(1, `rgba(${TRACE},0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x, y, 11, 0, 7); ctx.fill();
+
+      ctx.fillStyle = light ? "rgba(255,255,255,0.95)" : "rgba(236,237,239,0.95)";
+      ctx.beginPath(); ctx.arc(x, y, 1.7, 0, 7); ctx.fill();
+    }
+  }
+
+  function loop(){
+    if (!circuitCanvasEl) return;
+    draw();
+    circuitRAF = requestAnimationFrame(loop);
+  }
+
+  build();
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) { draw(); return; }
+  t0 = performance.now();
+  circuitRAF = requestAnimationFrame(loop);
+
+  if (!canvas._lgResize){
+    canvas._lgResize = true;
+    window.addEventListener("resize", () => { if (circuitCanvasEl === canvas) build(); });
+  }
+}
+
 function renderLogin(){
   const isFile = (location.protocol === "file:" || !location.hostname);
   return `
     <div class="lg-wrap">
+      <canvas class="lg-bg" id="lgCircuit" aria-hidden="true"></canvas>
+
       <section class="lg-left">
         <div class="lg-brand"><img src="icon-192.png" alt="SpareCube" class="lg-mark-img"><span class="lg-name"><span class="brand-spare">Spare</span><span class="brand-title-cube">Cube</span></span></div>
 
