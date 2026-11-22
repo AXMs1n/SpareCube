@@ -6,6 +6,10 @@
 <title>SpareCube</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#14161A">
+<script>
+  /* ตั้งธีมก่อนวาดหน้า จะได้ไม่กระพริบ */
+  try { document.documentElement.setAttribute('data-theme', localStorage.getItem('wk_theme') || 'dark'); } catch (e) {}
+</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -559,6 +563,194 @@
   .mc-refresh-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
   .mc-refresh-row .meta{ font-size:11px; color:var(--mutedFaint); }
   .spin{ display:inline-block; animation:spin 1s linear infinite; }
+  /* =====================================================================
+     THEME — กลางวัน / กลางคืน
+     ===================================================================== */
+  .brand-spare{ color:#ECEDEF; }
+  html[data-theme="light"]{
+    --bg:#F3F5F9; --panel:#FFFFFF; --panelAlt:#EDF1F6; --border:#DCE2EA;
+    --text:#0F172A; --muted:#5A6675; --mutedFaint:#8B97A6;
+    --accent:#0D9488; --accentDim:#CCFBF1;
+    --warn:#B45309; --warnDim:#FEF3C7;
+    --danger:#DC2626; --dangerDim:#FEE2E2;
+    --machine:#2563EB; --machineDim:#DBEAFE;
+  }
+  html[data-theme="light"] body{ background:var(--bg); color:var(--text); }
+  html[data-theme="light"] .brand-spare{ color:#0F172A; }
+  html[data-theme="light"] .brand-title-cube{
+    background:linear-gradient(90deg,#0D9488,#0F172A,#14B8A6,#0D9488);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  html[data-theme="light"] .topbar{
+    background:radial-gradient(ellipse at 8% 50%, rgba(13,148,136,.13), transparent 60%), var(--panel);
+    box-shadow:0 1px 0 var(--border);
+  }
+  html[data-theme="light"] .tabs{ background:linear-gradient(180deg,rgba(15,23,42,.035),rgba(15,23,42,.008)); }
+  html[data-theme="light"] .tabs .tab:hover{ background:rgba(15,23,42,.055); }
+  html[data-theme="light"] .tabs .tab.active{ color:#fff; }
+  html[data-theme="light"] .gauge-bar{ background:#E2E8F0; }
+  html[data-theme="light"] #bgParticles{ opacity:.45; }
+  html[data-theme="light"] .toast{ box-shadow:0 10px 26px rgba(15,23,42,.16); }
+  html[data-theme="light"] .lightbox-overlay{ background:rgba(243,245,249,.94); }
+  html[data-theme="light"] .lightbox-close{ background:#fff; color:#0F172A; border:1px solid var(--border); }
+  html[data-theme="light"] .edit-btn{ background:rgba(255,255,255,.85); color:#0F172A; }
+  html[data-theme="light"] .mc-owner-avatar{ color:#fff; }
+  html[data-theme="light"] .btn-accent{ color:#fff; }
+  html[data-theme="light"] .sw-pill{ box-shadow:0 4px 16px rgba(15,23,42,.14); }
+  html[data-theme="light"] .login-screen{
+    background:
+      radial-gradient(circle at 50% 0%, rgba(13,148,136,.10), transparent 55%),
+      repeating-linear-gradient(0deg, rgba(13,148,136,.05) 0, rgba(13,148,136,.05) 1px, transparent 1px, transparent 42px),
+      repeating-linear-gradient(90deg, rgba(13,148,136,.05) 0, rgba(13,148,136,.05) 1px, transparent 1px, transparent 42px),
+      var(--bg);
+  }
+
+  /* =====================================================================
+     LOGIN — editorial / minimal (อิงจากต้นแบบ)
+     ===================================================================== */
+  .lg-wrap{
+    --lg-bg:#f7f6f3; --lg-ink:#1c1c1a; --lg-muted:#6b6a64; --lg-faint:#9a988f;
+    --lg-line:#e4e2dc; --lg-accent:#0f766e; --lg-accent-soft:#5eead4;
+    --lg-btn-bg:#1c1c1a; --lg-btn-fg:#f7f6f3; --lg-dot:#d6d3cb;
+    min-height:100vh; display:grid; grid-template-columns:1fr 1fr;
+    background:var(--lg-bg); color:var(--lg-ink); overflow-x:hidden;
+  }
+  html[data-theme="dark"] .lg-wrap{
+    --lg-bg:#14161A; --lg-ink:#ECEDEF; --lg-muted:#878D97; --lg-faint:#5B6068;
+    --lg-line:#2C3139; --lg-accent:#2DD4BF; --lg-accent-soft:#6EE7D8;
+    --lg-btn-bg:#2DD4BF; --lg-btn-fg:#0A0C0E; --lg-dot:#2A3038;
+  }
+
+  @keyframes lgRise   { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
+  @keyframes lgFade   { from{opacity:0;} to{opacity:1;} }
+  @keyframes lgDraw   { from{transform:scaleX(0);} to{transform:scaleX(1);} }
+  @keyframes lgFloat  { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
+  @keyframes lgShimmer{ 0%{background-position:0% 50%;} 100%{background-position:200% 50%;} }
+  @keyframes lgPulse  { 0%,100%{box-shadow:0 0 0 0 rgba(15,118,110,.35);} 50%{box-shadow:0 0 0 10px rgba(15,118,110,0);} }
+  @keyframes lgDrift  { to{transform:translate(26px,26px);} }
+  @keyframes lgRipple { to{transform:scale(4);opacity:0;} }
+
+  .lg-left{
+    position:relative; padding:56px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    border-right:1px solid var(--lg-line); overflow:hidden;
+  }
+  .lg-left::before{
+    content:""; position:absolute; inset:-40px;
+    background-image:radial-gradient(circle, var(--lg-dot) 1px, transparent 1.2px);
+    background-size:26px 26px; opacity:.55; pointer-events:none;
+    animation:lgFade 1.2s ease both, lgDrift 30s linear infinite;
+    mask-image:radial-gradient(ellipse at 30% 40%, #000 30%, transparent 75%);
+    -webkit-mask-image:radial-gradient(ellipse at 30% 40%, #000 30%, transparent 75%);
+  }
+  .lg-brand{
+    position:relative; display:flex; align-items:center; gap:12px;
+    font-weight:600; font-size:17px; animation:lgRise .7s ease both;
+  }
+  .lg-mark{
+    width:32px; height:32px; border-radius:9px; background:var(--lg-accent); color:#fff;
+    display:grid; place-items:center; font-size:15px;
+    animation:lgFloat 5s ease-in-out infinite;
+  }
+  .lg-hero{ position:relative; }
+  .lg-headline{
+    font-size:clamp(26px,3.1vw,38px); line-height:1.32; font-weight:500; letter-spacing:-.02em;
+    max-width:460px; animation:lgRise .9s .1s ease both;
+  }
+  .lg-headline .shine{
+    background:linear-gradient(90deg,var(--lg-accent),var(--lg-accent-soft),var(--lg-accent));
+    background-size:200% auto; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:lgShimmer 4s linear infinite;
+  }
+  .lg-underline{
+    height:2px; width:120px; margin-top:18px; background:var(--lg-accent);
+    transform-origin:left; animation:lgDraw .9s .5s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .lg-list{ position:relative; font-size:13.5px; color:var(--lg-muted); font-weight:300; max-width:460px; }
+  .lg-list div{
+    padding:14px 0; border-top:1px solid var(--lg-line);
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    opacity:0; animation:lgRise .6s ease forwards;
+    transition:color .25s, padding-left .25s;
+  }
+  .lg-list div:nth-child(1){ animation-delay:.6s; }
+  .lg-list div:nth-child(2){ animation-delay:.75s; }
+  .lg-list div:nth-child(3){ animation-delay:.9s; }
+  .lg-list div::after{
+    content:"→"; opacity:0; transform:translateX(-6px); color:var(--lg-accent);
+    transition:opacity .25s, transform .25s;
+  }
+  .lg-list div:hover{ color:var(--lg-ink); padding-left:6px; }
+  .lg-list div:hover::after{ opacity:1; transform:translateX(0); }
+
+  .lg-right{ position:relative; display:flex; align-items:center; justify-content:center; padding:44px; }
+  .lg-panel{ width:100%; max-width:340px; animation:lgRise .8s .2s ease both; }
+  .lg-panel h2{ font-size:24px; font-weight:500; letter-spacing:-.02em; margin:0; }
+  .lg-sub{ margin-top:8px; font-size:13px; color:var(--lg-muted); font-weight:300; line-height:1.7; }
+
+  .lg-warn{
+    margin-top:24px; padding:12px 14px; border-radius:10px;
+    background:#fdf6e3; border:1px solid #f0e0a8; color:#7a5b00;
+    font-size:12px; line-height:1.65;
+  }
+  html[data-theme="dark"] .lg-warn{ background:rgba(245,166,35,.10); border-color:rgba(245,166,35,.32); color:#F0D3A0; }
+  .lg-warn b{ font-weight:600; }
+
+  .lg-btn{
+    position:relative; overflow:hidden; margin-top:32px;
+    width:100%; height:52px; border-radius:999px;
+    border:1px solid var(--lg-btn-bg); background:var(--lg-btn-bg); color:var(--lg-btn-fg);
+    font-family:'Prompt',sans-serif; font-weight:500; font-size:14.5px;
+    display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer;
+    transition:transform .2s ease, box-shadow .3s ease;
+    animation:lgPulse 2.8s 1.4s ease-in-out infinite;
+  }
+  .lg-btn .g{
+    width:18px; height:18px; border-radius:50%; flex-shrink:0;
+    background:conic-gradient(#4285f4 0 25%, #34a853 0 50%, #fbbc05 0 75%, #ea4335 0);
+    mask:radial-gradient(circle, transparent 5px, #000 6px);
+    -webkit-mask:radial-gradient(circle, transparent 5px, #000 6px);
+    transition:transform .4s ease;
+  }
+  .lg-btn .arrow{ transition:transform .3s ease; }
+  .lg-btn:hover{ transform:translateY(-2px); box-shadow:0 14px 30px -12px rgba(28,28,26,.55); }
+  .lg-btn:hover .g{ transform:rotate(-20deg) scale(1.08); }
+  .lg-btn:hover .arrow{ transform:translateX(4px); }
+  .lg-btn:active{ transform:translateY(0) scale(.98); }
+  .lg-btn[disabled]{ opacity:.6; cursor:not-allowed; }
+  .lg-btn .ripple{ position:absolute; border-radius:50%; background:rgba(255,255,255,.35); transform:scale(0); pointer-events:none; animation:lgRipple .6s ease-out forwards; }
+  html[data-theme="dark"] .lg-btn .ripple{ background:rgba(10,12,14,.28); }
+
+  .lg-status{
+    margin-top:16px; min-height:20px; font-size:12.5px; color:var(--lg-accent); text-align:center;
+    opacity:0; transition:opacity .3s;
+  }
+  .lg-status.show{ opacity:1; }
+  .lg-err{ margin-top:14px; font-size:12px; color:var(--danger,#F0473E); line-height:1.65; }
+  html[data-theme="light"] .lg-err{ color:#b91c1c; }
+
+  .lg-note{ margin-top:24px; font-size:12px; color:#7c7a72; line-height:1.75; font-weight:300; }
+  html[data-theme="dark"] .lg-note{ color:#98A0AC; }
+  .lg-note b{ color:var(--lg-muted); font-weight:500; }
+
+  .lg-theme{
+    position:absolute; top:22px; right:22px; width:38px; height:38px; border-radius:11px;
+    border:1px solid transparent; background:transparent; color:var(--lg-faint);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:17px;
+    transition:color .2s, background .2s, border-color .2s;
+  }
+  .lg-theme:hover{ color:var(--lg-accent); background:var(--lg-line); border-color:var(--lg-line); }
+
+  @media (max-width:860px){
+    .lg-wrap{ grid-template-columns:1fr; }
+    .lg-left{ display:none; }
+    .lg-right{ padding:32px 24px; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .lg-wrap *, .lg-wrap *::before, .lg-wrap *::after{
+      animation:none !important; transition:none !important; opacity:1 !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -625,6 +817,24 @@ googleProvider.setCustomParameters({ prompt: "select_account" });
 
 const ROLE_LABEL = { admin: "Admin", approve: "Approve", user: "User" };
 const VALID_ROLES = ["admin", "approve", "user"];
+
+/* ---------------- ธีม กลางวัน / กลางคืน ---------------- */
+let currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+
+function applyTheme(t){
+  currentTheme = (t === "light") ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", currentTheme);
+  try { localStorage.setItem("wk_theme", currentTheme); } catch (e) {}
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", currentTheme === "light" ? "#F3F5F9" : "#14161A");
+}
+
+function toggleTheme(){
+  applyTheme(currentTheme === "light" ? "dark" : "light");
+  render();
+}
+
+function themeIcon(){ return currentTheme === "light" ? "ti-sun" : "ti-moon"; }
 
 /* ======================================================
    วางลิงก์ Google Apps Script Web App ตรงนี้ (สำหรับระบบ PR + Google Drive)
@@ -1801,7 +2011,20 @@ function fmtDate(ts){
 
 function lowStockParts(){ return parts.filter(p => p.qty <= p.min); }
 
+/* ปุ่มสแกน AI และหลอดความจุ แสดงเฉพาะตอนเข้าใช้งานแล้ว (ไม่โชว์บนหน้า login) */
+function syncChromeVisibility(){
+  const inApp = !!(authReady && authUser && userProfile);
+  const show = inApp ? "" : "none";
+  const sw = document.getElementById("storageWidget");
+  const fab = document.getElementById("aiScanFab");
+  const ov = document.getElementById("aiScanOverlay");
+  if (sw) sw.style.display = inApp ? "flex" : "none";
+  if (fab) fab.style.display = show;
+  if (ov && !inApp) ov.classList.remove("open");
+}
+
 function render(){
+  syncChromeVisibility();
   const app = document.getElementById("app");
   if (!authReady) {
     app.innerHTML = `<div class="login-screen"><div class="wrap" style="max-width:380px;padding-top:150px;text-align:center;color:var(--muted);font-size:13px;">
@@ -1841,7 +2064,7 @@ function render(){
               <img src="icon-192.png" alt="SpareCube" style="width:44px;height:44px;border-radius:10px;">
             </span>
             <span class="head" style="font-size:24px;font-weight:700;letter-spacing:-0.3px;">
-              <span style="color:#ECEDEF;">Spare</span><span class="brand-title-cube">Cube</span>
+              <span class="brand-spare">Spare</span><span class="brand-title-cube">Cube</span>
             </span>
           </div>
           <div style="display:flex;align-items:center;gap:10px;">
@@ -1849,6 +2072,7 @@ function render(){
               <div style="font-size:12px;font-weight:600;">${esc(currentName)}</div>
               <div style="font-size:10px;color:${isAdmin?'var(--warn)':(isApprove?'#C09EFC':'var(--muted)')};">${isAdmin?"Admin":(isApprove?"Approve":"User")}</div>
             </div>
+            <button class="btn btn-ghost" id="btnTheme" title="สลับกลางวัน / กลางคืน" style="padding:8px;"><i class="ti ${themeIcon()}" aria-hidden="true"></i></button>
             <button class="btn btn-ghost" id="btnLogout" title="ออกจากระบบ / สลับผู้ใช้" style="padding:8px;"><i class="ti ti-logout" aria-hidden="true"></i></button>
             ${isAdmin ? `<button class="btn btn-accent" id="btnAdd">+ เพิ่มอะไหล่</button>` : ""}
           </div>
@@ -1887,41 +2111,48 @@ function render(){
 }
 
 function renderLogin(){
+  const isFile = (location.protocol === "file:" || !location.hostname);
   return `
-    <div class="login-screen">
-    <div class="wrap" style="max-width:390px;padding-top:80px;position:relative;">
-      <div style="text-align:center;margin-bottom:30px;">
-        <span class="brand-icon-wrap" style="border-radius:22px;">
-          <img src="icon-192.png" alt="SpareCube" style="width:96px;height:96px;border-radius:22px;">
-        </span>
-        <div class="head" style="font-size:32px;font-weight:700;margin-top:14px;letter-spacing:-0.5px;">
-          <span style="color:#ECEDEF;">Spare</span><span class="brand-title-cube">Cube</span>
+    <div class="lg-wrap">
+      <section class="lg-left">
+        <div class="lg-brand"><div class="lg-mark">◈</div>SpareCube</div>
+
+        <div class="lg-hero">
+          <div class="lg-headline">จัดการคลังอะไหล่ <span class="shine">อย่างเป็นระบบ</span> ทุกขั้นตอน</div>
+          <div class="lg-underline"></div>
         </div>
-        <div style="color:var(--muted);font-size:12.5px;margin-top:4px;">เข้าสู่ระบบเพื่อใช้งาน</div>
-      </div>
 
-      <button id="btnGoogleLogin" ${authBusy ? "disabled" : ""}
-        style="width:100%;display:flex;align-items:center;justify-content:center;gap:11px;cursor:pointer;
-               background:#FFFFFF;color:#1F1F1F;border:none;border-radius:10px;padding:14px 12px;
-               font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;
-               box-shadow:0 4px 16px rgba(0,0,0,.35);transition:transform .15s ease, box-shadow .15s ease;
-               ${authBusy ? "opacity:.6;" : ""}">
-        <svg width="19" height="19" viewBox="0 0 48 48" aria-hidden="true">
-          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.2 17.6 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.5c-.5 2.9-2.2 5.4-4.7 7l7.6 5.9c4.4-4.1 6.7-10.1 6.7-17.4z"/>
-          <path fill="#FBBC05" d="M10.4 28.7c-.5-1.4-.8-2.9-.8-4.7s.3-3.3.8-4.7l-7.8-6.1C1 16.4 0 20.1 0 24s1 7.6 2.6 10.8l7.8-6.1z"/>
-          <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.8 2.3-8.3 2.3-6.4 0-11.7-3.7-13.6-8.9l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/>
-        </svg>
-        ${authBusy ? "กำลังเข้าสู่ระบบ..." : "Continue with Google"}
-      </button>
+        <div class="lg-list">
+          <div><span>สต็อกเรียลไทม์ พร้อมแจ้งเตือนเมื่อต่ำกว่า min</span></div>
+          <div><span>ใบขอซื้อ (PR) พร้อมสายอนุมัติที่ชัดเจน</span></div>
+          <div><span>สรุปค่าซ่อมบำรุงรายปีและรายเดือน</span></div>
+        </div>
+      </section>
 
-      ${authError ? `<div class="err-text" style="text-align:center;margin-top:14px;line-height:1.6;">${esc(authError)}</div>` : ""}
+      <section class="lg-right">
+        <button class="lg-theme" id="btnThemeLogin" title="สลับกลางวัน / กลางคืน">
+          <i class="ti ${themeIcon()}" aria-hidden="true"></i>
+        </button>
 
-      <div style="color:var(--mutedFaint);font-size:11px;text-align:center;margin-top:20px;line-height:1.8;">
-        ใช้บัญชี Google ของบริษัท หรือ Gmail ส่วนตัวก็ได้<br>
-        สิทธิ์ (User / Approve / Admin) ถูกกำหนดโดยผู้ดูแลระบบ
-      </div>
-    </div>
+        <div class="lg-panel">
+          <h2>เข้าสู่ระบบ</h2>
+          <p class="lg-sub">ใช้บัญชี Google ของบริษัท หรือ Gmail ส่วนตัว</p>
+
+          ${isFile ? `<div class="lg-warn"><b>เปิดจากไฟล์ในเครื่อง (file://)</b><br>Google Login ใช้ได้เฉพาะเว็บออนไลน์ กรุณาเปิด <b>https://axms1n.github.io/SpareCube/</b></div>` : ""}
+
+          <button class="lg-btn" id="btnGoogleLogin" ${authBusy ? "disabled" : ""}>
+            <span class="g"></span>
+            <span>${authBusy ? "กำลังเข้าสู่ระบบ..." : "Continue with Google"}</span>
+            <span class="arrow">→</span>
+          </button>
+
+          <div class="lg-status ${authBusy ? "show" : ""}">กำลังพาไปหน้า Google…</div>
+
+          ${authError ? `<div class="lg-err">${esc(authError)}</div>` : ""}
+
+          <p class="lg-note"><b>ยังไม่มีสิทธิ์?</b> ล็อกอินก่อน แล้วส่ง User ID ให้ผู้ดูแลระบบ<br>ระบบไม่ใช้รหัสผ่าน — ยืนยันตัวตนผ่าน Google โดยตรง</p>
+        </div>
+      </section>
     </div>
   `;
 }
@@ -3376,7 +3607,11 @@ function friendlyAuthError(e){
   if (c === "auth/popup-closed-by-user")     return "ปิดหน้าต่าง Login ก่อนเข้าสู่ระบบเสร็จ — ลองอีกครั้ง";
   if (c === "auth/cancelled-popup-request")  return "มีหน้าต่าง Login เปิดอยู่แล้ว";
   if (c === "auth/operation-not-allowed")    return "ยังไม่ได้เปิด Google Sign-in ใน Firebase Console (Authentication → Sign-in method)";
-  if (c === "auth/unauthorized-domain")      return "โดเมนนี้ยังไม่ได้รับอนุญาต — เพิ่ม " + location.hostname + " ใน Authentication → Settings → Authorized domains";
+  if (c === "auth/unauthorized-domain") {
+    if (location.protocol === "file:" || !location.hostname)
+      return "คุณกำลังเปิดไฟล์จากเครื่อง (file://) — Google Login ใช้ได้เฉพาะเว็บออนไลน์ ให้เปิดที่ https://axms1n.github.io/SpareCube/";
+    return "โดเมนนี้ยังไม่ได้รับอนุญาต — เพิ่ม " + location.hostname + " ใน Authentication → Settings → Authorized domains";
+  }
   if (c === "auth/network-request-failed")   return "เชื่อมต่ออินเทอร์เน็ตไม่ได้";
   if (c === "auth/internal-error")           return "Firebase ปฏิเสธคำขอ (auth/internal-error) — ถ้าเปิดแอปแบบติดตั้งไว้ ให้เปิดผ่านเบราว์เซอร์ปกติ (Chrome/Safari) ที่ https://axms1n.github.io/SpareCube/ แล้วล็อกอินอีกครั้ง";
   return "เข้าสู่ระบบไม่สำเร็จ: " + ((e && e.message) ? e.message : "") + (c ? " (" + c + ")" : "");
@@ -3431,7 +3666,20 @@ async function doGoogleLogin(){
 }
 
 function bindLoginEvents(){
-  document.getElementById("btnGoogleLogin")?.addEventListener("click", doGoogleLogin);
+  document.getElementById("btnGoogleLogin")?.addEventListener("click", (e) => {
+    const btn = e.currentTarget;
+    const r = btn.getBoundingClientRect();
+    const size = Math.max(r.width, r.height);
+    const span = document.createElement("span");
+    span.className = "ripple";
+    span.style.width = span.style.height = size + "px";
+    span.style.left = (e.clientX - r.left - size / 2) + "px";
+    span.style.top  = (e.clientY - r.top  - size / 2) + "px";
+    btn.appendChild(span);
+    setTimeout(() => span.remove(), 600);
+    doGoogleLogin();
+  });
+  document.getElementById("btnThemeLogin")?.addEventListener("click", toggleTheme);
 }
 
 function bindNoAccessEvents(){
@@ -3637,6 +3885,7 @@ function renderUsers(){
 let pendingPhotoBlob = null, pendingPhotoPreview = null;
 
 function bindEvents(){
+  document.getElementById("btnTheme")?.addEventListener("click", toggleTheme);
   document.getElementById("btnLogout")?.addEventListener("click", async () => {
     const ok = await showConfirm({
       title: "ออกจากระบบ?",
@@ -3956,6 +4205,7 @@ initBgParticles();
 initWarehouseDoor();
 mountStorageWidget();
 mountAiScanFab();
+syncChromeVisibility();   // ซ่อนของที่ใช้เฉพาะในแอป ถ้ายังไม่ล็อกอิน
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
