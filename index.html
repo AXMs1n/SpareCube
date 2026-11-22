@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root{
     --bg:#14161A; --panel:#1B1E23; --panelAlt:#22262C; --border:#2C3139;
@@ -590,8 +591,8 @@ import {
   runTransaction, serverTimestamp, query, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
-  setPersistence, browserLocalPersistence
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+  signOut, onAuthStateChanged, setPersistence, browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 /* หมายเหตุ: ไม่ใช้ Firebase Storage เพราะ Google เปลี่ยนนโยบายให้ต้องผูกบัตรเครดิต (Blaze plan)
    ถึงจะใช้ได้แล้ว เราเลยเก็บรูปเป็น base64 ไว้ในเอกสาร Firestore แทน ยังฟรี 100% ไม่ต้องผูกบัตร */
@@ -700,29 +701,44 @@ function resetPRForm(){
 resetPRForm();
 
 /* ---------------- firestore live sync ---------------- */
-onSnapshot(collection(db, "parts"), (snap) => {
-  parts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  render();
-  updateStorageWidget();
-}, (err) => showToast("โหลดคลังไม่สำเร็จ: " + err.message));
+/* ⚠️ ต้องเริ่ม listener หลังล็อกอินเสร็จเท่านั้น
+   ถ้าเริ่มตอนที่ยังไม่ล็อกอิน แล้ว Rules บังคับ "ต้องล็อกอินก่อนอ่าน"
+   listener จะโดนปฏิเสธแล้วหยุดทำงานถาวร → แอปจะดูเหมือนข้อมูลหายทั้งคลัง */
+let dataUnsubs = [];
 
-onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(200)), (snap) => {
-  history = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  render();
-  updateStorageWidget();
-}, (err) => showToast("โหลดประวัติไม่สำเร็จ: " + err.message));
+function detachDataListeners(){
+  dataUnsubs.forEach((u) => { try { u(); } catch (e) {} });
+  dataUnsubs = [];
+  parts = []; history = []; machines = []; prRequests = [];
+}
 
-onSnapshot(query(collection(db, "machines"), orderBy("name")), (snap) => {
-  machines = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  render();
-  updateStorageWidget();
-}, (err) => showToast("โหลดรายชื่อเครื่องจักรไม่สำเร็จ: " + err.message));
+function attachDataListeners(){
+  detachDataListeners();
 
-onSnapshot(query(collection(db, "pr_requests"), orderBy("createdAt", "desc"), limit(300)), (snap) => {
-  prRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  render();
-  updateStorageWidget();
-}, (err) => showToast("โหลดรายการ PR ไม่สำเร็จ: " + err.message));
+  dataUnsubs.push(onSnapshot(collection(db, "parts"), (snap) => {
+    parts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+    updateStorageWidget();
+  }, (err) => showToast("โหลดคลังไม่สำเร็จ: " + err.message)));
+
+  dataUnsubs.push(onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(200)), (snap) => {
+    history = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+    updateStorageWidget();
+  }, (err) => showToast("โหลดประวัติไม่สำเร็จ: " + err.message)));
+
+  dataUnsubs.push(onSnapshot(query(collection(db, "machines"), orderBy("name")), (snap) => {
+    machines = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+    updateStorageWidget();
+  }, (err) => showToast("โหลดรายชื่อเครื่องจักรไม่สำเร็จ: " + err.message)));
+
+  dataUnsubs.push(onSnapshot(query(collection(db, "pr_requests"), orderBy("createdAt", "desc"), limit(300)), (snap) => {
+    prRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+    updateStorageWidget();
+  }, (err) => showToast("โหลดรายการ PR ไม่สำเร็จ: " + err.message)));
+}
 
 /* ======================================================
    หลอดแสดงความจุที่ใช้ไป (Storage widget)
@@ -1843,6 +1859,7 @@ function render(){
           ${(isAdmin || isApprove) ? tabBtn("prlist","รายการ PR") : ""}
           ${isAdmin ? tabBtn("dashboard","ภาพรวม",low.length) : ""}
           ${isAdmin ? tabBtn("history","ประวัติ") : ""}
+          ${isAdmin ? tabBtn("maintcost","ค่าซ่อมบำรุง") : ""}
           
           ${isAdmin ? tabBtn("users","ผู้ใช้") : ""}
           ${isAdmin ? tabBtn("settings","ตั้งค่า") : ""}
@@ -1856,6 +1873,7 @@ function render(){
       ${view === "settings" ? renderSettings(low.length) : ""}
       ${view === "openpr" ? renderOpenPR() : ""}
       ${view === "prlist" ? renderPRList() : ""}
+      ${view === "maintcost" ? renderMaintCost() : ""}
       ${view === "users" ? renderUsers() : ""}
       
     </div>
@@ -1946,7 +1964,7 @@ function renderNoAccess(){
 }
 
 function tabBtn(key, label, count){
-  const ic = {inventory:"building-warehouse", openpr:"file-plus", prlist:"list-details", dashboard:"layout-dashboard", history:"history", users:"users-group", settings:"settings"}[key];
+  const ic = {inventory:"building-warehouse", openpr:"file-plus", prlist:"list-details", dashboard:"layout-dashboard", history:"history", maintcost:"report-money", users:"users-group", settings:"settings"}[key];
   return `<button class="tab ${view===key?"active":""}" data-tab="${key}">${ic ? `<i class="ti ti-${ic}" aria-hidden="true"></i>` : ""}${label}${count ? `<span class="badge">${count}</span>`:""}</button>`;
 }
 
@@ -3360,16 +3378,56 @@ function friendlyAuthError(e){
   if (c === "auth/operation-not-allowed")    return "ยังไม่ได้เปิด Google Sign-in ใน Firebase Console (Authentication → Sign-in method)";
   if (c === "auth/unauthorized-domain")      return "โดเมนนี้ยังไม่ได้รับอนุญาต — เพิ่ม " + location.hostname + " ใน Authentication → Settings → Authorized domains";
   if (c === "auth/network-request-failed")   return "เชื่อมต่ออินเทอร์เน็ตไม่ได้";
-  if (c === "auth/internal-error")           return "Firebase ตอบกลับผิดพลาด — ลองรีเฟรชหน้าเว็บ";
-  return "เข้าสู่ระบบไม่สำเร็จ: " + ((e && e.message) ? e.message : c);
+  if (c === "auth/internal-error")           return "Firebase ปฏิเสธคำขอ (auth/internal-error) — ถ้าเปิดแอปแบบติดตั้งไว้ ให้เปิดผ่านเบราว์เซอร์ปกติ (Chrome/Safari) ที่ https://axms1n.github.io/SpareCube/ แล้วล็อกอินอีกครั้ง";
+  return "เข้าสู่ระบบไม่สำเร็จ: " + ((e && e.message) ? e.message : "") + (c ? " (" + c + ")" : "");
 }
 
-function doGoogleLogin(){
+/* อยู่ในโหมดแอปติดตั้ง (PWA) หรือไม่ — โหมดนี้ popup ใช้ไม่ได้ ต้องใช้ redirect */
+function isStandaloneApp(){
+  try {
+    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)
+      || window.navigator.standalone === true
+      || (window.matchMedia && window.matchMedia("(display-mode: minimal-ui)").matches);
+  } catch (e) { return false; }
+}
+
+/* error ที่แปลว่า "popup ใช้ไม่ได้ในสภาพแวดล้อมนี้" → ลอง redirect แทน */
+const POPUP_FALLBACK_CODES = [
+  "auth/internal-error",
+  "auth/popup-blocked",
+  "auth/operation-not-supported-in-this-environment",
+  "auth/cancelled-popup-request",
+  "auth/web-storage-unsupported",
+];
+
+async function doGoogleLogin(){
   if (authBusy) return;
-  authBusy = true; authError = ""; render();
-  signInWithPopup(auth, googleProvider)
-    .then(() => { authBusy = false; })
-    .catch((e) => { authBusy = false; authError = friendlyAuthError(e); render(); });
+  authBusy = true; authError = "";
+
+  // 1) แอปติดตั้ง (PWA) → redirect ตั้งแต่แรก
+  if (isStandaloneApp()) {
+    render();
+    try { await signInWithRedirect(auth, googleProvider); }
+    catch (e) { authBusy = false; authError = friendlyAuthError(e); render(); }
+    return;
+  }
+
+  // 2) เบราว์เซอร์ปกติ → popup ก่อน (ต้องเรียกทันทีก่อน await ใดๆ เพื่อไม่ให้เสีย user gesture)
+  const pending = signInWithPopup(auth, googleProvider);
+  render();
+  try {
+    await pending;
+    authBusy = false;
+  } catch (e) {
+    const c = (e && e.code) || "";
+    if (POPUP_FALLBACK_CODES.includes(c)) {
+      try { await signInWithRedirect(auth, googleProvider); return; } // หน้านี้จะพาไป Google แล้วกลับมาเอง
+      catch (e2) { e = e2; }
+    }
+    authBusy = false;
+    authError = friendlyAuthError(e);
+    render();
+  }
 }
 
 function bindLoginEvents(){
@@ -3385,7 +3443,7 @@ function bindNoAccessEvents(){
   document.getElementById("btnRetryAccess")?.addEventListener("click", async () => {
     showToast("กำลังตรวจสอบสิทธิ์...");
     await loadProfile(authUser);
-    if (userProfile) { showToast("ได้รับสิทธิ์แล้ว เข้าสู่ระบบ..."); view = "inventory"; }
+    if (userProfile) { attachDataListeners(); showToast("ได้รับสิทธิ์แล้ว เข้าสู่ระบบ..."); view = "inventory"; }
     else showToast("ยังไม่พบสิทธิ์ของบัญชีนี้");
     render();
   });
@@ -3414,11 +3472,20 @@ async function loadProfile(u){
 
 setPersistence(auth, browserLocalPersistence).catch(() => {});
 
+/* จบ flow แบบ redirect (กลับมาจากหน้า Google) — ถ้าพลาดให้โชว์สาเหตุจริง */
+getRedirectResult(auth).catch((e) => {
+  authBusy = false;
+  authError = friendlyAuthError(e);
+  render();
+});
+
 onAuthStateChanged(auth, async (u) => {
   authUser = u || null;
   authBusy = false;
   if (u) await loadProfile(u);
   else { userProfile = null; currentRole = null; currentName = ""; usersLoaded = false; usersList = []; }
+  // เริ่มดึงข้อมูลจริง "หลัง" รู้สิทธิ์แล้วเท่านั้น
+  if (u && userProfile) attachDataListeners(); else detachDataListeners();
   authReady = true;
   lastRenderedView = null;
   render();

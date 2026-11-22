@@ -1,4 +1,4 @@
-// SpareCube Service Worker — v28
+// SpareCube Service Worker — v29
 // เปลี่ยนจาก v27:
 //   1) HTML/หน้าเว็บ = network-first → อัปเดตใหม่เห็นทันที (ไม่ค้าง 1 รอบเหมือนเดิม)
 //   2) แคช CDN ที่จำเป็นจริง (เดิมคอมเมนต์บอกว่าแคช แต่ไม่ได้แคชเลย)
@@ -6,7 +6,7 @@
 //      ทำให้ไฟล์ CSS ของฟอนต์ไม่เคยถูกแคช → ออฟไลน์ฟอนต์หลุด)
 //   4) จำกัดจำนวนไฟล์ในแคช ไม่ให้โตไม่หยุด
 
-const CACHE_NAME = "sparecube-shell-v28";
+const CACHE_NAME = "sparecube-shell-v29";
 
 const APP_SHELL = [
   "./",
@@ -22,6 +22,7 @@ const CDN_ASSETS = [
   "https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css",
   "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",
   "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js",
+  "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js",
 ];
 
 const MAX_CACHE_ENTRIES = 80;
