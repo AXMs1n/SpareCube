@@ -744,16 +744,67 @@
   }
   .lg-theme:hover{ color:var(--lg-accent); background:var(--lg-line); border-color:var(--lg-line); }
 
+  .lg-brand-m{ display:none; }
+
   @media (max-width:860px){
     .lg-wrap{ grid-template-columns:1fr; }
     .lg-left{ display:none; }
-    .lg-right{ padding:32px 24px; }
+    .lg-right{ padding:76px 24px 40px; align-items:flex-start; justify-content:flex-start; }
+    .lg-panel{ max-width:100%; }
+
+    /* บนมือถือ: โชว์ตรา + ชื่อเว็บด้านบนการ์ด (เพราะแผงซ้ายถูกซ่อน) */
+    .lg-brand-m{ display:flex; align-items:center; gap:12px; margin-bottom:34px; }
+    .lg-brand-m .lg-mark-img{ width:40px; height:40px; border-radius:11px; animation:none; }
+    .lg-brand-m .lg-name{ font-size:21px; font-weight:700; letter-spacing:-.4px; }
   }
   @media (prefers-reduced-motion:reduce){
     .lg-wrap *, .lg-wrap *::before, .lg-wrap *::after{
       animation:none !important; transition:none !important; opacity:1 !important;
     }
   }
+  /* =====================================================================
+     ANIMATION CHOREOGRAPHY (v4.2)
+     อนิเมชันจากต้นแบบมีครบแล้ว (rise/fade/drawLine/float/shimmer/pulse/drift/ripple)
+     ที่เพิ่ม: จังหวะไล่โผล่ทีละelement + แสงกวาดปุ่ม + โลโก้เรืองแสง
+     ===================================================================== */
+  @keyframes lgPop   { 0%{opacity:0; transform:scale(.94);} 100%{opacity:1; transform:scale(1);} }
+  @keyframes lgSweep { 0%{transform:translateX(-130%);} 100%{transform:translateX(240%);} }
+  @keyframes lgGlow  { 0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.28);} 50%{box-shadow:0 8px 26px rgba(45,212,191,.5);} }
+
+  /* ให้แต่ละส่วนของการ์ดไล่โผล่ทีละจังหวะ (แทนที่จะโผล่พร้อมกันทั้งก้อน) */
+  .lg-wrap .lg-panel{ animation:none; }
+  .lg-panel h2       { animation:lgRise .50s .26s ease both; }
+  .lg-panel .lg-sub  { animation:lgRise .50s .34s ease both; }
+  .lg-panel .lg-warn { animation:lgPop  .45s .28s ease both; }
+  .lg-panel .lg-btn  { animation:lgRise .58s .42s ease both, lgPulse 2.8s 1.7s ease-in-out infinite; }
+  .lg-panel .lg-note { animation:lgRise .50s .58s ease both; }
+  .lg-panel .lg-err  { animation:lgPop  .40s .05s ease both; }
+  .lg-brand-m        { animation:lgRise .60s .08s ease both; }
+  .lg-theme          { animation:lgFade .90s .55s ease both; }
+
+  /* โลโก้: ลอยขึ้นลง + เรืองแสงเบาๆ */
+  .lg-mark-img{ animation:lgFloat 5s ease-in-out infinite, lgGlow 4.5s ease-in-out infinite; }
+
+  /* แสงกวาดผ่านปุ่ม 1 ครั้งหลังเปิดหน้า */
+  .lg-btn::after{
+    content:""; position:absolute; top:0; left:0; width:45%; height:100%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.30), transparent);
+    transform:translateX(-130%); animation:lgSweep 1.05s 1.05s ease-out both;
+    pointer-events:none;
+  }
+  html[data-theme="dark"] .lg-btn::after{
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.5), transparent);
+  }
+
+  /* แถวรายการ: ขีดสีเลื่อนเข้าตอน hover */
+  .lg-list div{ position:relative; }
+  .lg-list div::before{
+    content:""; position:absolute; left:-14px; top:14px; bottom:14px; width:2px;
+    background:var(--lg-accent); opacity:0; transform:scaleY(.3);
+    transition:opacity .25s ease, transform .25s ease;
+  }
+  .lg-list div:hover::before{ opacity:1; transform:scaleY(1); }
+
 </style>
 </head>
 <body>
@@ -2138,6 +2189,11 @@ function renderLogin(){
         </button>
 
         <div class="lg-panel">
+          <div class="lg-brand-m">
+            <img src="icon-192.png" alt="SpareCube" class="lg-mark-img">
+            <span class="lg-name"><span class="brand-spare">Spare</span><span class="brand-title-cube">Cube</span></span>
+          </div>
+
           <h2>Sign in</h2>
           <p class="lg-sub">Use your company Google account or personal Gmail.</p>
 
