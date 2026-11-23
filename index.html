@@ -1022,6 +1022,86 @@
   .gauge-top > span:last-child{ font-size:14px !important; }
   .gauge-top{ gap:9px !important; }
 
+  /* =====================================================================
+     SKIN v2.5 — แท็บ: ตัวใหญ่ ไอคอนใหญ่ เต็มความกว้าง + ฟอนต์ Prompt
+     ===================================================================== */
+  .tabs{
+    display:flex !important; gap:0 !important; padding:0 !important;
+    border-bottom:1px solid var(--border) !important;
+    overflow-x:auto; overflow-y:hidden;
+  }
+  .tabs .tab{
+    flex:1 0 auto; min-width:132px;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    font-family:'Prompt',sans-serif !important;
+    font-size:15.5px !important; font-weight:600 !important;
+    padding:16px 12px !important;
+    border-bottom:2px solid transparent; margin-bottom:-1px;
+    white-space:nowrap;
+  }
+  .tabs .tab i{ font-size:20px !important; opacity:.9; }
+  .tabs .tab .badge{ font-size:11.5px !important; padding:2px 7px !important; }
+  .tabs .tab:hover{ background:rgba(45,212,191,.06) !important; color:var(--text) !important; }
+  .tabs .tab.active{ border-bottom-color:var(--accent) !important; color:var(--text) !important; }
+  .tabs .tab.active i{ color:var(--accent); opacity:1; }
+
+  @media(max-width:700px){
+    .tabs .tab{ min-width:124px; font-size:14.5px !important; padding:14px 10px !important; gap:7px; }
+    .tabs .tab i{ font-size:18px !important; }
+  }
+
+  /* =====================================================================
+     LAYERS — ชั้นเครื่องจักร: กดหัวชั้นแล้วพลิกเปิดรายการอะไหล่
+     ===================================================================== */
+  .machine-group{ perspective:1600px; }
+
+  .mg-toggle{
+    width:100%; display:flex; align-items:center; gap:10px;
+    background:none; border:0; cursor:pointer; text-align:left;
+    font-family:'Prompt',sans-serif; font-size:18px; font-weight:700;
+    color:var(--machine); padding:2px 0 12px; margin:0; line-height:1.3;
+    transition:opacity .2s ease;
+  }
+  .machine-group.unassigned .mg-toggle{ color:var(--muted); }
+  .mg-toggle:hover{ opacity:.85; }
+  .mg-toggle:focus-visible{ outline:2px solid var(--accent); outline-offset:4px; border-radius:8px; }
+  .mg-name{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .mg-count{ font-size:13px; color:var(--mutedFaint); font-weight:500; flex:0 0 auto; }
+  .mg-chev{
+    font-size:19px; color:var(--muted); flex:0 0 auto;
+    transition:transform .5s cubic-bezier(.22,1,.36,1), color .25s ease;
+  }
+  .machine-group.open .mg-chev{ transform:rotate(180deg); color:var(--accent); }
+
+  /* กลไกยืด/หดความสูง */
+  .mg-body-wrap{
+    display:grid; grid-template-rows:0fr;
+    transition:grid-template-rows .55s cubic-bezier(.22,1,.36,1);
+  }
+  .machine-group.open .mg-body-wrap{ grid-template-rows:1fr; }
+  .mg-body{ overflow:hidden; }
+
+  /* ตัวรายการ: พลิกออกจากด้านหลังหัวชั้น */
+  .mg-body > .parts-grid{
+    transform-origin:top center;
+    transform:rotateX(-78deg) translateY(-6px);
+    opacity:0;
+    transition:transform .58s cubic-bezier(.2,1.05,.3,1), opacity .38s ease;
+  }
+  .machine-group.open .mg-body > .parts-grid{
+    transform:rotateX(0deg) translateY(0);
+    opacity:1;
+  }
+
+  @media(max-width:600px){
+    .mg-toggle{ font-size:16px; gap:8px; padding-bottom:10px; }
+    .mg-chev{ font-size:17px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .mg-body-wrap, .mg-body > .parts-grid, .mg-chev{ transition:none !important; }
+    .mg-body > .parts-grid{ transform:none !important; opacity:1 !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -1811,6 +1891,18 @@ function mountAiScanFab(){
   document.body.appendChild(overlay);
   overlay.addEventListener("click", (e) => { if (e.target === overlay) closeAiScan(); });
   document.getElementById("btnAiScanClose").addEventListener("click", closeAiScan);
+}
+
+/* ---------------- สถานะการเปิด/ปิดชั้นเครื่องจักร ---------------- */
+let openGroups = (() => {
+  try {
+    const v = JSON.parse(localStorage.getItem("wk_openGroups") || "null");
+    return Array.isArray(v) ? new Set(v) : null;
+  } catch (e) { return null; }
+})();
+
+function persistGroups(){
+  try { localStorage.setItem("wk_openGroups", JSON.stringify([...openGroups])); } catch (e) {}
 }
 
 /* ---------------- data actions ---------------- */
@@ -2703,6 +2795,15 @@ function renderInventory(){
   const machineKeys = [...groups.keys()].filter(k => k !== "__unassigned__").sort((a,b) => a.localeCompare(b, "th"));
   if (groups.has("__unassigned__")) machineKeys.push("__unassigned__");
 
+  // ตอนค้นหาหรือกรองโซน: กางทุกชั้นให้เห็นผลลัพธ์ทันที
+  const forceOpen = Boolean(search || zoneFilter);
+
+  // ครั้งแรกที่เปิด: กางชั้นแรกให้เห็นว่ามีของอยู่ข้างใน
+  if (openGroups === null){
+    openGroups = new Set(machineKeys.length ? [machineKeys[0]] : []);
+    persistGroups();
+  }
+
   return `
     <div class="search">
       <span class="icon">🔍</span>
@@ -2712,11 +2813,18 @@ function renderInventory(){
     ${machineKeys.map(key => {
       const isUnassigned = key === "__unassigned__";
       const groupParts = groups.get(key);
+      const isOpen = forceOpen || openGroups.has(key);
       return `
-      <div class="machine-group ${isUnassigned?"unassigned":""}">
-        <div class="machine-group-title">${isUnassigned ? "ยังไม่ระบุเครื่องจักร" : esc(key)} <span class="mono" style="color:var(--mutedFaint);font-weight:500;font-size:11px;">(${groupParts.length})</span></div>
-        <div class="parts-grid" style="margin-bottom:10px;">
-          ${groupParts.map(partCardHtml).join("")}
+      <div class="machine-group ${isUnassigned?"unassigned":""} ${isOpen?"open":""}" data-group="${esc(key)}">
+        <button type="button" class="mg-toggle" data-group-toggle="${esc(key)}" aria-expanded="${isOpen?"true":"false"}">
+          <span class="mg-name">${isUnassigned ? "ยังไม่ระบุเครื่องจักร" : esc(key)}</span>
+          <span class="mg-count mono">${groupParts.length}</span>
+          <i class="ti ti-chevron-down mg-chev" aria-hidden="true"></i>
+        </button>
+        <div class="mg-body-wrap">
+          <div class="mg-body">
+            <div class="parts-grid">${groupParts.map(partCardHtml).join("")}</div>
+          </div>
         </div>
       </div>`;
     }).join("")}
@@ -4477,6 +4585,18 @@ function bindEvents(){
   document.getElementById("zoneFilterSelect")?.addEventListener("change", (e) => {
     zoneFilter = e.target.value; render();
   });
+
+  /* กดหัวชั้น = พลิกเปิด/ปิด (ไม่ re-render เพื่อให้อนิเมชันเล่นได้) */
+  document.querySelectorAll("[data-group-toggle]").forEach(el => el.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    const key = el.dataset.groupToggle;
+    const card = el.closest(".machine-group");
+    const willOpen = !card.classList.contains("open");
+    card.classList.toggle("open", willOpen);
+    el.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    if (willOpen) openGroups.add(key); else openGroups.delete(key);
+    persistGroups();
+  }));
 
   // part form
   document.getElementById("closePart")?.addEventListener("click", () => { addOpen=false; editPart=null; showNewMachineInput=false; render(); });
