@@ -1212,6 +1212,233 @@
     .scroll-index{ display:none !important; }
   }
 
+  /* =====================================================================
+     MOBILE LAYOUT — จัดใหม่สำหรับจอมือถือ (<=700px)
+     ===================================================================== */
+  @media(max-width:700px){
+    /* ---- topbar: ลดความแน่น ---- */
+    .topbar-inner{ padding:12px 14px 0 !important; }
+    .row{ flex-wrap:nowrap !important; align-items:center !important; gap:10px !important; margin-bottom:10px !important; }
+    .brand{ gap:8px !important; }
+    .brand .head{ font-size:19px !important; }
+    .brand img{ width:34px !important; height:34px !important; }
+    .brand-icon-wrap{ border-radius:9px !important; }
+    .topbar .row > div:last-child{ gap:6px !important; }
+    #btnLogout{ padding:7px !important; font-size:13px !important; }
+    #btnAdd{
+      padding:9px 12px !important; font-size:0 !important; line-height:1 !important;
+      min-width:38px; justify-content:center;
+    }
+    #btnAdd::before{ content:"+"; font-size:20px; font-weight:700; line-height:1; }
+
+    /* ---- tabs: เลื่อนแนวนอน กดง่าย ---- */
+    .tabs{ margin:8px 0 2px !important; padding:5px !important; gap:4px !important; border-radius:13px !important; }
+    .tabs .tab{ padding:8px 12px !important; font-size:12.5px !important; gap:5px !important; }
+    .tabs .tab i{ font-size:15px !important; }
+    .tabs .tab .badge{ font-size:9px !important; }
+
+    /* ---- search ---- */
+    .search{ margin-bottom:12px !important; }
+    .search input{ font-size:13px !important; padding:9px 12px 9px 34px !important; }
+    .search .icon{ top:9px !important; left:11px !important; font-size:13px !important; }
+
+    /* ---- zone filter / select ---- */
+    select, input, textarea{ font-size:13.5px !important; padding:9px 11px !important; }
+
+    /* ---- machine group ---- */
+    .machine-group{
+      padding:10px 12px 2px !important;
+      margin:0 0 16px !important;
+      border-radius:12px !important;
+    }
+    .machine-group-title{ font-size:15px !important; margin:2px 0 6px !important; gap:7px !important; }
+    .machine-group-title span{ font-size:10.5px !important; }
+
+    /* ---- part row: ชื่อขึ้น 2 บรรทัด ไม่ตัดเป็น "ต.." ---- */
+    .part-card{ padding:11px 0 !important; gap:11px !important; flex-wrap:nowrap !important; }
+    .part-photo{ width:54px !important; height:54px !important; flex:0 0 54px !important; border-radius:10px !important; }
+    .part-body{
+      grid-template-columns:1fr auto !important;
+      grid-template-areas:"name gauge" "code btn" !important;
+      column-gap:10px !important; row-gap:7px !important; align-items:start !important;
+    }
+    .part-name{ font-size:15px !important; line-height:1.3 !important; }
+    .part-name.truncate{
+      white-space:normal !important; overflow:hidden !important; text-overflow:clip !important;
+      display:-webkit-box !important; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    }
+    .part-code{ font-size:11.5px !important; line-height:1.35 !important; }
+    .gauge-top{ gap:4px !important; align-items:baseline !important; }
+    .gauge-top > span:first-child{ font-size:23px !important; }
+    .gauge-top > span:last-child{ font-size:10.5px !important; }
+    .withdraw-btn{
+      justify-self:end !important; align-self:end !important;
+      padding:7px 12px !important; font-size:12px !important; border-radius:8px !important;
+    }
+    .withdraw-btn i{ font-size:12px !important; }
+    .edit-btn{ top:4px !important; right:4px !important; padding:4px !important; }
+
+    /* ---- ที่ว่างล่างหน้า: ไม่ให้ปุ่มลอย/ที่วัดพื้นที่ทับแถว ---- */
+    .wrap{ padding:0 14px 160px !important; }
+    .content{ padding-top:10px !important; }
+    #aiScanFab{ padding:11px !important; left:12px !important; bottom:14px !important; }
+    #storageWidget{ right:10px !important; bottom:14px !important; }
+    .sw-panel{ width:calc(100vw - 40px) !important; }
+
+    /* ---- ฟอร์ม: ยุบเป็นคอลัมน์เดียว (เดิมบีบ 2 คอลัมน์ในจอแคบ) ---- */
+    .grid2, .grid3{ grid-template-columns:1fr !important; gap:0 !important; }
+    .modal{ border-radius:18px 18px 0 0 !important; }
+    .modal-head{ padding:14px 16px !important; }
+    .modal-head .head{ font-size:15px !important; }
+    .modal-body{ padding:16px !important; }
+    .field-wrap{ margin-bottom:12px !important; }
+    .pill-group{ gap:6px !important; }
+    .pill-group .btn{ padding:7px 12px !important; font-size:12px !important; }
+    .photo-picker{ width:104px !important; height:104px !important; }
+
+    /* ---- การ์ด PR ---- */
+    .pr-card{ padding:12px !important; }
+    .pr-attach-row{ padding:7px 9px !important; }
+
+    /* ---- ปุ่ม/การ์ดอื่น ---- */
+    .stat .val{ font-size:21px !important; }
+    .stats{ gap:8px !important; margin-bottom:18px !important; }
+    .stat{ padding:11px !important; }
+    .section-title{ font-size:13.5px !important; }
+  }
+
+  @media(max-width:520px){
+    /* จอเล็กมาก: ซ่อนบล็อกชื่อผู้ใช้ กันหัวแน่น */
+    .row > div:last-child > div[style*="text-align:right"]{ display:none !important; }
+    .brand .head{ font-size:18px !important; }
+    .part-photo{ width:48px !important; height:48px !important; flex:0 0 48px !important; }
+    .part-name{ font-size:14.5px !important; }
+    .gauge-top > span:first-child{ font-size:21px !important; }
+  }
+
+/* =====================================================================
+   MACHINE CAROUSEL — สไตล์ editorial: ใบกลางเต็ม ใบข้างโผล่ครึ่ง + จาง
+   ===================================================================== */
+:root{ --car-slot: 176px; }
+
+.car-toolbar{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.car-select{
+  flex:1; max-width:220px; padding:9px 12px; font-size:13px;
+  background:var(--panelAlt); border:1px solid var(--border); border-radius:9px; color:var(--text);
+}
+.car-mode{ font-size:12px !important; padding:9px 13px !important; white-space:nowrap; }
+.car-mode i{ font-size:14px; }
+
+/* ---- chips เลือกเครื่อง ---- */
+.car-chips{
+  display:flex; gap:8px; overflow-x:auto; padding:2px 2px 12px;
+  scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.car-chips::-webkit-scrollbar{ display:none; }
+.car-chip{
+  flex:0 0 auto; cursor:pointer; white-space:nowrap;
+  background:transparent; border:1px solid var(--border); border-radius:999px;
+  color:var(--muted); font-family:'Prompt',sans-serif; font-size:12.5px; font-weight:600;
+  padding:8px 14px; transition:all .22s ease;
+}
+.car-chip span{
+  font-size:10.5px; opacity:.6; margin-left:5px; font-variant-numeric:tabular-nums;
+}
+.car-chip:hover{ color:var(--text); border-color:var(--mutedFaint); }
+.car-chip.on{
+  color:#0B1614; background:var(--accent); border-color:var(--accent);
+  box-shadow:0 6px 18px -8px rgba(45,212,191,.9);
+}
+.car-chip.on span{ opacity:.75; }
+
+/* ---- stage ---- */
+.car-wrap{ max-width:640px; margin:0 auto; }
+.car-stage{
+  position:relative; height:calc(var(--car-slot) * 3);
+  overflow:hidden; outline:none; touch-action:pan-x; cursor:grab;
+}
+.car-stage:active{ cursor:grabbing; }
+.car-track{ position:absolute; inset:0; }
+
+.car-card{
+  position:absolute; left:0; right:0; top:0;
+  height:calc(var(--car-slot) - 12px);
+  display:flex; gap:16px; align-items:stretch;
+  padding:14px 16px;
+  background:linear-gradient(158deg, var(--panel), var(--panelAlt));
+  border:1px solid var(--border); border-radius:16px;
+  transition:transform .58s cubic-bezier(.22,1,.36,1), opacity .4s ease, border-color .3s ease, box-shadow .3s ease;
+  will-change:transform, opacity;
+}
+.car-card.is-active{
+  border-color:rgba(45,212,191,.42);
+  box-shadow:0 22px 48px -26px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.car-photo{
+  width:118px; flex:0 0 118px; border-radius:12px; overflow:hidden;
+  background:var(--panelAlt); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; font-size:26px; color:var(--mutedFaint);
+}
+.car-photo img{ width:100%; height:100%; object-fit:cover; }
+.car-main{ flex:1; min-width:0; display:flex; flex-direction:column; justify-content:space-between; gap:8px; }
+.car-name{
+  font-size:17px; font-weight:600; line-height:1.3; letter-spacing:-.1px;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.car-code{ font-size:12px; color:var(--mutedFaint); margin-top:3px; }
+.car-code b{ color:var(--accent); font-weight:600; }
+.car-machine{
+  font-size:11.5px; color:var(--machine); margin-top:5px;
+  display:flex; align-items:center; gap:5px;
+}
+.car-machine i{ font-size:12px; }
+.car-bottom{ display:flex; align-items:center; gap:14px; }
+.car-qty{ display:flex; align-items:baseline; gap:6px; flex:0 0 auto; }
+.car-qty .n{ font-size:31px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+.car-qty .m{ font-size:11px; color:var(--mutedFaint); font-variant-numeric:tabular-nums; }
+.car-bar{ flex:1; height:4px; border-radius:2px; background:var(--border); overflow:hidden; min-width:40px; }
+.car-bar > div{ height:100%; border-radius:2px; transition:width .3s ease; }
+.car-btn{ padding:8px 15px !important; font-size:12.5px !important; border-radius:9px !important; }
+
+.car-fade{ position:absolute; left:0; right:0; height:52px; pointer-events:none; z-index:2; }
+.car-fade.top{ top:0; background:linear-gradient(var(--bg), transparent); }
+.car-fade.bottom{ bottom:0; background:linear-gradient(transparent, var(--bg)); }
+
+.car-pos{
+  position:absolute; right:2px; bottom:6px; z-index:3;
+  font-size:11px; color:var(--mutedFaint); font-variant-numeric:tabular-nums;
+  background:var(--bg); padding:2px 7px; border-radius:6px;
+}
+.car-arrow{
+  position:absolute; right:0; z-index:4; width:30px; height:30px; border-radius:50%;
+  background:var(--panel); border:1px solid var(--border); color:var(--muted);
+  display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px;
+  transition:all .2s ease; opacity:.9;
+}
+.car-arrow:hover{ color:var(--accent); border-color:var(--accent); transform:scale(1.06); }
+.car-arrow.up{ top:calc(50% - 74px); }
+.car-arrow.down{ top:calc(50% + 44px); }
+.car-hint{
+  text-align:center; font-size:11px; color:var(--mutedFaint); margin-top:10px; letter-spacing:.01em;
+}
+
+@media(max-width:700px){
+  :root{ --car-slot: 152px; }
+  .car-wrap{ max-width:100%; }
+  .car-card{ padding:12px; gap:12px; border-radius:14px; }
+  .car-photo{ width:86px; flex:0 0 86px; border-radius:10px; }
+  .car-name{ font-size:15px; }
+  .car-code{ font-size:11px; }
+  .car-qty .n{ font-size:26px; }
+  .car-bottom{ gap:9px; }
+  .car-btn{ padding:7px 11px !important; font-size:11.5px !important; }
+  .car-arrow.up{ top:calc(50% - 62px); }
+  .car-arrow.down{ top:calc(50% + 34px); }
+  .car-arrow{ width:27px; height:27px; font-size:13px; }
+  .car-chip{ font-size:11.5px; padding:7px 12px; }
+  .car-stage{ touch-action:pan-y; }
+}
+
 </style>
 </head>
 <body>
@@ -2824,6 +3051,7 @@ function renderLogin(){
           <p class="lg-sub">Use your company Google account or personal Gmail.</p>
 
           ${isFile ? `<div class="lg-warn"><b>Opened from a local file (file://)</b><br>Google Login only works on the live website. Please open <b>https://axms1n.github.io/SpareCube/</b> instead.</div>` : ""}
+          ${(!isFile && isInAppBrowser()) ? `<div class="lg-warn"><b>เปิดจากเบราว์เซอร์ในแอป (LINE / Facebook / Messenger)</b><br>Google ไม่อนุญาตให้ล็อกอินผ่านเบราว์เซอร์ของแอป — กด <b>⋯</b> มุมขวาบน แล้วเลือก <b>"เปิดในเบราว์เซอร์"</b> (Chrome / Safari) แล้วล็อกอินอีกครั้ง</div>` : ""}
 
           <button class="lg-btn" id="btnGoogleLogin" ${authBusy ? "disabled" : ""}>
             <span class="g"></span>
@@ -2967,6 +3195,7 @@ function partCardHtml(p){
 
 function renderInventory(){
   const allZones = [...new Set(parts.flatMap(p => getPartZones(p)).filter(z => z && z !== "__all__"))].sort((a,b) => a.localeCompare(b, "th"));
+  if (invMode === "carousel") return renderInventoryCarousel(allZones);
   const filtered = parts.filter(p => {
     const pz = getPartZones(p);
     const matchesSearch = (p.name + p.code + (p.machine||"") + pz.join(" ")).toLowerCase().includes(search.toLowerCase());
@@ -2974,11 +3203,14 @@ function renderInventory(){
     return matchesSearch && matchesZone;
   });
   const zoneFilterHtml = `
-    <div style="margin-bottom:12px;">
-      <select id="zoneFilterSelect">
+    <div class="car-toolbar">
+      <select id="zoneFilterSelect" class="car-select">
         <option value="">ทุกโซน</option>
         ${allZones.map(z => `<option value="${esc(z)}" ${zoneFilter===z?"selected":""}>${esc(z)}</option>`).join("")}
       </select>
+      <button class="btn btn-ghost car-mode" id="invModeToggle" title="สลับเป็นมุมมอง carousel">
+        <i class="ti ti-carousel-horizontal"></i> ดูแบบ carousel
+      </button>
     </div>`;
   if (filtered.length === 0) {
     return `
@@ -3037,6 +3269,263 @@ function renderInventory(){
       </div>`;
     }).join("")}
   `;
+}
+
+/* =====================================================================
+   SPARECUBE · MACHINE CAROUSEL  (v-motion)
+   เลือกเครื่องจักรแยกทีละเครื่อง แล้วเลื่อนดูอะไหล่แบบ carousel แนวตั้ง
+   เห็น 3 ใบ: กลางเต็ม · บน/ล่างโผล่ครึ่ง · เลื่อนขึ้นลงด้วยล้อ/ลาก/ปุ่ม/คีย์บอร์ด
+   ===================================================================== */
+
+/* ---------------- state ---------------- */
+let invMode = localStorage.getItem("wk_inv_mode") || "carousel"; // carousel | list
+let carMachine = localStorage.getItem("wk_car_machine") || "__all__";
+let carIndex = 0;
+let carDragging = false;
+let carWheelLock = false;
+
+/* ---------------- helpers ---------------- */
+function carMachineLabel(key){
+  return key === "__all__" ? "ทุกเครื่อง" : key === "__unassigned__" ? "ยังไม่ระบุเครื่อง" : key;
+}
+
+function carouselPool(){
+  const q = (search || "").toLowerCase();
+  return parts.filter(p => {
+    const pz = getPartZones(p);
+    const matchSearch = (p.name + p.code + (p.machine || "") + pz.join(" ")).toLowerCase().includes(q);
+    const matchZone = !zoneFilter || pz.includes(zoneFilter) || pz.includes("__all__");
+    const matchMachine = carMachine === "__all__" || (p.machine && p.machine.trim() ? p.machine.trim() : "__unassigned__") === carMachine;
+    return matchSearch && matchZone && matchMachine;
+  }).sort((a, b) => {
+    if (carMachine !== "__all__") return 0;
+    const ma = (a.machine || "\uffff"), mb = (b.machine || "\uffff");
+    return ma.localeCompare(mb, "th") || (a.name || "").localeCompare(b.name || "", "th");
+  });
+}
+
+function carMachineChips(){
+  const groups = new Map();
+  parts.forEach(p => {
+    const key = p.machine && p.machine.trim() ? p.machine.trim() : "__unassigned__";
+    groups.set(key, (groups.get(key) || 0) + 1);
+  });
+  const keys = [...groups.keys()].filter(k => k !== "__unassigned__").sort((a, b) => a.localeCompare(b, "th"));
+  if (groups.has("__unassigned__")) keys.push("__unassigned__");
+
+  if (!keys.includes(carMachine) && carMachine !== "__all__") carMachine = "__all__";
+
+  return `
+    <button type="button" class="car-chip ${carMachine === "__all__" ? "on" : ""}" data-car-machine="__all__">
+      ทุกเครื่อง <span>${parts.length}</span>
+    </button>
+    ${keys.map(k => `
+      <button type="button" class="car-chip ${carMachine === k ? "on" : ""}" data-car-machine="${esc(k)}">
+        ${esc(carMachineLabel(k))} <span>${groups.get(k)}</span>
+      </button>`).join("")}
+  `;
+}
+
+function carCardHtml(p, i){
+  const pz = getPartZones(p);
+  const zoneTxt = pz.includes("__all__") ? "ทุกโซน" : pz.join(", ");
+  const color = gaugeColor(p.qty, p.min);
+  const pct = p.max && p.max > 0 ? Math.min(100, (p.qty / Math.max(p.max, 1)) * 100) : Math.min(100, (p.qty / Math.max(p.min * 2, 1)) * 100);
+  return `
+    <article class="car-card" data-ci="${i}">
+      <div class="car-photo">
+        ${p.photo ? `<img src="${p.photo}" alt="" class="car-img zoomable">` : `<span>📦</span>`}
+      </div>
+      <div class="car-main">
+        <div class="car-top">
+          <div class="car-name">${esc(p.name)}</div>
+          <div class="car-code">${esc(p.code)} · ${esc(p.unit)}${zoneTxt ? ` · <b>${esc(zoneTxt)}</b>` : ""}</div>
+          ${p.machine ? `<div class="car-machine"><i class="ti ti-settings"></i> ${esc(p.machine)}</div>` : ""}
+        </div>
+        <div class="car-bottom">
+          <div class="car-qty">
+            <span class="n" style="color:${color}">${p.qty}</span>
+            <span class="m">/ min ${p.min}</span>
+          </div>
+          <div class="car-bar"><div style="width:${pct.toFixed(0)}%;background:${color}"></div></div>
+          <button class="btn btn-ghost car-btn" data-withdraw="${p.id}">
+            <i class="ti ti-transfer-out"></i> เบิกใช้
+          </button>
+        </div>
+      </div>
+    </article>`;
+}
+
+function renderInventoryCarousel(allZones){
+  const pool = carouselPool();
+  if (carIndex >= pool.length) carIndex = Math.max(0, pool.length - 1);
+
+  const zoneFilterHtml = `
+    <div class="car-toolbar">
+      <select id="zoneFilterSelect" class="car-select">
+        <option value="">ทุกโซน</option>
+        ${allZones.map(z => `<option value="${esc(z)}" ${zoneFilter === z ? "selected" : ""}>${esc(z)}</option>`).join("")}
+      </select>
+      <button class="btn btn-ghost car-mode" id="invModeToggle" title="สลับเป็นมุมมองรายการ">
+        <i class="ti ti-list"></i> ดูแบบรายการ
+      </button>
+    </div>`;
+
+  const searchHtml = `
+    <div class="search">
+      <span class="icon">🔍</span>
+      <input id="searchInput" placeholder="ค้นหาชื่อ รหัส หรือเครื่องจักร" value="${esc(search)}">
+    </div>`;
+
+  if (pool.length === 0){
+    return `${searchHtml}${zoneFilterHtml}
+      <div class="car-chips">${carMachineChips()}</div>
+      <div class="empty">ไม่พบอะไหล่ในเครื่องนี้</div>`;
+  }
+
+  return `
+    ${searchHtml}
+    ${zoneFilterHtml}
+    <div class="car-chips">${carMachineChips()}</div>
+    <div class="car-wrap">
+      <div class="car-stage" id="carStage" tabindex="0">
+        <div class="car-track" id="carTrack">
+          ${pool.map((p, i) => carCardHtml(p, i)).join("")}
+        </div>
+        <div class="car-fade top"></div>
+        <div class="car-fade bottom"></div>
+        <div class="car-pos" id="carPos">${String(carIndex + 1).padStart(2, "0")} / ${String(pool.length).padStart(2, "0")}</div>
+        <button class="car-arrow up" id="carPrev" aria-label="ก่อนหน้า"><i class="ti ti-chevron-up"></i></button>
+        <button class="car-arrow down" id="carNext" aria-label="ถัดไป"><i class="ti ti-chevron-down"></i></button>
+      </div>
+      <div class="car-hint">เลื่อนล้อ / ลากขึ้นลง / กดลูกศร ↑↓ เพื่อดูอะไหล่ถัดไป</div>
+    </div>`;
+}
+
+function carLayout(){
+  const track = document.getElementById("carTrack");
+  if (!track) return;
+  const cards = [...track.querySelectorAll(".car-card")];
+  if (!cards.length) return;
+
+  const stage = document.getElementById("carStage");
+  const slotH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--car-slot")) || 168;
+  const centerY = slotH; // 3 ช่อง → ช่องกลางคือ index 1
+
+  cards.forEach((el, i) => {
+    const d = i - carIndex;
+    const ad = Math.abs(d);
+    if (ad > 1) {
+      el.style.transform = `translateY(${centerY + d * slotH}px) scale(.86)`;
+      el.style.opacity = "0";
+      el.style.pointerEvents = "none";
+      el.classList.remove("is-active");
+      return;
+    }
+    el.style.transform = `translateY(${centerY + d * slotH}px) scale(${ad === 0 ? 1 : 0.9})`;
+    el.style.opacity = ad === 0 ? "1" : "0.42";
+    el.style.pointerEvents = "auto";
+    el.classList.toggle("is-active", ad === 0);
+  });
+
+  const pos = document.getElementById("carPos");
+  if (pos) pos.textContent = `${String(carIndex + 1).padStart(2, "0")} / ${String(cards.length).padStart(2, "0")}`;
+
+  // มีใบเดียว = ไม่ต้องมีลูกศร
+  const prev = document.getElementById("carPrev"), next = document.getElementById("carNext");
+  if (prev) prev.style.display = cards.length < 2 ? "none" : "flex";
+  if (next) next.style.display = cards.length < 2 ? "none" : "flex";
+  if (stage) { stage.dataset.idx = carIndex; }
+}
+
+function carGo(idx, total){
+  const max = (total ?? document.querySelectorAll("#carTrack .car-card").length) - 1;
+  carIndex = Math.max(0, Math.min(max, idx));
+  carLayout();
+}
+
+function bindCarousel(){
+  carLayout();
+  const stage = document.getElementById("carStage");
+  if (!stage) return;
+  const total = () => document.querySelectorAll("#carTrack .car-card").length;
+
+  document.getElementById("carPrev")?.addEventListener("click", (e) => { e.stopPropagation(); carGo(carIndex - 1, total()); });
+  document.getElementById("carNext")?.addEventListener("click", (e) => { e.stopPropagation(); carGo(carIndex + 1, total()); });
+
+  // เลือกเครื่อง
+  document.querySelectorAll("[data-car-machine]").forEach(el => {
+    el.addEventListener("click", () => {
+      carMachine = el.dataset.carMachine;
+      carIndex = 0;
+      localStorage.setItem("wk_car_machine", carMachine);
+      render();
+    });
+  });
+
+  // คลิกใบข้าง ๆ เพื่อเลื่อนไปใบนั้น
+  stage.querySelectorAll(".car-card").forEach(el => {
+    el.addEventListener("click", (e) => {
+      if (e.target.closest("[data-withdraw]")) return;
+      const i = Number(el.dataset.ci);
+      if (i !== carIndex) { e.stopPropagation(); carGo(i, total()); }
+    });
+  });
+
+  // ล้อเมาส์ / trackpad
+  stage.addEventListener("wheel", (e) => {
+    const dy = e.deltaY;
+    if (Math.abs(dy) < 8) return;
+    e.preventDefault();
+    if (carWheelLock) return;
+    carWheelLock = true;
+    carGo(carIndex + (dy > 0 ? 1 : -1), total());
+    setTimeout(() => { carWheelLock = false; }, 260);
+  }, { passive: false });
+
+  // ลาก/ปัด (touch + mouse)
+  let startY = 0, startX = 0, active = false, locked = false;
+  stage.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("[data-withdraw]")) return;
+    if (e.target.closest(".car-arrow")) return;
+    active = true; locked = false;
+    startY = e.clientY; startX = e.clientX;
+  });
+  stage.addEventListener("pointermove", (e) => {
+    if (!active || locked) return;
+    const dy = e.clientY - startY;
+    const dx = e.clientX - startX;
+    if (Math.abs(dy) > 46 && Math.abs(dy) > Math.abs(dx)) {
+      locked = true;
+      carGo(carIndex + (dy < 0 ? 1 : -1), total());
+    }
+  });
+  const endDrag = () => { active = false; };
+  stage.addEventListener("pointerup", endDrag);
+  stage.addEventListener("pointercancel", endDrag);
+  stage.addEventListener("pointerleave", endDrag);
+
+  // คีย์บอร์ด
+  stage.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); carGo(carIndex + 1, total()); }
+    if (e.key === "ArrowUp") { e.preventDefault(); carGo(carIndex - 1, total()); }
+  });
+
+  // ปุ่มสลับมุมมอง
+  document.getElementById("invModeToggle")?.addEventListener("click", () => {
+    invMode = "list";
+    localStorage.setItem("wk_inv_mode", invMode);
+    render();
+  });
+}
+
+/* ปุ่มสลับกลับมา carousel (ใช้ในมุมมองรายการ) */
+function bindListModeToggle(){
+  document.getElementById("invModeToggle")?.addEventListener("click", () => {
+    invMode = "carousel";
+    localStorage.setItem("wk_inv_mode", invMode);
+    render();
+  });
 }
 
 function histRow(h){
@@ -4320,6 +4809,13 @@ function friendlyAuthError(e){
   return "Sign-in failed: " + ((e && e.message) ? e.message : "") + (c ? " (" + c + ")" : "");
 }
 
+/* เปิดจากเบราว์เซอร์ในแอป (LINE / Facebook / IG / Messenger) ?
+   Google ไม่อนุญาตให้ทำ OAuth ใน webview พวกนี้ → ต้องเปิดใน Chrome/Safari */
+function isInAppBrowser(){
+  const ua = navigator.userAgent || "";
+  return /\bLine\/|FBAN|FBAV|FB_IAB|Instagram|Messenger|MicroMessenger|TikTok|Snapchat|Twitter/i.test(ua);
+}
+
 /* อยู่ในโหมดแอปติดตั้ง (PWA) หรือไม่ — โหมดนี้ popup ใช้ไม่ได้ ต้องใช้ redirect */
 function isStandaloneApp(){
   try {
@@ -4795,6 +5291,9 @@ function bindEvents(){
   document.getElementById("zoneFilterSelect")?.addEventListener("change", (e) => {
     zoneFilter = e.target.value; render();
   });
+  if (view === "inventory") {
+    if (invMode === "carousel") bindCarousel(); else bindListModeToggle();
+  }
 
   if (view === "inventory") buildScrollIndex();
 
