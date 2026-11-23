@@ -1640,6 +1640,11 @@ let editingMachineId = null;
 let savingMachine = false;
 let lightboxImg = null;
 let detailPart = null;
+/* กันคลิกที่เกิดจากการลาก/ปัด/กดค้าง — ต้องแตะสั้นๆ ไม่ขยับเท่านั้นถึงเปิด */
+let hgSuppressUntil = 0;
+function hgClickBlocked(){
+  return Date.now() < hgSuppressUntil;
+}
 let currentRole = null;   // "admin" | "approve" | "user" — มาจาก users/{uid} เท่านั้น (ไม่ใช่ localStorage)
 let currentName = "";     // ชื่อที่ใช้แสดงและบันทึกในประวัติการเบิก
 let authUser = null;      // Firebase Auth user
@@ -3492,6 +3497,42 @@ function bindHgStrips(){
     setTimeout(sync, 420);
 
     // ลากด้วยเมาส์ (จอสัมผัสใช้การปัดของเบราว์เซอร์อยู่แล้ว)
+    /* ---------- ตรวจจับ "แตะจริง" vs "ลาก/ปัด/กดค้าง" ---------- */
+    const g = { at: 0, x: 0, y: 0, scroll: 0, moved: false };
+    const blockClicks = () => { hgSuppressUntil = Date.now() + 420; };
+
+    strip.addEventListener("pointerdown", (e) => {
+      g.at = Date.now();
+      g.x = e.clientX; g.y = e.clientY;
+      g.scroll = strip.scrollLeft;
+      g.moved = false;
+    }, { passive: true });
+
+    strip.addEventListener("pointermove", (e) => {
+      if (!g.at || g.moved) return;
+      if (Math.abs(e.clientX - g.x) > 8 || Math.abs(e.clientY - g.y) > 8) g.moved = true;
+    }, { passive: true });
+
+    strip.addEventListener("pointerup", () => {
+      if (!g.at) return;
+      const held = Date.now() - g.at;
+      const scrolled = Math.abs(strip.scrollLeft - g.scroll) > 6;
+      // ลาก / เลื่อน / กดค้างเกิน 600ms  → ไม่ต้องเปิดอะไร
+      if (g.moved || scrolled || held > 600) blockClicks();
+      g.at = 0;
+    });
+
+    strip.addEventListener("pointercancel", () => {
+      blockClicks();
+      g.at = 0;
+    });
+
+    // ถ้าแถวเลื่อนระหว่างนิ้วยังกดอยู่ = ถือว่าลาก
+    strip.addEventListener("scroll", () => {
+      if (g.at) g.moved = true;
+    }, { passive: true });
+
+    /* ---------- ลากด้วยเมาส์ ---------- */
     let down = false, moved = false, startX = 0, startScroll = 0;
     strip.addEventListener("pointerdown", (e) => {
       if (e.pointerType === "touch") return;
@@ -3530,9 +3571,9 @@ function bindHgStrips(){
     strip.addEventListener("pointerleave", end);
     strip.addEventListener("pointercancel", end);
 
-    // กันคลิกโดนตอนลาก
+    // กันคลิกช่วงที่เพิ่งลาก/ปัดเสร็จ (capture phase)
     strip.addEventListener("click", (e) => {
-      if (moved) { e.preventDefault(); e.stopPropagation(); }
+      if (hgClickBlocked()) { e.preventDefault(); e.stopPropagation(); }
     }, true);
   });
 }
@@ -5129,6 +5170,7 @@ function bindEvents(){
   // คลิกรูป = ดูรูปใหญ่
   document.querySelectorAll("[data-photo]").forEach(el => el.addEventListener("click", (ev) => {
     ev.stopPropagation();
+    if (hgClickBlocked()) return;
     const p = parts.find(x => x.id === el.dataset.photo);
     if (!p) return;
     if (p.photo) { lightboxImg = p.photo; render(); }
@@ -5137,6 +5179,7 @@ function bindEvents(){
   // คลิกในกรอบ = ดูรายละเอียด
   document.querySelectorAll(".part-card[data-detail]").forEach(el => el.addEventListener("click", (ev) => {
     if (ev.target.closest("[data-withdraw],[data-edit],[data-photo]")) return;
+    if (hgClickBlocked()) return;
     detailPart = parts.find(p => p.id === el.dataset.detail) || null;
     render();
   }));
