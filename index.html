@@ -1181,6 +1181,37 @@
   }
 
 
+  /* =====================================================================
+     SCROLL INDEX v2 — ขยายอีกรอบ
+     ===================================================================== */
+  .si-list{ width:370px !important; height:270px !important; }
+  .si-item{ font-size:16.5px !important; height:54px !important; gap:12px; }
+  .si-item .si-num{ font-size:13.5px !important; }
+  .si-item .si-label{ max-width:300px !important; }
+  .si-item .si-dot{ width:8px !important; height:8px !important; flex-basis:8px !important; }
+  .si-item.passed{ font-size:15.5px !important; }
+  .si-item.active{ font-size:22px !important; padding-right:12px !important; }
+  .si-item.active .si-label{ max-width:330px !important; }
+  .si-item.active .si-dot{ width:12px !important; height:12px !important; flex-basis:12px !important; }
+  .si-track{ height:220px !important; width:4px !important; }
+  .si-pct{ font-size:14.5px !important; }
+  .si-progress{ gap:10px; }
+  .scroll-index{ right:24px; gap:20px; max-width:420px; }
+
+  @media(min-width:1181px){ .wrap{ padding-right:340px !important; } }
+
+  @media(max-width:1400px){
+    .si-list{ width:330px !important; height:250px !important; }
+    .si-item{ font-size:15.5px !important; height:50px !important; }
+    .si-item.active{ font-size:20px !important; }
+    .si-item.passed{ font-size:14.5px !important; }
+    .si-track{ height:190px !important; }
+    .wrap{ padding-right:300px !important; }
+  }
+  @media(max-width:1180px){
+    .scroll-index{ display:none !important; }
+  }
+
 </style>
 </head>
 <body>
