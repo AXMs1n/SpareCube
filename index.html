@@ -816,6 +816,127 @@
   }
   .lg-list div:hover::before{ opacity:1; transform:scaleY(1); }
 
+  /* =====================================================================
+     SKIN v2 — minimal / editorial (ให้เข้าชุดกับหน้า login)
+     ===================================================================== */
+
+  /* ---- ใช้พื้นที่เต็มจอ ---- */
+  .wrap{ max-width:1680px; margin:0 auto; padding:0 40px 64px; }
+  .topbar-inner{ max-width:1680px; padding:16px 40px 0; }
+  .content{ padding-top:22px; }
+  @media(max-width:700px){
+    .wrap{ padding:0 16px 48px; }
+    .topbar-inner{ padding:12px 16px 0; }
+  }
+
+  /* ---- แท็บ: เส้นใต้บาง แทน pill ---- */
+  .tabs{
+    background:transparent; border:0; border-bottom:1px solid var(--border);
+    border-radius:0; padding:0; gap:28px; margin:16px 0 0; overflow-x:auto;
+  }
+  .tabs .tab{
+    background:transparent !important; box-shadow:none !important; border-radius:0 !important;
+    padding:12px 2px; font-size:13px; font-weight:500; color:var(--muted);
+    border-bottom:2px solid transparent; margin-bottom:-1px; transform:none;
+  }
+  .tabs .tab i{ font-size:15px; opacity:.8; }
+  .tabs .tab:hover{ background:transparent !important; color:var(--text); }
+  .tabs .tab.active{
+    color:var(--text) !important; background:transparent !important;
+    border-bottom-color:var(--accent); box-shadow:none !important;
+  }
+  .tabs .tab .badge{ background:var(--danger); }
+
+  /* ---- ช่องค้นหา: ขีดเส้นใต้ ---- */
+  .search{ margin-bottom:20px; }
+  .search input{
+    background:transparent; border:0; border-bottom:1px solid var(--border);
+    border-radius:0; padding:10px 0 10px 28px; font-size:14px;
+  }
+  .search input:focus{ border-bottom-color:var(--accent); }
+  .search .icon{ left:4px; top:11px; }
+  #zoneFilterSelect{ max-width:280px; background:transparent; border:0; border-bottom:1px solid var(--border); border-radius:0; }
+
+  /* ---- กลุ่มเครื่องจักร: หัวข้อเล็กตัวพิมพ์ใหญ่ + เส้นคั่น ---- */
+  .machine-group{
+    border:0 !important; border-radius:0; padding:0; margin:0 0 42px; background:transparent !important;
+  }
+  .machine-group-title{
+    color:var(--muted); font-size:10.5px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:0;
+    justify-content:space-between; align-items:baseline;
+  }
+  .machine-group.unassigned .machine-group-title{ color:var(--mutedFaint); border-bottom-style:dashed; }
+
+  /* ---- อะไหล่: แถวเรียบ ไม่มีกรอบการ์ด ---- */
+  .parts-grid{ display:block !important; margin-bottom:0 !important; }
+  .part-card{
+    display:flex; align-items:center; gap:18px;
+    background:transparent; border:0; border-bottom:1px solid var(--border); border-radius:0;
+    padding:14px 8px; transition:background .18s ease, padding-left .18s ease;
+  }
+  .part-card:hover{ background:rgba(45,212,191,.05); padding-left:14px; }
+  .part-card:hover .part-name{ color:var(--accent); }
+
+  .part-photo{
+    width:52px; height:52px; flex:0 0 52px; aspect-ratio:auto;
+    border-radius:10px; overflow:hidden; background:var(--panelAlt); border:1px solid var(--border);
+  }
+  .part-photo img{ width:100%; height:100%; object-fit:cover; }
+  .edit-btn{ top:3px; right:3px; padding:3px; font-size:11px; border-radius:5px; }
+
+  .part-body{
+    flex:1; min-width:0; padding:0;
+    display:grid; grid-template-columns:1fr auto auto;
+    grid-template-areas:"name gauge btn" "code gauge btn";
+    column-gap:22px; row-gap:3px; align-items:center;
+  }
+  .part-name{ grid-area:name; font-size:14px; font-weight:600; transition:color .18s ease; }
+  .part-code{ grid-area:code; margin:0 !important; font-size:11.5px; color:var(--mutedFaint); }
+  .gauge-top{ grid-area:gauge; margin:0; display:flex; align-items:baseline; gap:7px; justify-content:flex-end; }
+  .gauge-top > span:first-child{ font-size:21px !important; line-height:1 !important; }
+  .gauge-top > span:last-child{ font-size:11px !important; }
+  .gauge-bar{ display:none; }
+
+  .withdraw-btn{
+    grid-area:btn; width:auto; margin:0; padding:7px 14px; font-size:11.5px;
+    background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--muted);
+    transition:border-color .18s ease, color .18s ease;
+  }
+  .withdraw-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .withdraw-btn i{ font-size:13px; }
+
+  /* ---- จอเล็ก: จัดใหม่ให้อ่านง่าย ---- */
+  @media(max-width:600px){
+    .part-card{ padding:12px 4px; gap:13px; }
+    .part-photo{ width:44px; height:44px; flex:0 0 44px; border-radius:8px; }
+    .part-body{ grid-template-columns:1fr auto; grid-template-areas:"name gauge" "code code" "btn btn"; row-gap:9px; column-gap:12px; }
+    .withdraw-btn{ justify-self:start; }
+    .tabs{ gap:20px; }
+    .machine-group{ margin-bottom:32px; }
+  }
+
+  /* ---- พื้นหลังแอป: จุดกริดจางแบบเดียวกับหน้า login + particle เบาลง ---- */
+  body{
+    background-image:radial-gradient(circle, rgba(45,212,191,.075) 1px, transparent 1.2px);
+    background-size:26px 26px;
+    background-attachment:fixed;
+  }
+  html[data-theme="light"] body{
+    background-image:radial-gradient(circle, rgba(15,23,42,.065) 1px, transparent 1.2px);
+  }
+  #bgParticles{ opacity:.22; }
+  html[data-theme="light"] #bgParticles{ opacity:.14; }
+  .topbar{ backdrop-filter:blur(10px); }
+
+  /* ---- เก็บรายละเอียด: กันปุ่มลอยทับแถวล่าง + ทำตัวเลขตรงคอลัมน์ ---- */
+  .wrap{ padding-bottom:104px; }
+  .gauge-top > span:first-child{
+    font-variant-numeric:tabular-nums; min-width:2.4ch; text-align:right; display:inline-block;
+  }
+  .gauge-top > span:last-child{ white-space:nowrap; }
+  @media(max-width:700px){ .wrap{ padding-bottom:120px; } }
+
 </style>
 </head>
 <body>
