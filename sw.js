@@ -1,4 +1,4 @@
-// SpareCube Service Worker — v29
+// SpareCube Service Worker — v30
 // เปลี่ยนจาก v27:
 //   1) HTML/หน้าเว็บ = network-first → อัปเดตใหม่เห็นทันที (ไม่ค้าง 1 รอบเหมือนเดิม)
 //   2) แคช CDN ที่จำเป็นจริง (เดิมคอมเมนต์บอกว่าแคช แต่ไม่ได้แคชเลย)
@@ -6,13 +6,14 @@
 //      ทำให้ไฟล์ CSS ของฟอนต์ไม่เคยถูกแคช → ออฟไลน์ฟอนต์หลุด)
 //   4) จำกัดจำนวนไฟล์ในแคช ไม่ให้โตไม่หยุด
 
-const CACHE_NAME = "sparecube-shell-v29";
+const CACHE_NAME = "sparecube-shell-v30";
 
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
+  "./logo-mark.png",
   "./icon-512.png",
 ];
 
