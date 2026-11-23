@@ -1352,10 +1352,11 @@
   .hg-wrap{ position:relative; }
   .hg-strip{
     position:relative;
-    display:flex; gap:14px; align-items:stretch;
+    --card-w:334px;
+    display:flex; gap:14px; align-items:center;
     overflow-x:auto; overflow-y:hidden;
     scroll-snap-type:x mandatory; scroll-behavior:smooth;
-    padding:6px 4px 16px; margin:0 -4px;
+    padding:10px calc(50% - var(--card-w) / 2) 18px; margin:0;
     scrollbar-width:none; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
     cursor:grab;
   }
@@ -1366,33 +1367,42 @@
   .hg-strip > .part-card{
     flex:0 0 auto;
     width:334px; max-width:86vw;
-    scroll-snap-align:start;
+    scroll-snap-align:center;
     display:flex; align-items:center; gap:14px;
     padding:14px 15px !important;
     background:var(--panel) !important;
     border:1px solid var(--border) !important;
     border-radius:15px !important;
-    opacity:.56;
-    filter:saturate(.45) brightness(.82);
+    opacity:.42;
+    filter:saturate(.35) brightness(.75);
     transition:transform .38s cubic-bezier(.22,1,.36,1), border-color .3s ease,
                box-shadow .3s ease, opacity .3s ease, filter .3s ease;
   }
-  .hg-strip > .part-card:hover{ opacity:.82; filter:none; border-color:var(--mutedFaint) !important; }
+  .hg-strip > .part-card:not(.is-center){ transform:scale(.94); }
+  .hg-strip > .part-card:hover{ opacity:.85; filter:none; border-color:var(--mutedFaint) !important; }
   .hg-strip > .part-card.is-center{
-    opacity:1; filter:none;
-    border-color:rgba(45,212,191,.5) !important;
+    opacity:1; filter:none; z-index:2;
+    border-color:rgba(45,212,191,.55) !important;
     background:linear-gradient(164deg, var(--panel), var(--panelAlt)) !important;
-    box-shadow:0 22px 40px -26px rgba(0,0,0,.95),
-               inset 3px 0 0 var(--accent),
+    box-shadow:0 26px 50px -26px rgba(0,0,0,.95),
+               0 0 0 1px rgba(45,212,191,.18),
                inset 0 1px 0 rgba(255,255,255,.05);
-    transform:translateY(-3px) scale(1.012);
+    transform:scale(1.06);
   }
 
   /* จัดเนื้อในการ์ดให้พอดีความกว้างการ์ด */
   .hg-strip > .part-card .part-photo{
     width:96px !important; height:96px !important; flex:0 0 96px !important; border-radius:13px !important;
     box-shadow:0 8px 20px -14px rgba(0,0,0,.9);
+    cursor:zoom-in; position:relative;
   }
+  .hg-strip > .part-card .part-photo::after{
+    content:"\f0b2"; font-family:"tabler-icons";
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(8,9,11,.55); color:#fff; font-size:18px;
+    opacity:0; transition:opacity .2s ease; pointer-events:none;
+  }
+  .hg-strip > .part-card .part-photo:hover::after{ opacity:1; }
   .hg-strip > .part-card .part-photo span{ font-size:30px; }
   .hg-strip > .part-card .part-body{
     grid-template-columns:minmax(0,1fr) max-content !important;
@@ -1443,8 +1453,9 @@
     .inv-select{ width:100%; height:42px; min-width:0; font-size:12.5px; }
     .inv-count{ display:none; }
 
-    .hg-strip{ gap:10px; padding:4px 2px 12px; }
+    .hg-strip{ --card-w:274px; gap:10px; padding:8px calc(50% - var(--card-w) / 2) 14px; }
     .hg-strip > .part-card{ width:274px; max-width:80vw; padding:11px !important; gap:10px; }
+    .hg-strip > .part-card.is-center{ transform:scale(1.05); }
     .hg-strip > .part-card .part-photo{ width:70px !important; height:70px !important; flex:0 0 70px !important; border-radius:11px !important; }
     .hg-strip > .part-card .part-photo span{ font-size:24px; }
     .hg-strip > .part-card .part-body{ column-gap:8px !important; row-gap:7px !important; }
@@ -1457,6 +1468,68 @@
     .hg-arrow{ width:27px; height:27px; font-size:13px; }
     .hg-arrow.left{ left:-8px; }
     .hg-arrow.right{ right:-8px; }
+  }
+
+
+  /* =====================================================================
+     PART DETAIL MODAL — คลิกรูปเพื่อดูรายละเอียด
+     ===================================================================== */
+  .pd-overlay{ align-items:center !important; padding:16px; z-index:120; }
+  .pd-modal{
+    position:relative; width:100%; max-width:440px; max-height:90vh; overflow-y:auto;
+    border-radius:18px !important; padding:0 !important; border:1px solid var(--border);
+    background:linear-gradient(168deg, var(--panel), var(--panelAlt));
+  }
+  .pd-close{
+    position:absolute; top:10px; right:10px; z-index:3;
+    width:30px; height:30px; border-radius:50%; cursor:pointer;
+    background:rgba(8,9,11,.72); border:1px solid var(--border); color:var(--text);
+    display:flex; align-items:center; justify-content:center; font-size:13px;
+  }
+  .pd-close:hover{ color:var(--accent); border-color:var(--accent); }
+  .pd-photo{
+    width:100%; height:232px; background:#0B0D10;
+    display:flex; align-items:center; justify-content:center; font-size:44px; color:var(--mutedFaint);
+    overflow:hidden;
+  }
+  .pd-photo img{ width:100%; height:100%; object-fit:contain; }
+  .pd-body{ padding:16px 18px 18px; }
+  .pd-name{ font-size:19px; font-weight:700; line-height:1.32; letter-spacing:-.2px; }
+  .pd-code{ font-size:12.5px; color:var(--mutedFaint); margin-top:4px; }
+  .pd-machine, .pd-zone{
+    font-size:12px; margin-top:7px; display:flex; align-items:center; gap:6px;
+  }
+  .pd-machine{ color:var(--machine); }
+  .pd-zone{ color:var(--accent); }
+  .pd-machine i, .pd-zone i{ font-size:13px; }
+  .pd-qty-row{ display:flex; align-items:flex-end; justify-content:space-between; margin-top:18px; gap:12px; }
+  .pd-qty{ display:flex; align-items:baseline; gap:6px; }
+  .pd-qty span{ font-size:38px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+  .pd-qty i{ font-style:normal; font-size:12px; color:var(--muted); }
+  .pd-limits{ display:flex; gap:16px; font-size:11px; color:var(--muted); }
+  .pd-limits b{ color:var(--text); font-variant-numeric:tabular-nums; }
+  .pd-bar{ height:6px; border-radius:3px; background:var(--panelAlt); overflow:hidden; margin-top:10px; }
+  .pd-bar > div{ height:100%; border-radius:3px; }
+  .pd-hist-title{
+    font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--mutedFaint); margin:20px 0 8px;
+  }
+  .pd-hist{ display:flex; flex-direction:column; gap:6px; max-height:148px; overflow-y:auto; }
+  .pd-hist-row{
+    display:flex; align-items:center; gap:9px; font-size:11.5px;
+    background:var(--panelAlt); border:1px solid var(--border); border-radius:9px; padding:7px 10px;
+  }
+  .pd-hist-row span{ flex:1; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pd-hist-row b{ color:var(--danger); font-variant-numeric:tabular-nums; }
+  .pd-hist-row i{ font-style:normal; color:var(--mutedFaint); font-size:10px; white-space:nowrap; }
+  .pd-actions{ display:flex; gap:8px; margin-top:18px; }
+  .pd-actions .btn{ flex:1; justify-content:center; padding:11px 12px; }
+
+  @media(max-width:700px){
+    .pd-photo{ height:190px; }
+    .pd-name{ font-size:17px; }
+    .pd-qty span{ font-size:32px; }
+    .pd-modal{ max-height:92vh; }
   }
 
 </style>
@@ -1565,6 +1638,7 @@ let showNewMachineInput = false;
 let editingMachineId = null;
 let savingMachine = false;
 let lightboxImg = null;
+let detailPart = null;
 let currentRole = null;   // "admin" | "approve" | "user" — มาจาก users/{uid} เท่านั้น (ไม่ใช่ localStorage)
 let currentName = "";     // ชื่อที่ใช้แสดงและบันทึกในประวัติการเบิก
 let authUser = null;      // Firebase Auth user
@@ -2927,6 +3001,7 @@ function render(){
     ${lightboxImg ? renderLightbox() : ""}
     ${prViewerFile ? renderPRViewerModal() : ""}
     ${editingPR ? renderPREditModal() : ""}
+    ${detailPart ? renderPartDetail() : ""}
   `;
   bindEvents();
 }
@@ -3190,14 +3265,65 @@ function renderDashboard(low, todayCount){
   `;
 }
 
+function renderPartDetail(){
+  const p = detailPart;
+  if (!p) return "";
+  const pz = getPartZones(p);
+  const zoneTxt = pz.includes("__all__") ? "ทุกโซน" : (pz.join(", ") || "—");
+  const color = gaugeColor(p.qty, p.min);
+  const denom = (p.max && p.max > 0) ? Math.max(p.max, 1) : Math.max(p.min * 2, 1);
+  const pct = Math.max(3, Math.min(100, (p.qty / denom) * 100));
+  const hist = (history || []).filter(h => h.partId === p.id).slice(0, 5);
+  return `
+    <div class="overlay pd-overlay" id="overlayPartDetail">
+      <div class="modal pd-modal">
+        <button class="pd-close" id="closePartDetail" aria-label="ปิด">✕</button>
+        <div class="pd-photo">
+          ${p.photo ? `<img src="${p.photo}" class="zoomable" alt="">` : `<span>📦</span>`}
+        </div>
+        <div class="pd-body">
+          <div class="pd-name">${esc(p.name)}</div>
+          <div class="pd-code">${esc(p.code)} · ${esc(p.unit)}</div>
+          ${p.machine ? `<div class="pd-machine"><i class="ti ti-settings"></i> ${esc(p.machine)}</div>` : ""}
+          <div class="pd-zone"><i class="ti ti-map-pin"></i> ${esc(zoneTxt)}</div>
+
+          <div class="pd-qty-row">
+            <div class="pd-qty"><span style="color:${color}">${p.qty}</span><i>${esc(p.unit)}</i></div>
+            <div class="pd-limits">
+              <div>ขั้นต่ำ <b>${p.min}</b></div>
+              <div>สูงสุด <b>${p.max ?? "-"}</b></div>
+            </div>
+          </div>
+          <div class="pd-bar"><div style="width:${pct.toFixed(1)}%;background:${color}"></div></div>
+
+          ${hist.length ? `
+            <div class="pd-hist-title">ประวัติล่าสุด</div>
+            <div class="pd-hist">
+              ${hist.map(h => `
+                <div class="pd-hist-row">
+                  <span>${esc(h.by || "-")} · ${esc(h.machine || "-")}</span>
+                  <b>-${h.qtyWithdrawn ?? 0}</b>
+                  <i>${fmtDate(h.timestamp)}</i>
+                </div>`).join("")}
+            </div>` : ""}
+
+          <div class="pd-actions">
+            <button class="btn btn-accent" data-withdraw="${p.id}"><i class="ti ti-transfer-out"></i> เบิกใช้</button>
+            ${currentRole === "admin" ? `<button class="btn btn-ghost" data-edit="${p.id}"><i class="ti ti-edit"></i> แก้ไข</button>` : ""}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
 function partCardHtml(p){
   const denom = (p.max && p.max > 0) ? Math.max(p.max, p.qty, 1) : Math.max(p.min * 2, p.qty, 1);
   const pct = Math.max(4, Math.min(100, (p.qty / denom) * 100));
   const color = gaugeColor(p.qty, p.min);
   return `
     <div class="part-card">
-      <div class="part-photo">
-        ${p.photo ? `<img class="zoomable" src="${p.photo}">` : "📦"}
+      <div class="part-photo" data-detail="${p.id}" role="button" tabindex="0" title="ดูรายละเอียด">
+        ${p.photo ? `<img src="${p.photo}">` : "📦"}
         ${currentRole === "admin" ? `<button class="edit-btn" data-edit="${p.id}">✎</button>` : ""}
       </div>
       <div class="part-body">
@@ -3328,10 +3454,12 @@ function bindHgStrips(){
       if (rightBtn) rightBtn.classList.toggle("off", strip.scrollLeft >= max - 2);
 
       const cards = [...strip.querySelectorAll(".part-card")];
-      // ใบที่ชิดขอบซ้ายสุด (ตำแหน่งที่หยุดสนิท) = ใบที่ถูกเน้น
+      // ใบที่อยู่กลางแถวมากที่สุด = ใบที่ถูกเน้น
+      const mid = strip.scrollLeft + strip.clientWidth / 2;
       let best = null, bestD = Infinity;
       cards.forEach(c => {
-        const d = Math.abs(c.offsetLeft - strip.scrollLeft);
+        const cc = c.offsetLeft + c.offsetWidth / 2;
+        const d = Math.abs(cc - mid);
         if (d < bestD) { bestD = d; best = c; }
         c.classList.remove("is-center");
       });
@@ -3367,10 +3495,18 @@ function bindHgStrips(){
       down = false;
       strip.classList.remove("dragging");
       if (moved) {
-        const card = strip.querySelector(".part-card");
-        const w = card ? card.getBoundingClientRect().width + 14 : 320;
-        const target = Math.round(strip.scrollLeft / w) * w;
-        strip.scrollTo({ left: target, behavior: "smooth" });
+        const cards = [...strip.querySelectorAll(".part-card")];
+        const mid = strip.scrollLeft + strip.clientWidth / 2;
+        let best = null, bestD = Infinity;
+        cards.forEach(c => {
+          const cc = c.offsetLeft + c.offsetWidth / 2;
+          const d = Math.abs(cc - mid);
+          if (d < bestD) { bestD = d; best = c; }
+        });
+        if (best) {
+          const target = best.offsetLeft - (strip.clientWidth - best.offsetWidth) / 2;
+          strip.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
+        }
       }
       moved = false;
     };
@@ -4969,9 +5105,21 @@ function bindEvents(){
   document.getElementById("btnReconcileApply")?.addEventListener("click", applyReconcile);
   document.getElementById("btnReconcileCancel")?.addEventListener("click", () => { reconcileResults = null; reconcileStatus = "idle"; render(); });
   if (view === "maintcost") bindMaintCostCharts();
-  document.querySelectorAll("[data-withdraw]").forEach(el => el.addEventListener("click", () => {
+  document.querySelectorAll("[data-withdraw]").forEach(el => el.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    detailPart = null;
     withdrawPart = parts.find(p => p.id === el.dataset.withdraw); render();
   }));
+  document.querySelectorAll("[data-detail]").forEach(el => el.addEventListener("click", (ev) => {
+    if (ev.target.closest("[data-edit]")) return;
+    ev.stopPropagation();
+    detailPart = parts.find(p => p.id === el.dataset.detail) || null;
+    render();
+  }));
+  document.getElementById("closePartDetail")?.addEventListener("click", () => { detailPart = null; render(); });
+  document.getElementById("overlayPartDetail")?.addEventListener("click", (ev) => {
+    if (ev.target.id === "overlayPartDetail") { detailPart = null; render(); }
+  });
   document.querySelectorAll("[data-edit]").forEach(el => el.addEventListener("click", () => {
     editPart = parts.find(p => p.id === el.dataset.edit); pendingPhotoBlob=null; pendingPhotoPreview=null; showNewMachineInput=false; render();
   }));
