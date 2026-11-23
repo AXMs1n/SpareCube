@@ -943,9 +943,9 @@
   /* ---- กลุ่มเครื่องจักร: กรอบสี + หัวข้อใหญ่ชัด ---- */
   .machine-group{
     border:1.5px solid var(--machine) !important;
-    border-radius:16px !important;
-    padding:18px 20px 8px !important;
-    margin:0 0 28px !important;
+    border-radius:14px !important;
+    padding:12px 16px 4px !important;
+    margin:0 0 20px !important;
     background:rgba(59,130,246,.07) !important;
   }
   html[data-theme="light"] .machine-group{ background:rgba(37,99,235,.045) !important; }
@@ -1110,7 +1110,7 @@
     z-index:30; display:flex; flex-direction:row; align-items:center; gap:18px;
     max-width:360px; pointer-events:auto;
   }
-  .si-list{ display:flex; flex-direction:column; align-items:flex-end; gap:18px; }
+  .si-list{ position:relative; width:340px; height:230px; }
   .si-progress{ display:flex; flex-direction:column; align-items:center; gap:9px; }
   .si-pct{
     font-family:'Prompt',sans-serif; font-size:12.5px; font-weight:700;
@@ -1125,11 +1125,14 @@
     transition:height .12s linear;
   }
   .si-item{
+    position:absolute; right:0; top:0; height:46px;
     display:flex; align-items:center; justify-content:flex-end; gap:10px;
-    background:none; border:0; padding:2px 0; cursor:pointer;
+    background:none; border:0; padding:0 0 0 8px; cursor:pointer;
+    will-change:transform, opacity;
     font-family:'Prompt',sans-serif; font-size:14.5px; font-weight:500;
     color:var(--mutedFaint); opacity:.5;
-    transition:opacity .28s ease, color .28s ease, transform .32s cubic-bezier(.22,1,.36,1), font-size .28s ease;
+    transition:transform .55s cubic-bezier(.22,1,.36,1), opacity .35s ease,
+               color .28s ease, font-size .3s ease, padding-right .3s ease;
     text-align:right; max-width:330px;
   }
   .si-item .si-num{
@@ -1147,12 +1150,12 @@
   .si-item:hover{ opacity:1; color:var(--text); }
 
   /* ผ่านไปแล้ว = จางตกไปอยู่ฉากหลัง */
-  .si-item.passed{ opacity:.26; color:var(--mutedFaint); transform:none; font-size:13.5px; }
+  .si-item.passed{ color:var(--mutedFaint); font-size:13.5px; }
 
   /* อยู่ตรงนี้ = ขยาย + ขาว + จุดเรืองแสง */
   .si-item.active{
-    opacity:1; color:#fff; font-size:18.5px; font-weight:700;
-    transform:translateX(-10px); letter-spacing:-.2px;
+    color:#fff; font-size:18.5px; font-weight:700;
+    padding-right:10px; letter-spacing:-.2px;
   }
   html[data-theme="light"] .si-item.active{ color:#0F172A; }
   .si-item.active .si-label{ max-width:300px; }
@@ -1163,7 +1166,19 @@
   .si-item.active .si-num{ color:var(--accent); opacity:1; }
 
   @media(max-width:1180px){ .scroll-index{ display:none !important; } }
-  @media(max-width:1400px){ .si-item{ font-size:13.5px; } .si-item.active{ font-size:16.5px; } .si-track{ height:160px; } }
+
+  /* เว้นที่ให้แถบขวา ไม่ให้ทับเนื้อหา/อนิเมชัน */
+  @media(min-width:1181px){
+    .wrap{ padding-right:300px; }
+  }
+  @media(max-width:1400px){
+    .si-item{ font-size:13.5px; }
+    .si-item.active{ font-size:16.5px; }
+    .si-track{ height:160px; }
+    .si-list{ height:210px; width:300px; }
+    .si-item{ height:42px; }
+    .wrap{ padding-right:260px; }
+  }
 
 
 </style>
@@ -1973,22 +1988,35 @@ function siUpdate(){
     fillEl.style.height = pct + "%";
   }
 
-  const items = document.querySelectorAll("#scrollIndex .si-item");
+  const items = [...document.querySelectorAll("#scrollIndex .si-item")];
   const groups = document.querySelectorAll(".machine-group[data-group]");
   if (!items.length || !groups.length) return;
+
   const probe = window.innerHeight * 0.35;
   let active = 0;
   groups.forEach((g, i) => {
-    const top = g.getBoundingClientRect().top;
-    if (top - probe <= 0) active = i;
+    if (g.getBoundingClientRect().top - probe <= 0) active = i;
   });
-  // ถึงท้ายหน้าแล้ว: บังคับให้ตัวสุดท้ายเป็น active (ไม่งั้นจะไม่มีวันถึง)
   if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 6){
     active = groups.length - 1;
   }
+
+  // กองเลื่อน: ตัวที่กำลังดูอยู่ = ช่องกลาง · ยังไม่ถึง = ล่าง · ผ่านแล้ว = บน
+  const listEl = document.querySelector("#scrollIndex .si-list");
+  const rowH = items[0] ? items[0].offsetHeight || 46 : 46;
+  const windowH = listEl ? listEl.clientHeight : rowH * 5;
+  const slots = Math.max(1, Math.round(windowH / rowH));
+  const centerY = Math.floor((slots - 1) / 2) * rowH;
+
   items.forEach((it, i) => {
-    it.classList.toggle("active", i === active);
-    it.classList.toggle("passed", i < active);
+    const d = i - active;
+    const y = centerY + d * rowH;
+    it.style.transform = `translateY(${y}px)`;
+    const ad = Math.abs(d);
+    it.style.opacity = ad === 0 ? 1 : ad === 1 ? 0.55 : ad === 2 ? 0.22 : 0;
+    it.style.pointerEvents = ad > 2 ? "none" : "auto";
+    it.classList.toggle("active", d === 0);
+    it.classList.toggle("passed", d < 0);
   });
 }
 
