@@ -1365,6 +1365,7 @@
 
   /* การ์ดในแถว: แทนที่จะเป็นแถวเต็มความกว้าง → การ์ดลอย */
   .hg-strip > .part-card{
+    cursor:pointer;
     flex:0 0 auto;
     width:334px; max-width:86vw;
     scroll-snap-align:center;
@@ -3321,8 +3322,8 @@ function partCardHtml(p){
   const pct = Math.max(4, Math.min(100, (p.qty / denom) * 100));
   const color = gaugeColor(p.qty, p.min);
   return `
-    <div class="part-card">
-      <div class="part-photo" data-detail="${p.id}" role="button" tabindex="0" title="ดูรายละเอียด">
+    <div class="part-card" data-detail="${p.id}" role="button" tabindex="0">
+      <div class="part-photo" data-photo="${p.id}" title="${p.photo ? "ดูรูปใหญ่" : "ไม่มีรูป"}">
         ${p.photo ? `<img src="${p.photo}">` : "📦"}
         ${currentRole === "admin" ? `<button class="edit-btn" data-edit="${p.id}">✎</button>` : ""}
       </div>
@@ -3465,6 +3466,21 @@ function bindHgStrips(){
       });
       if (best) best.classList.add("is-center");
     };
+
+    // เริ่มต้น: ให้การ์ดกลางแถวถูกเลือก (ถ้ามีตั้งแต่ 3 ใบขึ้นไป)
+    const cardsNow = [...strip.querySelectorAll(".part-card")];
+    const startIdx = cardsNow.length >= 3 ? Math.floor(cardsNow.length / 2) : 0;
+    const centerOn = (idx) => {
+      const c = cardsNow[idx];
+      if (!c) return;
+      const target = c.offsetLeft - (strip.clientWidth - c.offsetWidth) / 2;
+      strip.scrollLeft = Math.max(0, target);
+    };
+    if (startIdx > 0) {
+      requestAnimationFrame(() => centerOn(startIdx));
+      setTimeout(() => centerOn(startIdx), 90);
+      setTimeout(() => centerOn(startIdx), 350);
+    }
 
     let raf = 0;
     strip.addEventListener("scroll", () => {
@@ -5110,9 +5126,17 @@ function bindEvents(){
     detailPart = null;
     withdrawPart = parts.find(p => p.id === el.dataset.withdraw); render();
   }));
-  document.querySelectorAll("[data-detail]").forEach(el => el.addEventListener("click", (ev) => {
-    if (ev.target.closest("[data-edit]")) return;
+  // คลิกรูป = ดูรูปใหญ่
+  document.querySelectorAll("[data-photo]").forEach(el => el.addEventListener("click", (ev) => {
     ev.stopPropagation();
+    const p = parts.find(x => x.id === el.dataset.photo);
+    if (!p) return;
+    if (p.photo) { lightboxImg = p.photo; render(); }
+    else { detailPart = p; render(); }   // ไม่มีรูป → เปิดรายละเอียดแทน
+  }));
+  // คลิกในกรอบ = ดูรายละเอียด
+  document.querySelectorAll(".part-card[data-detail]").forEach(el => el.addEventListener("click", (ev) => {
+    if (ev.target.closest("[data-withdraw],[data-edit],[data-photo]")) return;
     detailPart = parts.find(p => p.id === el.dataset.detail) || null;
     render();
   }));
