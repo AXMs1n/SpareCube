@@ -1102,6 +1102,81 @@
     .mg-body > .parts-grid{ transform:none !important; opacity:1 !important; }
   }
 
+  /* =====================================================================
+     SCROLL INDEX — แถบชื่อเครื่องจักรด้านขวา (แบบ getartcraft)
+     ===================================================================== */
+  .scroll-index{
+    position:fixed; right:28px; top:50%; transform:translateY(-50%);
+    z-index:30; display:flex; flex-direction:column; align-items:flex-end; gap:16px;
+    max-width:280px; pointer-events:auto;
+  }
+  .si-item{
+    display:flex; align-items:center; justify-content:flex-end; gap:10px;
+    background:none; border:0; padding:2px 0; cursor:pointer;
+    font-family:'Prompt',sans-serif; font-size:12.5px; font-weight:500;
+    color:var(--mutedFaint); opacity:.5;
+    transition:opacity .28s ease, color .28s ease, transform .32s cubic-bezier(.22,1,.36,1), font-size .28s ease;
+    text-align:right; max-width:270px;
+  }
+  .si-item .si-num{
+    font-size:10px; font-weight:600; opacity:.7; letter-spacing:.06em;
+    font-variant-numeric:tabular-nums; flex:0 0 auto;
+  }
+  .si-item .si-label{
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:210px;
+    transition:max-width .3s ease;
+  }
+  .si-item .si-dot{
+    width:5px; height:5px; border-radius:50%; background:currentColor;
+    flex:0 0 5px; transition:all .28s ease;
+  }
+  .si-item:hover{ opacity:1; color:var(--text); }
+
+  /* ผ่านไปแล้ว = จางตกไปอยู่ฉากหลัง */
+  .si-item.passed{ opacity:.22; color:var(--mutedFaint); transform:none; font-size:12px; }
+
+  /* อยู่ตรงนี้ = ขยาย + ขาว + จุดเรืองแสง */
+  .si-item.active{
+    opacity:1; color:#fff; font-size:15.5px; font-weight:700;
+    transform:translateX(-8px);
+  }
+  html[data-theme="light"] .si-item.active{ color:#0F172A; }
+  .si-item.active .si-label{ max-width:250px; }
+  .si-item.active .si-dot{
+    width:8px; height:8px; flex-basis:8px; background:var(--accent);
+    box-shadow:0 0 0 4px rgba(45,212,191,.15), 0 0 12px rgba(45,212,191,.8);
+  }
+  .si-item.active .si-num{ color:var(--accent); opacity:1; }
+
+  @media(max-width:1180px){ .scroll-index{ display:none !important; } }
+
+  /* ---- ปุ่ม Microsoft + เส้นคั่น "or" ---- */
+  .lg-or{
+    display:flex; align-items:center; gap:12px; margin:16px 0 4px;
+    color:var(--lg-faint,#9a988f); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .lg-or::before, .lg-or::after{
+    content:""; flex:1; height:1px; background:var(--lg-line,#e4e2dc);
+  }
+  .lg-btn-ms{
+    margin-top:14px;
+    background:transparent; color:var(--lg-ink,#1c1c1a);
+    border:1px solid var(--lg-line,#e4e2dc);
+    animation:none;
+  }
+  .lg-btn-ms:hover{ box-shadow:0 10px 24px -14px rgba(0,0,0,.5); }
+  .lg-btn-ms .arrow{ opacity:.6; }
+  .ms-logo{
+    display:grid; grid-template-columns:1fr 1fr; gap:2px;
+    width:16px; height:16px; flex:0 0 16px;
+  }
+  .ms-logo i{ display:block; width:100%; height:100%; }
+  .ms-logo i:nth-child(1){ background:#F25022; }
+  .ms-logo i:nth-child(2){ background:#7FBA00; }
+  .ms-logo i:nth-child(3){ background:#00A4EF; }
+  .ms-logo i:nth-child(4){ background:#FFB900; }
+  html[data-theme="dark"] .lg-btn-ms .ripple{ background:rgba(255,255,255,.18); }
+
 </style>
 </head>
 <body>
@@ -1134,8 +1209,8 @@ import {
   runTransaction, serverTimestamp, query, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
-  signOut, onAuthStateChanged, setPersistence, browserLocalPersistence
+  getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, signInWithRedirect,
+  getRedirectResult, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 /* หมายเหตุ: ไม่ใช้ Firebase Storage เพราะ Google เปลี่ยนนโยบายให้ต้องผูกบัตรเครดิต (Blaze plan)
    ถึงจะใช้ได้แล้ว เราเลยเก็บรูปเป็น base64 ไว้ในเอกสาร Firestore แทน ยังฟรี 100% ไม่ต้องผูกบัตร */
@@ -1165,6 +1240,16 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
+
+/* Microsoft / Outlook — ต้องเปิด provider "Microsoft" ใน Firebase Console ก่อน
+   (Authentication → Sign-in method → Microsoft → ใส่ Client ID / Secret จาก Azure)
+   รองรับทั้งอีเมลบริษัท (@company.com) และ outlook.com / hotmail.com / live.com
+   ถ้าใน Azure ตั้งเป็น "Accounts in any organizational directory and personal Microsoft accounts" */
+const msProvider = new OAuthProvider("microsoft.com");
+msProvider.setCustomParameters({ prompt: "select_account" });
+msProvider.addScope("openid");
+msProvider.addScope("profile");
+msProvider.addScope("email");
 
 const ROLE_LABEL = { admin: "Admin", approve: "Approve", user: "User" };
 const VALID_ROLES = ["admin", "approve", "user"];
@@ -1893,6 +1978,70 @@ function mountAiScanFab(){
   document.getElementById("btnAiScanClose").addEventListener("click", closeAiScan);
 }
 
+/* ---------------- Scroll index (แถบชื่อเครื่องจักรด้านขวา) ---------------- */
+let siRAF = null, siBound = false;
+
+function siUpdate(){
+  const items = document.querySelectorAll("#scrollIndex .si-item");
+  const groups = document.querySelectorAll(".machine-group[data-group]");
+  if (!items.length || !groups.length) return;
+  const probe = window.innerHeight * 0.35;
+  let active = 0;
+  groups.forEach((g, i) => {
+    const top = g.getBoundingClientRect().top;
+    if (top - probe <= 0) active = i;
+  });
+  // ถึงท้ายหน้าแล้ว: บังคับให้ตัวสุดท้ายเป็น active (ไม่งั้นจะไม่มีวันถึง)
+  if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 6){
+    active = groups.length - 1;
+  }
+  items.forEach((it, i) => {
+    it.classList.toggle("active", i === active);
+    it.classList.toggle("passed", i < active);
+  });
+}
+
+function siOnScroll(){
+  if (siRAF) return;
+  siRAF = requestAnimationFrame(() => { siRAF = null; siUpdate(); });
+}
+
+function buildScrollIndex(){
+  const nav = document.getElementById("scrollIndex");
+  if (!nav) return;
+  const groups = [...document.querySelectorAll(".machine-group[data-group]")];
+
+  nav.innerHTML = groups.map((g, i) => {
+    const key = g.dataset.group;
+    const label = key === "__unassigned__" ? "ยังไม่ระบุเครื่องจักร" : key;
+    return `<button type="button" class="si-item" data-si="${esc(key)}" title="${esc(label)}">
+      <span class="si-num">${String(i + 1).padStart(2, "0")}</span>
+      <span class="si-label">${esc(label)}</span>
+      <span class="si-dot"></span>
+    </button>`;
+  }).join("");
+
+  nav.style.display = groups.length ? "" : "none";
+
+  nav.querySelectorAll("[data-si]").forEach(btn => btn.addEventListener("click", () => {
+    const key = btn.dataset.si;
+    const card = [...document.querySelectorAll(".machine-group[data-group]")]
+      .find(el => el.dataset.group === key);
+    if (!card) return;
+    if (!card.classList.contains("open")) card.querySelector(".mg-toggle")?.click();
+    const y = card.getBoundingClientRect().top + window.scrollY - 120;
+    window.scrollTo({ top: y, behavior: "smooth" });
+    siUpdate();
+  }));
+
+  if (!siBound){
+    siBound = true;
+    window.addEventListener("scroll", siOnScroll, { passive: true });
+    window.addEventListener("resize", siOnScroll);
+  }
+  siUpdate();
+}
+
 /* ---------------- สถานะการเปิด/ปิดชั้นเครื่องจักร ---------------- */
 let openGroups = (() => {
   try {
@@ -2615,7 +2764,7 @@ function renderLogin(){
           </div>
 
           <h2>Sign in</h2>
-          <p class="lg-sub">Use your company Google account or personal Gmail.</p>
+          <p class="lg-sub">Use your company Google or Microsoft account.</p>
 
           ${isFile ? `<div class="lg-warn"><b>Opened from a local file (file://)</b><br>Google Login only works on the live website. Please open <b>https://axms1n.github.io/SpareCube/</b> instead.</div>` : ""}
 
@@ -2625,7 +2774,15 @@ function renderLogin(){
             <span class="arrow">→</span>
           </button>
 
-          <div class="lg-status ${authBusy ? "show" : ""}">Redirecting to Google…</div>
+          <div class="lg-or"><span>or</span></div>
+
+          <button class="lg-btn lg-btn-ms" id="btnMicrosoftLogin" ${authBusy ? "disabled" : ""}>
+            <span class="ms-logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            <span>Continue with Microsoft</span>
+            <span class="arrow">→</span>
+          </button>
+
+          <div class="lg-status ${authBusy ? "show" : ""}">Redirecting…</div>
 
           ${authError ? `<div class="lg-err">${esc(authError)}</div>` : ""}
 
@@ -2805,6 +2962,8 @@ function renderInventory(){
   }
 
   return `
+    <nav class="scroll-index" id="scrollIndex" aria-label="รายชื่อเครื่องจักร"></nav>
+
     <div class="search">
       <span class="icon">🔍</span>
       <input id="searchInput" placeholder="ค้นหาชื่อ รหัส หรือเครื่องจักร" value="${esc(search)}">
@@ -4101,7 +4260,7 @@ function friendlyAuthError(e){
   if (c === "auth/popup-blocked")            return "Your browser blocked the sign-in popup. Allow popups for this site and try again.";
   if (c === "auth/popup-closed-by-user")     return "The sign-in window was closed before finishing. Please try again.";
   if (c === "auth/cancelled-popup-request")  return "A sign-in window is already open.";
-  if (c === "auth/operation-not-allowed")    return "Google sign-in is not enabled in the Firebase Console (Authentication → Sign-in method).";
+  if (c === "auth/operation-not-allowed")    return "This sign-in method is not enabled yet in the Firebase Console (Authentication → Sign-in method).";
   if (c === "auth/unauthorized-domain") {
     if (location.protocol === "file:" || !location.hostname)
       return "This page is open from a local file (file://). Google Login only works on the live website — open https://axms1n.github.io/SpareCube/ instead.";
@@ -4130,20 +4289,20 @@ const POPUP_FALLBACK_CODES = [
   "auth/web-storage-unsupported",
 ];
 
-async function doGoogleLogin(){
+async function doProviderLogin(provider){
   if (authBusy) return;
   authBusy = true; authError = "";
 
   // 1) แอปติดตั้ง (PWA) → redirect ตั้งแต่แรก
   if (isStandaloneApp()) {
     render();
-    try { await signInWithRedirect(auth, googleProvider); }
+    try { await signInWithRedirect(auth, provider); }
     catch (e) { authBusy = false; authError = friendlyAuthError(e); render(); }
     return;
   }
 
   // 2) เบราว์เซอร์ปกติ → popup ก่อน (ต้องเรียกทันทีก่อน await ใดๆ เพื่อไม่ให้เสีย user gesture)
-  const pending = signInWithPopup(auth, googleProvider);
+  const pending = signInWithPopup(auth, provider);
   render();
   try {
     await pending;
@@ -4151,7 +4310,7 @@ async function doGoogleLogin(){
   } catch (e) {
     const c = (e && e.code) || "";
     if (POPUP_FALLBACK_CODES.includes(c)) {
-      try { await signInWithRedirect(auth, googleProvider); return; } // หน้านี้จะพาไป Google แล้วกลับมาเอง
+      try { await signInWithRedirect(auth, provider); return; }
       catch (e2) { e = e2; }
     }
     authBusy = false;
@@ -4159,6 +4318,9 @@ async function doGoogleLogin(){
     render();
   }
 }
+
+const doGoogleLogin = () => doProviderLogin(googleProvider);
+const doMicrosoftLogin = () => doProviderLogin(msProvider);
 
 function bindLoginEvents(){
   document.getElementById("btnGoogleLogin")?.addEventListener("click", (e) => {
@@ -4173,6 +4335,20 @@ function bindLoginEvents(){
     btn.appendChild(span);
     setTimeout(() => span.remove(), 600);
     doGoogleLogin();
+  });
+  const msBtn = document.getElementById("btnMicrosoftLogin");
+  if (msBtn) msBtn.addEventListener("click", (e) => {
+    const btn = e.currentTarget;
+    const r = btn.getBoundingClientRect();
+    const size = Math.max(r.width, r.height);
+    const span = document.createElement("span");
+    span.className = "ripple";
+    span.style.width = span.style.height = size + "px";
+    span.style.left = (e.clientX - r.left - size / 2) + "px";
+    span.style.top  = (e.clientY - r.top  - size / 2) + "px";
+    btn.appendChild(span);
+    setTimeout(() => span.remove(), 600);
+    doMicrosoftLogin();
   });
   document.getElementById("btnThemeLogin")?.addEventListener("click", toggleTheme);
 }
@@ -4585,6 +4761,8 @@ function bindEvents(){
   document.getElementById("zoneFilterSelect")?.addEventListener("change", (e) => {
     zoneFilter = e.target.value; render();
   });
+
+  if (view === "inventory") buildScrollIndex();
 
   /* กดหัวชั้น = พลิกเปิด/ปิด (ไม่ re-render เพื่อให้อนิเมชันเล่นได้) */
   document.querySelectorAll("[data-group-toggle]").forEach(el => el.addEventListener("click", (ev) => {
