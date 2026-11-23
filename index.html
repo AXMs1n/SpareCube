@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SpareCube</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json?v=3">
 <meta name="theme-color" content="#14161A">
 <script>
   /* ตั้งธีมก่อนวาดหน้า จะได้ไม่กระพริบ */
@@ -14,9 +14,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SpareCube">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="favicon.png?v=3">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=3">
+<link rel="apple-touch-icon" href="icon-192.png?v=3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
@@ -113,10 +113,10 @@
   .topbar{position:sticky;top:0;background:radial-gradient(ellipse at 8% 50%, rgba(45,212,191,0.18), transparent 60%), var(--bg);border-bottom:1px solid var(--border);z-index:20;}
   .topbar-inner{max-width:1180px;margin:0 auto;padding:20px 24px 0;}
   .brand{display:flex;align-items:center;gap:10px;}
-  .brand img{border-radius:10px;box-shadow:0 0 14px #2DD4BF44;}
-  .brand-icon-wrap{position:relative;display:inline-block;border-radius:10px;overflow:hidden;flex-shrink:0;animation:brandGlowPulse 3s ease-in-out infinite;}
+  .brand img{border-radius:0;box-shadow:none;}
+  .brand-icon-wrap{position:relative;display:inline-block;border-radius:0;overflow:visible;flex-shrink:0;animation:none;}
   .brand-icon-wrap img{display:block;box-shadow:none !important;}
-  .brand-icon-wrap::after{
+  .brand-icon-wrap::after{ display:none !important; content:none;
     content:"";
     position:absolute; left:0; right:0; height:40%;
     background:linear-gradient(180deg, transparent, rgba(160,255,240,0.9), transparent);
@@ -151,8 +151,8 @@
   @media (max-width:480px){
     .topbar-inner{padding:14px 14px 0;}
     .row{flex-wrap:wrap;row-gap:10px;}
-    .brand img{width:34px !important;height:34px !important;border-radius:8px;}
-    .brand-icon-wrap{border-radius:8px;}
+    .brand img{width:34px !important;height:34px !important;border-radius:0;}
+    .brand-icon-wrap{border-radius:0;}
     .brand .head{font-size:17px !important;}
     #btnAdd{padding:8px 10px;font-size:12px;white-space:nowrap;}
     .row > div:last-child{gap:8px !important;}
@@ -660,8 +660,8 @@
     animation:lgRise .7s ease both;
   }
   .lg-mark-img{
-    width:44px; height:44px; border-radius:12px; object-fit:cover;
-    box-shadow:0 8px 22px rgba(0,0,0,.28);
+    width:44px; height:44px; border-radius:0; object-fit:contain;
+    box-shadow:none;
     animation:lgFloat 5s ease-in-out infinite;
   }
   .lg-name{ display:inline-flex; align-items:baseline; }
@@ -765,7 +765,7 @@
 
     /* บนมือถือ: โชว์ตรา + ชื่อเว็บด้านบนการ์ด (เพราะแผงซ้ายถูกซ่อน) */
     .lg-brand-m{ display:flex; align-items:center; gap:12px; margin-bottom:34px; }
-    .lg-brand-m .lg-mark-img{ width:40px; height:40px; border-radius:11px; animation:none; }
+    .lg-brand-m .lg-mark-img{ width:40px; height:40px; border-radius:0; animation:none; }
     .lg-brand-m .lg-name{ font-size:21px; font-weight:700; letter-spacing:-.4px; }
   }
   @media (prefers-reduced-motion:reduce){
@@ -780,7 +780,7 @@
      ===================================================================== */
   @keyframes lgPop   { 0%{opacity:0; transform:scale(.94);} 100%{opacity:1; transform:scale(1);} }
   @keyframes lgSweep { 0%{transform:translateX(-130%);} 100%{transform:translateX(240%);} }
-  @keyframes lgGlow  { 0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.28);} 50%{box-shadow:0 8px 26px rgba(45,212,191,.5);} }
+  @keyframes lgGlow  { 0%,100%{filter:drop-shadow(0 0 0 rgba(45,212,191,0));} 50%{filter:drop-shadow(0 0 10px rgba(45,212,191,.55));} }
 
   /* ให้แต่ละส่วนของการ์ดไล่โผล่ทีละจังหวะ (แทนที่จะโผล่พร้อมกันทั้งก้อน) */
   .lg-wrap .lg-panel{ animation:none; }
