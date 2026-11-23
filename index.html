@@ -1320,14 +1320,38 @@
   /* =====================================================================
      HORIZONTAL PART STRIP — แต่ละเครื่องเลื่อนซ้าย/ขวาแยกกัน (scroll-snap)
      ===================================================================== */
-  .inv-toolbar{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
-  .inv-select{
-    flex:0 1 220px; padding:9px 12px; font-size:13px;
-    background:var(--panelAlt); border:1px solid var(--border); border-radius:9px; color:var(--text);
+  /* ---- แถบค้นหา + ตัวกรอง (แบบใหม่) ---- */
+  .inv-bar{ display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+  .inv-search{ position:relative; flex:1 1 260px; min-width:0; display:flex; align-items:center; }
+  .inv-search input{
+    width:100%; height:44px; padding:0 40px 0 40px; font-size:13.5px;
+    background:var(--panel); border:1px solid var(--border); border-radius:12px;
+    transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
   }
+  .inv-search input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(45,212,191,.13); }
+  .inv-search input::placeholder{ color:var(--mutedFaint); }
+  .inv-ico{ position:absolute; left:14px; font-size:15px; color:var(--mutedFaint); pointer-events:none; }
+  .inv-clear{
+    position:absolute; right:8px; width:26px; height:26px; border-radius:50%;
+    border:0; background:var(--panelAlt); color:var(--muted); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:12px;
+  }
+  .inv-clear:hover{ color:var(--text); }
+  .inv-select-wrap{ position:relative; flex:0 0 auto; display:flex; align-items:center; }
+  .inv-select{
+    appearance:none; -webkit-appearance:none; height:44px; min-width:158px;
+    padding:0 38px 0 38px; font-size:13px; font-weight:500;
+    background:var(--panel); border:1px solid var(--border); border-radius:12px;
+    color:var(--text); cursor:pointer; transition:border-color .2s ease;
+  }
+  .inv-select:hover{ border-color:var(--mutedFaint); }
+  .inv-ico-l{ position:absolute; left:13px; font-size:14px; color:var(--mutedFaint); pointer-events:none; }
+  .inv-chev{ position:absolute; right:13px; font-size:13px; color:var(--muted); pointer-events:none; }
+  .inv-count{ font-size:11.5px; color:var(--mutedFaint); font-variant-numeric:tabular-nums; margin-left:auto; }
 
   .hg-wrap{ position:relative; }
   .hg-strip{
+    position:relative;
     display:flex; gap:14px; align-items:stretch;
     overflow-x:auto; overflow-y:hidden;
     scroll-snap-type:x mandatory; scroll-behavior:smooth;
@@ -1341,26 +1365,35 @@
   /* การ์ดในแถว: แทนที่จะเป็นแถวเต็มความกว้าง → การ์ดลอย */
   .hg-strip > .part-card{
     flex:0 0 auto;
-    width:318px; max-width:84vw;
-    scroll-snap-align:center;
+    width:334px; max-width:86vw;
+    scroll-snap-align:start;
     display:flex; align-items:center; gap:14px;
-    padding:13px 15px !important;
+    padding:14px 15px !important;
     background:var(--panel) !important;
     border:1px solid var(--border) !important;
-    border-radius:14px !important;
-    transition:transform .32s cubic-bezier(.22,1,.36,1), border-color .28s ease, box-shadow .28s ease, opacity .28s ease;
+    border-radius:15px !important;
+    opacity:.56;
+    filter:saturate(.45) brightness(.82);
+    transition:transform .38s cubic-bezier(.22,1,.36,1), border-color .3s ease,
+               box-shadow .3s ease, opacity .3s ease, filter .3s ease;
   }
-  .hg-strip > .part-card:hover{ transform:translateY(-2px); border-color:var(--mutedFaint) !important; }
+  .hg-strip > .part-card:hover{ opacity:.82; filter:none; border-color:var(--mutedFaint) !important; }
   .hg-strip > .part-card.is-center{
-    border-color:rgba(45,212,191,.45) !important;
-    box-shadow:0 18px 34px -24px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.04);
-    transform:translateY(-3px);
+    opacity:1; filter:none;
+    border-color:rgba(45,212,191,.5) !important;
+    background:linear-gradient(164deg, var(--panel), var(--panelAlt)) !important;
+    box-shadow:0 22px 40px -26px rgba(0,0,0,.95),
+               inset 3px 0 0 var(--accent),
+               inset 0 1px 0 rgba(255,255,255,.05);
+    transform:translateY(-3px) scale(1.012);
   }
 
   /* จัดเนื้อในการ์ดให้พอดีความกว้างการ์ด */
   .hg-strip > .part-card .part-photo{
-    width:66px !important; height:66px !important; flex:0 0 66px !important; border-radius:11px !important;
+    width:96px !important; height:96px !important; flex:0 0 96px !important; border-radius:13px !important;
+    box-shadow:0 8px 20px -14px rgba(0,0,0,.9);
   }
+  .hg-strip > .part-card .part-photo span{ font-size:30px; }
   .hg-strip > .part-card .part-body{
     grid-template-columns:minmax(0,1fr) max-content !important;
     grid-template-areas:"name gauge" "code btn" !important;
@@ -1369,9 +1402,14 @@
   }
   .hg-strip > .part-card .gauge-top{ white-space:nowrap !important; flex:0 0 auto; }
   .hg-strip > .part-card .part-name{
-    font-size:15px !important; font-weight:600 !important; line-height:1.32 !important; letter-spacing:0 !important;
+    font-size:15px !important; font-weight:600 !important; line-height:1.3 !important; letter-spacing:-.1px !important;
+    color:var(--muted) !important;
     white-space:normal !important; overflow:hidden !important; text-overflow:clip !important;
     display:-webkit-box !important; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    transition:color .3s ease, font-size .3s ease;
+  }
+  .hg-strip > .part-card.is-center .part-name{
+    font-size:17px !important; font-weight:700 !important; color:var(--text) !important;
   }
   .hg-strip > .part-card .part-code{ font-size:11.5px !important; line-height:1.35 !important; }
   .hg-strip > .part-card .machine-tag{ display:none !important; }
@@ -1398,13 +1436,22 @@
   .hg-arrow.off{ opacity:0; pointer-events:none; }
 
   @media(max-width:700px){
+    .inv-bar{ gap:8px; margin-bottom:16px; }
+    .inv-search{ flex:1 1 100%; }
+    .inv-search input{ height:42px; font-size:13px; }
+    .inv-select-wrap{ flex:1 1 auto; }
+    .inv-select{ width:100%; height:42px; min-width:0; font-size:12.5px; }
+    .inv-count{ display:none; }
+
     .hg-strip{ gap:10px; padding:4px 2px 12px; }
-    .hg-strip > .part-card{ width:266px; max-width:78vw; padding:10px !important; gap:9px; }
-    .hg-strip > .part-card .part-photo{ width:48px !important; height:48px !important; flex:0 0 48px !important; border-radius:9px !important; }
+    .hg-strip > .part-card{ width:274px; max-width:80vw; padding:11px !important; gap:10px; }
+    .hg-strip > .part-card .part-photo{ width:70px !important; height:70px !important; flex:0 0 70px !important; border-radius:11px !important; }
+    .hg-strip > .part-card .part-photo span{ font-size:24px; }
     .hg-strip > .part-card .part-body{ column-gap:8px !important; row-gap:7px !important; }
-    .hg-strip > .part-card .part-name{ font-size:13px !important; line-height:1.3 !important; }
+    .hg-strip > .part-card .part-name{ font-size:13.5px !important; line-height:1.28 !important; }
+    .hg-strip > .part-card.is-center .part-name{ font-size:15px !important; }
     .hg-strip > .part-card .part-code{ font-size:10.5px !important; }
-    .hg-strip > .part-card .gauge-top > span:first-child{ font-size:20px !important; }
+    .hg-strip > .part-card .gauge-top > span:first-child{ font-size:22px !important; }
     .hg-strip > .part-card .gauge-top > span:last-child{ font-size:9.5px !important; }
     .hg-strip > .part-card .withdraw-btn{ padding:6px 10px !important; font-size:11px !important; }
     .hg-arrow{ width:27px; height:27px; font-size:13px; }
@@ -3174,20 +3221,26 @@ function renderInventory(){
     const matchesZone = !zoneFilter || pz.includes(zoneFilter) || pz.includes("__all__");
     return matchesSearch && matchesZone;
   });
-  const zoneFilterHtml = `
-    <div class="inv-toolbar">
-      <select id="zoneFilterSelect" class="inv-select">
-        <option value="">ทุกโซน</option>
-        ${allZones.map(z => `<option value="${esc(z)}" ${zoneFilter===z?"selected":""}>${esc(z)}</option>`).join("")}
-      </select>
+  const invTopHtml = `
+    <div class="inv-bar">
+      <div class="inv-search">
+        <i class="ti ti-search inv-ico"></i>
+        <input id="searchInput" placeholder="ค้นหาชื่อ รหัส หรือเครื่องจักร" value="${esc(search)}">
+        ${search ? `<button type="button" class="inv-clear" id="invClear" aria-label="ล้างคำค้น"><i class="ti ti-x"></i></button>` : ""}
+      </div>
+      <div class="inv-select-wrap">
+        <i class="ti ti-map-pin inv-ico-l"></i>
+        <select id="zoneFilterSelect" class="inv-select">
+          <option value="">ทุกโซน</option>
+          ${allZones.map(z => `<option value="${esc(z)}" ${zoneFilter===z?"selected":""}>${esc(z)}</option>`).join("")}
+        </select>
+        <i class="ti ti-chevron-down inv-chev"></i>
+      </div>
+      <span class="inv-count">${filtered.length} รายการ</span>
     </div>`;
   if (filtered.length === 0) {
     return `
-      <div class="search">
-        <span class="icon">🔍</span>
-        <input id="searchInput" placeholder="ค้นหาชื่อ รหัส หรือเครื่องจักร" value="${esc(search)}">
-      </div>
-      ${zoneFilterHtml}
+      ${invTopHtml}
       <div class="empty">ไม่พบอะไหล่ ลองเพิ่มรายการใหม่</div>
     `;
   }
@@ -3214,11 +3267,7 @@ function renderInventory(){
   return `
     <nav class="scroll-index" id="scrollIndex" aria-label="รายชื่อเครื่องจักร"></nav>
 
-    <div class="search">
-      <span class="icon">🔍</span>
-      <input id="searchInput" placeholder="ค้นหาชื่อ รหัส หรือเครื่องจักร" value="${esc(search)}">
-    </div>
-    ${zoneFilterHtml}
+    ${invTopHtml}
     ${machineKeys.map(key => {
       const isUnassigned = key === "__unassigned__";
       const groupParts = groups.get(key);
@@ -3279,15 +3328,10 @@ function bindHgStrips(){
       if (rightBtn) rightBtn.classList.toggle("off", strip.scrollLeft >= max - 2);
 
       const cards = [...strip.querySelectorAll(".part-card")];
-      if (strip.scrollWidth <= strip.clientWidth + 4){
-        cards.forEach(c => c.classList.remove("is-center"));
-        return;
-      }
-      const mid = strip.scrollLeft + strip.clientWidth / 2;
+      // ใบที่ชิดขอบซ้ายสุด (ตำแหน่งที่หยุดสนิท) = ใบที่ถูกเน้น
       let best = null, bestD = Infinity;
       cards.forEach(c => {
-        const cc = c.offsetLeft + c.offsetWidth / 2;
-        const d = Math.abs(cc - mid);
+        const d = Math.abs(c.offsetLeft - strip.scrollLeft);
         if (d < bestD) { bestD = d; best = c; }
         c.classList.remove("is-center");
       });
@@ -3300,6 +3344,8 @@ function bindHgStrips(){
       raf = requestAnimationFrame(sync);
     }, { passive: true });
     requestAnimationFrame(sync);
+    setTimeout(sync, 120);
+    setTimeout(sync, 420);
 
     // ลากด้วยเมาส์ (จอสัมผัสใช้การปัดของเบราว์เซอร์อยู่แล้ว)
     let down = false, moved = false, startX = 0, startScroll = 0;
@@ -4912,6 +4958,7 @@ function bindEvents(){
       await signOut(auth);   // onAuthStateChanged จะ render หน้าล็อกอินให้เอง
     }
   });
+  document.getElementById("invClear")?.addEventListener("click", () => { search = ""; render(); });
   document.getElementById("btnAdd")?.addEventListener("click", () => { addOpen = true; pendingPhotoBlob=null; pendingPhotoPreview=null; showNewMachineInput=false; render(); });
   document.querySelectorAll("[data-tab]").forEach(el => el.addEventListener("click", () => { view = el.dataset.tab; search=""; render(); }));
   document.getElementById("btnMcRefresh")?.addEventListener("click", () => { maintRefreshing = true; ensureMaintDataLoaded(true); });
