@@ -1316,128 +1316,101 @@
     .gauge-top > span:first-child{ font-size:21px !important; }
   }
 
-/* =====================================================================
-   MACHINE CAROUSEL — สไตล์ editorial: ใบกลางเต็ม ใบข้างโผล่ครึ่ง + จาง
-   ===================================================================== */
-:root{ --car-slot: 176px; }
 
-.car-toolbar{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-.car-select{
-  flex:1; max-width:220px; padding:9px 12px; font-size:13px;
-  background:var(--panelAlt); border:1px solid var(--border); border-radius:9px; color:var(--text);
-}
-.car-mode{ font-size:12px !important; padding:9px 13px !important; white-space:nowrap; }
-.car-mode i{ font-size:14px; }
+  /* =====================================================================
+     HORIZONTAL PART STRIP — แต่ละเครื่องเลื่อนซ้าย/ขวาแยกกัน (scroll-snap)
+     ===================================================================== */
+  .inv-toolbar{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .inv-select{
+    flex:0 1 220px; padding:9px 12px; font-size:13px;
+    background:var(--panelAlt); border:1px solid var(--border); border-radius:9px; color:var(--text);
+  }
 
-/* ---- chips เลือกเครื่อง ---- */
-.car-chips{
-  display:flex; gap:8px; overflow-x:auto; padding:2px 2px 12px;
-  scrollbar-width:none; -webkit-overflow-scrolling:touch;
-}
-.car-chips::-webkit-scrollbar{ display:none; }
-.car-chip{
-  flex:0 0 auto; cursor:pointer; white-space:nowrap;
-  background:transparent; border:1px solid var(--border); border-radius:999px;
-  color:var(--muted); font-family:'Prompt',sans-serif; font-size:12.5px; font-weight:600;
-  padding:8px 14px; transition:all .22s ease;
-}
-.car-chip span{
-  font-size:10.5px; opacity:.6; margin-left:5px; font-variant-numeric:tabular-nums;
-}
-.car-chip:hover{ color:var(--text); border-color:var(--mutedFaint); }
-.car-chip.on{
-  color:#0B1614; background:var(--accent); border-color:var(--accent);
-  box-shadow:0 6px 18px -8px rgba(45,212,191,.9);
-}
-.car-chip.on span{ opacity:.75; }
+  .hg-wrap{ position:relative; }
+  .hg-strip{
+    display:flex; gap:14px; align-items:stretch;
+    overflow-x:auto; overflow-y:hidden;
+    scroll-snap-type:x mandatory; scroll-behavior:smooth;
+    padding:6px 4px 16px; margin:0 -4px;
+    scrollbar-width:none; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
+    cursor:grab;
+  }
+  .hg-strip::-webkit-scrollbar{ display:none; }
+  .hg-strip.dragging{ cursor:grabbing; scroll-behavior:auto; scroll-snap-type:none; }
 
-/* ---- stage ---- */
-.car-wrap{ max-width:640px; margin:0 auto; }
-.car-stage{
-  position:relative; height:calc(var(--car-slot) * 3);
-  overflow:hidden; outline:none; touch-action:pan-x; cursor:grab;
-}
-.car-stage:active{ cursor:grabbing; }
-.car-track{ position:absolute; inset:0; }
+  /* การ์ดในแถว: แทนที่จะเป็นแถวเต็มความกว้าง → การ์ดลอย */
+  .hg-strip > .part-card{
+    flex:0 0 auto;
+    width:318px; max-width:84vw;
+    scroll-snap-align:center;
+    display:flex; align-items:center; gap:14px;
+    padding:13px 15px !important;
+    background:var(--panel) !important;
+    border:1px solid var(--border) !important;
+    border-radius:14px !important;
+    transition:transform .32s cubic-bezier(.22,1,.36,1), border-color .28s ease, box-shadow .28s ease, opacity .28s ease;
+  }
+  .hg-strip > .part-card:hover{ transform:translateY(-2px); border-color:var(--mutedFaint) !important; }
+  .hg-strip > .part-card.is-center{
+    border-color:rgba(45,212,191,.45) !important;
+    box-shadow:0 18px 34px -24px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.04);
+    transform:translateY(-3px);
+  }
 
-.car-card{
-  position:absolute; left:0; right:0; top:0;
-  height:calc(var(--car-slot) - 12px);
-  display:flex; gap:16px; align-items:stretch;
-  padding:14px 16px;
-  background:linear-gradient(158deg, var(--panel), var(--panelAlt));
-  border:1px solid var(--border); border-radius:16px;
-  transition:transform .58s cubic-bezier(.22,1,.36,1), opacity .4s ease, border-color .3s ease, box-shadow .3s ease;
-  will-change:transform, opacity;
-}
-.car-card.is-active{
-  border-color:rgba(45,212,191,.42);
-  box-shadow:0 22px 48px -26px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.04);
-}
-.car-photo{
-  width:118px; flex:0 0 118px; border-radius:12px; overflow:hidden;
-  background:var(--panelAlt); border:1px solid var(--border);
-  display:flex; align-items:center; justify-content:center; font-size:26px; color:var(--mutedFaint);
-}
-.car-photo img{ width:100%; height:100%; object-fit:cover; }
-.car-main{ flex:1; min-width:0; display:flex; flex-direction:column; justify-content:space-between; gap:8px; }
-.car-name{
-  font-size:17px; font-weight:600; line-height:1.3; letter-spacing:-.1px;
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-}
-.car-code{ font-size:12px; color:var(--mutedFaint); margin-top:3px; }
-.car-code b{ color:var(--accent); font-weight:600; }
-.car-machine{
-  font-size:11.5px; color:var(--machine); margin-top:5px;
-  display:flex; align-items:center; gap:5px;
-}
-.car-machine i{ font-size:12px; }
-.car-bottom{ display:flex; align-items:center; gap:14px; }
-.car-qty{ display:flex; align-items:baseline; gap:6px; flex:0 0 auto; }
-.car-qty .n{ font-size:31px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
-.car-qty .m{ font-size:11px; color:var(--mutedFaint); font-variant-numeric:tabular-nums; }
-.car-bar{ flex:1; height:4px; border-radius:2px; background:var(--border); overflow:hidden; min-width:40px; }
-.car-bar > div{ height:100%; border-radius:2px; transition:width .3s ease; }
-.car-btn{ padding:8px 15px !important; font-size:12.5px !important; border-radius:9px !important; }
+  /* จัดเนื้อในการ์ดให้พอดีความกว้างการ์ด */
+  .hg-strip > .part-card .part-photo{
+    width:66px !important; height:66px !important; flex:0 0 66px !important; border-radius:11px !important;
+  }
+  .hg-strip > .part-card .part-body{
+    grid-template-columns:minmax(0,1fr) max-content !important;
+    grid-template-areas:"name gauge" "code btn" !important;
+    column-gap:10px !important; row-gap:9px !important;
+    align-items:start !important;
+  }
+  .hg-strip > .part-card .gauge-top{ white-space:nowrap !important; flex:0 0 auto; }
+  .hg-strip > .part-card .part-name{
+    font-size:15px !important; font-weight:600 !important; line-height:1.32 !important; letter-spacing:0 !important;
+    white-space:normal !important; overflow:hidden !important; text-overflow:clip !important;
+    display:-webkit-box !important; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  }
+  .hg-strip > .part-card .part-code{ font-size:11.5px !important; line-height:1.35 !important; }
+  .hg-strip > .part-card .machine-tag{ display:none !important; }
+  .hg-strip > .part-card .gauge-top{ gap:4px !important; align-items:baseline !important; }
+  .hg-strip > .part-card .gauge-top > span:first-child{ font-size:25px !important; min-width:0 !important; }
+  .hg-strip > .part-card .gauge-top > span:last-child{ font-size:10.5px !important; }
+  .hg-strip > .part-card .withdraw-btn{
+    justify-self:end !important; align-self:end !important; width:auto !important;
+    padding:7px 13px !important; font-size:12px !important; border-radius:8px !important;
+  }
+  .hg-strip > .part-card .edit-btn{ top:6px !important; right:6px !important; padding:4px !important; }
 
-.car-fade{ position:absolute; left:0; right:0; height:52px; pointer-events:none; z-index:2; }
-.car-fade.top{ top:0; background:linear-gradient(var(--bg), transparent); }
-.car-fade.bottom{ bottom:0; background:linear-gradient(transparent, var(--bg)); }
+  /* ลูกศรซ้าย/ขวา */
+  .hg-arrow{
+    position:absolute; top:calc(50% - 8px); transform:translateY(-50%); z-index:5;
+    width:30px; height:30px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--border); color:var(--muted);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    font-size:14px; transition:all .2s ease; box-shadow:0 6px 18px -8px rgba(0,0,0,.8);
+  }
+  .hg-arrow:hover{ color:var(--accent); border-color:var(--accent); }
+  .hg-arrow.left{ left:-12px; }
+  .hg-arrow.right{ right:-12px; }
+  .hg-arrow.off{ opacity:0; pointer-events:none; }
 
-.car-pos{
-  position:absolute; right:2px; bottom:6px; z-index:3;
-  font-size:11px; color:var(--mutedFaint); font-variant-numeric:tabular-nums;
-  background:var(--bg); padding:2px 7px; border-radius:6px;
-}
-.car-arrow{
-  position:absolute; right:0; z-index:4; width:30px; height:30px; border-radius:50%;
-  background:var(--panel); border:1px solid var(--border); color:var(--muted);
-  display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px;
-  transition:all .2s ease; opacity:.9;
-}
-.car-arrow:hover{ color:var(--accent); border-color:var(--accent); transform:scale(1.06); }
-.car-arrow.up{ top:calc(50% - 74px); }
-.car-arrow.down{ top:calc(50% + 44px); }
-.car-hint{
-  text-align:center; font-size:11px; color:var(--mutedFaint); margin-top:10px; letter-spacing:.01em;
-}
-
-@media(max-width:700px){
-  :root{ --car-slot: 152px; }
-  .car-wrap{ max-width:100%; }
-  .car-card{ padding:12px; gap:12px; border-radius:14px; }
-  .car-photo{ width:86px; flex:0 0 86px; border-radius:10px; }
-  .car-name{ font-size:15px; }
-  .car-code{ font-size:11px; }
-  .car-qty .n{ font-size:26px; }
-  .car-bottom{ gap:9px; }
-  .car-btn{ padding:7px 11px !important; font-size:11.5px !important; }
-  .car-arrow.up{ top:calc(50% - 62px); }
-  .car-arrow.down{ top:calc(50% + 34px); }
-  .car-arrow{ width:27px; height:27px; font-size:13px; }
-  .car-chip{ font-size:11.5px; padding:7px 12px; }
-  .car-stage{ touch-action:pan-y; }
-}
+  @media(max-width:700px){
+    .hg-strip{ gap:10px; padding:4px 2px 12px; }
+    .hg-strip > .part-card{ width:266px; max-width:78vw; padding:10px !important; gap:9px; }
+    .hg-strip > .part-card .part-photo{ width:48px !important; height:48px !important; flex:0 0 48px !important; border-radius:9px !important; }
+    .hg-strip > .part-card .part-body{ column-gap:8px !important; row-gap:7px !important; }
+    .hg-strip > .part-card .part-name{ font-size:13px !important; line-height:1.3 !important; }
+    .hg-strip > .part-card .part-code{ font-size:10.5px !important; }
+    .hg-strip > .part-card .gauge-top > span:first-child{ font-size:20px !important; }
+    .hg-strip > .part-card .gauge-top > span:last-child{ font-size:9.5px !important; }
+    .hg-strip > .part-card .withdraw-btn{ padding:6px 10px !important; font-size:11px !important; }
+    .hg-arrow{ width:27px; height:27px; font-size:13px; }
+    .hg-arrow.left{ left:-8px; }
+    .hg-arrow.right{ right:-8px; }
+  }
 
 </style>
 </head>
@@ -3195,7 +3168,6 @@ function partCardHtml(p){
 
 function renderInventory(){
   const allZones = [...new Set(parts.flatMap(p => getPartZones(p)).filter(z => z && z !== "__all__"))].sort((a,b) => a.localeCompare(b, "th"));
-  if (invMode === "carousel") return renderInventoryCarousel(allZones);
   const filtered = parts.filter(p => {
     const pz = getPartZones(p);
     const matchesSearch = (p.name + p.code + (p.machine||"") + pz.join(" ")).toLowerCase().includes(search.toLowerCase());
@@ -3203,14 +3175,11 @@ function renderInventory(){
     return matchesSearch && matchesZone;
   });
   const zoneFilterHtml = `
-    <div class="car-toolbar">
-      <select id="zoneFilterSelect" class="car-select">
+    <div class="inv-toolbar">
+      <select id="zoneFilterSelect" class="inv-select">
         <option value="">ทุกโซน</option>
         ${allZones.map(z => `<option value="${esc(z)}" ${zoneFilter===z?"selected":""}>${esc(z)}</option>`).join("")}
       </select>
-      <button class="btn btn-ghost car-mode" id="invModeToggle" title="สลับเป็นมุมมอง carousel">
-        <i class="ti ti-carousel-horizontal"></i> ดูแบบ carousel
-      </button>
     </div>`;
   if (filtered.length === 0) {
     return `
@@ -3263,7 +3232,13 @@ function renderInventory(){
         </button>
         <div class="mg-body-wrap">
           <div class="mg-body">
-            <div class="parts-grid">${groupParts.map(partCardHtml).join("")}</div>
+            <div class="parts-grid">
+              <div class="hg-wrap">
+                <div class="hg-strip" data-hg="${esc(key)}">${groupParts.map(partCardHtml).join("")}</div>
+                <button type="button" class="hg-arrow left" data-hg-left="${esc(key)}" aria-label="เลื่อนซ้าย"><i class="ti ti-chevron-left"></i></button>
+                <button type="button" class="hg-arrow right" data-hg-right="${esc(key)}" aria-label="เลื่อนขวา"><i class="ti ti-chevron-right"></i></button>
+              </div>
+            </div>
           </div>
         </div>
       </div>`;
@@ -3271,260 +3246,96 @@ function renderInventory(){
   `;
 }
 
+
 /* =====================================================================
-   SPARECUBE · MACHINE CAROUSEL  (v-motion)
-   เลือกเครื่องจักรแยกทีละเครื่อง แล้วเลื่อนดูอะไหล่แบบ carousel แนวตั้ง
-   เห็น 3 ใบ: กลางเต็ม · บน/ล่างโผล่ครึ่ง · เลื่อนขึ้นลงด้วยล้อ/ลาก/ปุ่ม/คีย์บอร์ด
+   HORIZONTAL PART STRIP — แต่ละกลุ่มเครื่องเลื่อนซ้าย/ขวาของใครของมัน
    ===================================================================== */
+function bindHgStrips(){
+  document.querySelectorAll(".hg-strip").forEach(strip => {
+    if (strip.dataset.bound === "1") return;
+    strip.dataset.bound = "1";
+    const wrap = strip.closest(".hg-wrap");
+    const leftBtn = wrap ? wrap.querySelector("[data-hg-left]") : null;
+    const rightBtn = wrap ? wrap.querySelector("[data-hg-right]") : null;
 
-/* ---------------- state ---------------- */
-let invMode = localStorage.getItem("wk_inv_mode") || "carousel"; // carousel | list
-let carMachine = localStorage.getItem("wk_car_machine") || "__all__";
-let carIndex = 0;
-let carDragging = false;
-let carWheelLock = false;
+    const step = () => {
+      const card = strip.querySelector(".part-card");
+      return card ? card.getBoundingClientRect().width + 14 : 320;
+    };
 
-/* ---------------- helpers ---------------- */
-function carMachineLabel(key){
-  return key === "__all__" ? "ทุกเครื่อง" : key === "__unassigned__" ? "ยังไม่ระบุเครื่อง" : key;
-}
-
-function carouselPool(){
-  const q = (search || "").toLowerCase();
-  return parts.filter(p => {
-    const pz = getPartZones(p);
-    const matchSearch = (p.name + p.code + (p.machine || "") + pz.join(" ")).toLowerCase().includes(q);
-    const matchZone = !zoneFilter || pz.includes(zoneFilter) || pz.includes("__all__");
-    const matchMachine = carMachine === "__all__" || (p.machine && p.machine.trim() ? p.machine.trim() : "__unassigned__") === carMachine;
-    return matchSearch && matchZone && matchMachine;
-  }).sort((a, b) => {
-    if (carMachine !== "__all__") return 0;
-    const ma = (a.machine || "\uffff"), mb = (b.machine || "\uffff");
-    return ma.localeCompare(mb, "th") || (a.name || "").localeCompare(b.name || "", "th");
-  });
-}
-
-function carMachineChips(){
-  const groups = new Map();
-  parts.forEach(p => {
-    const key = p.machine && p.machine.trim() ? p.machine.trim() : "__unassigned__";
-    groups.set(key, (groups.get(key) || 0) + 1);
-  });
-  const keys = [...groups.keys()].filter(k => k !== "__unassigned__").sort((a, b) => a.localeCompare(b, "th"));
-  if (groups.has("__unassigned__")) keys.push("__unassigned__");
-
-  if (!keys.includes(carMachine) && carMachine !== "__all__") carMachine = "__all__";
-
-  return `
-    <button type="button" class="car-chip ${carMachine === "__all__" ? "on" : ""}" data-car-machine="__all__">
-      ทุกเครื่อง <span>${parts.length}</span>
-    </button>
-    ${keys.map(k => `
-      <button type="button" class="car-chip ${carMachine === k ? "on" : ""}" data-car-machine="${esc(k)}">
-        ${esc(carMachineLabel(k))} <span>${groups.get(k)}</span>
-      </button>`).join("")}
-  `;
-}
-
-function carCardHtml(p, i){
-  const pz = getPartZones(p);
-  const zoneTxt = pz.includes("__all__") ? "ทุกโซน" : pz.join(", ");
-  const color = gaugeColor(p.qty, p.min);
-  const pct = p.max && p.max > 0 ? Math.min(100, (p.qty / Math.max(p.max, 1)) * 100) : Math.min(100, (p.qty / Math.max(p.min * 2, 1)) * 100);
-  return `
-    <article class="car-card" data-ci="${i}">
-      <div class="car-photo">
-        ${p.photo ? `<img src="${p.photo}" alt="" class="car-img zoomable">` : `<span>📦</span>`}
-      </div>
-      <div class="car-main">
-        <div class="car-top">
-          <div class="car-name">${esc(p.name)}</div>
-          <div class="car-code">${esc(p.code)} · ${esc(p.unit)}${zoneTxt ? ` · <b>${esc(zoneTxt)}</b>` : ""}</div>
-          ${p.machine ? `<div class="car-machine"><i class="ti ti-settings"></i> ${esc(p.machine)}</div>` : ""}
-        </div>
-        <div class="car-bottom">
-          <div class="car-qty">
-            <span class="n" style="color:${color}">${p.qty}</span>
-            <span class="m">/ min ${p.min}</span>
-          </div>
-          <div class="car-bar"><div style="width:${pct.toFixed(0)}%;background:${color}"></div></div>
-          <button class="btn btn-ghost car-btn" data-withdraw="${p.id}">
-            <i class="ti ti-transfer-out"></i> เบิกใช้
-          </button>
-        </div>
-      </div>
-    </article>`;
-}
-
-function renderInventoryCarousel(allZones){
-  const pool = carouselPool();
-  if (carIndex >= pool.length) carIndex = Math.max(0, pool.length - 1);
-
-  const zoneFilterHtml = `
-    <div class="car-toolbar">
-      <select id="zoneFilterSelect" class="car-select">
-        <option value="">ทุกโซน</option>
-        ${allZones.map(z => `<option value="${esc(z)}" ${zoneFilter === z ? "selected" : ""}>${esc(z)}</option>`).join("")}
-      </select>
-      <button class="btn btn-ghost car-mode" id="invModeToggle" title="สลับเป็นมุมมองรายการ">
-        <i class="ti ti-list"></i> ดูแบบรายการ
-      </button>
-    </div>`;
-
-  const searchHtml = `
-    <div class="search">
-      <span class="icon">🔍</span>
-      <input id="searchInput" placeholder="ค้นหาชื่อ รหัส หรือเครื่องจักร" value="${esc(search)}">
-    </div>`;
-
-  if (pool.length === 0){
-    return `${searchHtml}${zoneFilterHtml}
-      <div class="car-chips">${carMachineChips()}</div>
-      <div class="empty">ไม่พบอะไหล่ในเครื่องนี้</div>`;
-  }
-
-  return `
-    ${searchHtml}
-    ${zoneFilterHtml}
-    <div class="car-chips">${carMachineChips()}</div>
-    <div class="car-wrap">
-      <div class="car-stage" id="carStage" tabindex="0">
-        <div class="car-track" id="carTrack">
-          ${pool.map((p, i) => carCardHtml(p, i)).join("")}
-        </div>
-        <div class="car-fade top"></div>
-        <div class="car-fade bottom"></div>
-        <div class="car-pos" id="carPos">${String(carIndex + 1).padStart(2, "0")} / ${String(pool.length).padStart(2, "0")}</div>
-        <button class="car-arrow up" id="carPrev" aria-label="ก่อนหน้า"><i class="ti ti-chevron-up"></i></button>
-        <button class="car-arrow down" id="carNext" aria-label="ถัดไป"><i class="ti ti-chevron-down"></i></button>
-      </div>
-      <div class="car-hint">เลื่อนล้อ / ลากขึ้นลง / กดลูกศร ↑↓ เพื่อดูอะไหล่ถัดไป</div>
-    </div>`;
-}
-
-function carLayout(){
-  const track = document.getElementById("carTrack");
-  if (!track) return;
-  const cards = [...track.querySelectorAll(".car-card")];
-  if (!cards.length) return;
-
-  const stage = document.getElementById("carStage");
-  const slotH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--car-slot")) || 168;
-  const centerY = slotH; // 3 ช่อง → ช่องกลางคือ index 1
-
-  cards.forEach((el, i) => {
-    const d = i - carIndex;
-    const ad = Math.abs(d);
-    if (ad > 1) {
-      el.style.transform = `translateY(${centerY + d * slotH}px) scale(.86)`;
-      el.style.opacity = "0";
-      el.style.pointerEvents = "none";
-      el.classList.remove("is-active");
-      return;
-    }
-    el.style.transform = `translateY(${centerY + d * slotH}px) scale(${ad === 0 ? 1 : 0.9})`;
-    el.style.opacity = ad === 0 ? "1" : "0.42";
-    el.style.pointerEvents = "auto";
-    el.classList.toggle("is-active", ad === 0);
-  });
-
-  const pos = document.getElementById("carPos");
-  if (pos) pos.textContent = `${String(carIndex + 1).padStart(2, "0")} / ${String(cards.length).padStart(2, "0")}`;
-
-  // มีใบเดียว = ไม่ต้องมีลูกศร
-  const prev = document.getElementById("carPrev"), next = document.getElementById("carNext");
-  if (prev) prev.style.display = cards.length < 2 ? "none" : "flex";
-  if (next) next.style.display = cards.length < 2 ? "none" : "flex";
-  if (stage) { stage.dataset.idx = carIndex; }
-}
-
-function carGo(idx, total){
-  const max = (total ?? document.querySelectorAll("#carTrack .car-card").length) - 1;
-  carIndex = Math.max(0, Math.min(max, idx));
-  carLayout();
-}
-
-function bindCarousel(){
-  carLayout();
-  const stage = document.getElementById("carStage");
-  if (!stage) return;
-  const total = () => document.querySelectorAll("#carTrack .car-card").length;
-
-  document.getElementById("carPrev")?.addEventListener("click", (e) => { e.stopPropagation(); carGo(carIndex - 1, total()); });
-  document.getElementById("carNext")?.addEventListener("click", (e) => { e.stopPropagation(); carGo(carIndex + 1, total()); });
-
-  // เลือกเครื่อง
-  document.querySelectorAll("[data-car-machine]").forEach(el => {
-    el.addEventListener("click", () => {
-      carMachine = el.dataset.carMachine;
-      carIndex = 0;
-      localStorage.setItem("wk_car_machine", carMachine);
-      render();
+    leftBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      strip.scrollBy({ left: -step(), behavior: "smooth" });
     });
-  });
-
-  // คลิกใบข้าง ๆ เพื่อเลื่อนไปใบนั้น
-  stage.querySelectorAll(".car-card").forEach(el => {
-    el.addEventListener("click", (e) => {
-      if (e.target.closest("[data-withdraw]")) return;
-      const i = Number(el.dataset.ci);
-      if (i !== carIndex) { e.stopPropagation(); carGo(i, total()); }
+    rightBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      strip.scrollBy({ left: step(), behavior: "smooth" });
     });
-  });
 
-  // ล้อเมาส์ / trackpad
-  stage.addEventListener("wheel", (e) => {
-    const dy = e.deltaY;
-    if (Math.abs(dy) < 8) return;
-    e.preventDefault();
-    if (carWheelLock) return;
-    carWheelLock = true;
-    carGo(carIndex + (dy > 0 ? 1 : -1), total());
-    setTimeout(() => { carWheelLock = false; }, 260);
-  }, { passive: false });
+    // เน้นการ์ดที่อยู่กลางแถว + ซ่อนลูกศรเมื่อสุดขอบ
+    const sync = () => {
+      const max = strip.scrollWidth - strip.clientWidth;
+      if (leftBtn) leftBtn.classList.toggle("off", strip.scrollLeft <= 2);
+      if (rightBtn) rightBtn.classList.toggle("off", strip.scrollLeft >= max - 2);
 
-  // ลาก/ปัด (touch + mouse)
-  let startY = 0, startX = 0, active = false, locked = false;
-  stage.addEventListener("pointerdown", (e) => {
-    if (e.target.closest("[data-withdraw]")) return;
-    if (e.target.closest(".car-arrow")) return;
-    active = true; locked = false;
-    startY = e.clientY; startX = e.clientX;
-  });
-  stage.addEventListener("pointermove", (e) => {
-    if (!active || locked) return;
-    const dy = e.clientY - startY;
-    const dx = e.clientX - startX;
-    if (Math.abs(dy) > 46 && Math.abs(dy) > Math.abs(dx)) {
-      locked = true;
-      carGo(carIndex + (dy < 0 ? 1 : -1), total());
-    }
-  });
-  const endDrag = () => { active = false; };
-  stage.addEventListener("pointerup", endDrag);
-  stage.addEventListener("pointercancel", endDrag);
-  stage.addEventListener("pointerleave", endDrag);
+      const cards = [...strip.querySelectorAll(".part-card")];
+      if (strip.scrollWidth <= strip.clientWidth + 4){
+        cards.forEach(c => c.classList.remove("is-center"));
+        return;
+      }
+      const mid = strip.scrollLeft + strip.clientWidth / 2;
+      let best = null, bestD = Infinity;
+      cards.forEach(c => {
+        const cc = c.offsetLeft + c.offsetWidth / 2;
+        const d = Math.abs(cc - mid);
+        if (d < bestD) { bestD = d; best = c; }
+        c.classList.remove("is-center");
+      });
+      if (best) best.classList.add("is-center");
+    };
 
-  // คีย์บอร์ด
-  stage.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); carGo(carIndex + 1, total()); }
-    if (e.key === "ArrowUp") { e.preventDefault(); carGo(carIndex - 1, total()); }
-  });
+    let raf = 0;
+    strip.addEventListener("scroll", () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(sync);
+    }, { passive: true });
+    requestAnimationFrame(sync);
 
-  // ปุ่มสลับมุมมอง
-  document.getElementById("invModeToggle")?.addEventListener("click", () => {
-    invMode = "list";
-    localStorage.setItem("wk_inv_mode", invMode);
-    render();
-  });
-}
+    // ลากด้วยเมาส์ (จอสัมผัสใช้การปัดของเบราว์เซอร์อยู่แล้ว)
+    let down = false, moved = false, startX = 0, startScroll = 0;
+    strip.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "touch") return;
+      if (e.target.closest("[data-withdraw],[data-edit]")) return;
+      down = true; moved = false;
+      startX = e.clientX; startScroll = strip.scrollLeft;
+      strip.classList.add("dragging");
+    });
+    strip.addEventListener("pointermove", (e) => {
+      if (!down) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 4) moved = true;
+      if (moved) strip.scrollLeft = startScroll - dx;
+    });
+    const end = () => {
+      if (!down) return;
+      down = false;
+      strip.classList.remove("dragging");
+      if (moved) {
+        const card = strip.querySelector(".part-card");
+        const w = card ? card.getBoundingClientRect().width + 14 : 320;
+        const target = Math.round(strip.scrollLeft / w) * w;
+        strip.scrollTo({ left: target, behavior: "smooth" });
+      }
+      moved = false;
+    };
+    strip.addEventListener("pointerup", end);
+    strip.addEventListener("pointerleave", end);
+    strip.addEventListener("pointercancel", end);
 
-/* ปุ่มสลับกลับมา carousel (ใช้ในมุมมองรายการ) */
-function bindListModeToggle(){
-  document.getElementById("invModeToggle")?.addEventListener("click", () => {
-    invMode = "carousel";
-    localStorage.setItem("wk_inv_mode", invMode);
-    render();
+    // กันคลิกโดนตอนลาก
+    strip.addEventListener("click", (e) => {
+      if (moved) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
   });
 }
 
@@ -5291,9 +5102,7 @@ function bindEvents(){
   document.getElementById("zoneFilterSelect")?.addEventListener("change", (e) => {
     zoneFilter = e.target.value; render();
   });
-  if (view === "inventory") {
-    if (invMode === "carousel") bindCarousel(); else bindListModeToggle();
-  }
+  if (view === "inventory") bindHgStrips();
 
   if (view === "inventory") buildScrollIndex();
 
