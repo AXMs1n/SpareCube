@@ -937,6 +937,91 @@
   .gauge-top > span:last-child{ white-space:nowrap; }
   @media(max-width:700px){ .wrap{ padding-bottom:120px; } }
 
+  /* =====================================================================
+     SKIN v2.1 — ขยายขนาด + ตีกรอบกลุ่มเครื่องจักรกลับมา (อ่านง่ายขึ้น)
+     ===================================================================== */
+  /* ---- กลุ่มเครื่องจักร: กรอบสี + หัวข้อใหญ่ชัด ---- */
+  .machine-group{
+    border:1.5px solid var(--machine) !important;
+    border-radius:16px !important;
+    padding:18px 20px 8px !important;
+    margin:0 0 28px !important;
+    background:rgba(59,130,246,.07) !important;
+  }
+  html[data-theme="light"] .machine-group{ background:rgba(37,99,235,.045) !important; }
+  .machine-group.unassigned{
+    border:1.5px dashed var(--border) !important;
+    background:transparent !important;
+  }
+  .machine-group-title{
+    font-size:17px !important; font-weight:700 !important;
+    letter-spacing:0 !important; text-transform:none !important;
+    color:var(--machine) !important;
+    border-bottom:0 !important; padding-bottom:0 !important;
+    margin:0 0 10px !important;
+    display:flex; align-items:center; gap:9px; justify-content:flex-start !important;
+  }
+  .machine-group-title::before{
+    content:""; width:9px; height:9px; border-radius:50%;
+    background:var(--machine); flex:0 0 9px;
+  }
+  .machine-group-title span[style]{ font-size:13px !important; margin-left:auto; }
+  .machine-group.unassigned .machine-group-title{ color:var(--muted) !important; }
+  .machine-group.unassigned .machine-group-title::before{ background:var(--mutedFaint); }
+
+  /* ---- แถวอะไหล่: ขยายรูป/ตัวหนังสือ ---- */
+  .part-photo{ width:64px !important; height:64px !important; flex:0 0 64px !important; border-radius:12px !important; }
+  .part-name{ font-size:16.5px !important; font-weight:600 !important; letter-spacing:-.1px; }
+  .part-code{ font-size:12.5px !important; color:var(--muted) !important; }
+  .part-code span{ font-size:12.5px !important; }
+  .gauge-top > span:first-child{ font-size:27px !important; }
+  .gauge-top > span:last-child{ font-size:12.5px !important; }
+  .withdraw-btn{ font-size:13px !important; padding:9px 16px !important; border-radius:9px !important; }
+  .withdraw-btn i{ font-size:15px !important; }
+  .part-card{ padding:16px 6px !important; gap:18px !important; }
+
+  /* ---- มือถือ ---- */
+  @media(max-width:600px){
+    .machine-group{ padding:14px 14px 6px !important; border-radius:14px !important; margin-bottom:22px !important; }
+    .machine-group-title{ font-size:15.5px !important; }
+    .part-photo{ width:56px !important; height:56px !important; flex:0 0 56px !important; }
+    .part-name{ font-size:15px !important; }
+    .part-code{ font-size:11.5px !important; }
+    .gauge-top > span:first-child{ font-size:23px !important; }
+    .withdraw-btn{ font-size:12.5px !important; padding:8px 14px !important; }
+  }
+
+  /* ---- SKIN v2.2: ขยายอีกรอบให้อ่านง่ายบนจอใหญ่ ---- */
+  .part-photo{ width:76px !important; height:76px !important; flex:0 0 76px !important; border-radius:14px !important; }
+  .part-name{ font-size:18px !important; }
+  .part-code{ font-size:13.5px !important; }
+  .part-code span{ font-size:13.5px !important; }
+  .gauge-top > span:first-child{ font-size:30px !important; }
+  .gauge-top > span:last-child{ font-size:13.5px !important; }
+  .withdraw-btn{ font-size:13.5px !important; padding:10px 18px !important; }
+  .part-card{ padding:18px 6px !important; }
+  .machine-group-title{ font-size:18px !important; margin-bottom:12px !important; }
+  @media(max-width:600px){
+    .part-photo{ width:64px !important; height:64px !important; flex:0 0 64px !important; }
+    .part-name{ font-size:16px !important; }
+    .gauge-top > span:first-child{ font-size:25px !important; }
+    .machine-group-title{ font-size:16px !important; }
+  }
+
+  /* ---- SKIN v2.3: รูปใหญ่ขึ้นอีก (จอใหญ่) ---- */
+  .part-photo{ width:88px !important; height:88px !important; flex:0 0 88px !important; border-radius:16px !important; }
+  .part-card{ padding:20px 6px !important; }
+  .part-name{ font-size:18.5px !important; }
+  @media(max-width:600px){
+    .part-photo{ width:68px !important; height:68px !important; flex:0 0 68px !important; border-radius:12px !important; }
+    .part-name{ font-size:16px !important; }
+  }
+
+  /* ---- SKIN v2.4: ข้อความรองอ่านง่ายขึ้นอีกนิด ---- */
+  .part-code, .part-code span{ font-size:14px !important; }
+  .gauge-top > span:last-child{ font-size:14px !important; }
+  .gauge-top{ gap:9px !important; }
+
 </style>
 </head>
 <body>
