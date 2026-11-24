@@ -2666,7 +2666,89 @@
     .accx-headset{ transform-box:fill-box; animation:hsPing .54s ease-out forwards; }
     @keyframes hsPing{ 0%{ transform:scale(1); opacity:1;} 45%{ transform:scale(1.09); opacity:1;} 100%{ transform:scale(1.42); opacity:0;} }
 
-  </style>
+  
+
+    /* ---- ตัวการ์ตูน "รายการ PR" (แบบที่ผู้ใช้ส่ง) ---- */
+    .pl-fb{ transform-box:fill-box; }
+    .pl-look{ animation:plLook 4s ease-in-out infinite; }
+    .pl-blink{ transform-origin:50% 50%; animation:plBlink 4s ease-in-out infinite; }
+    @keyframes plLook{
+      0%,10%{ transform:translate(0,0); } 16%,28%{ transform:translate(-4px,4px); }
+      34%,46%{ transform:translate(4px,4px); } 52%,60%{ transform:translate(-4px,5px); }
+      68%,100%{ transform:translate(0,0); }
+    }
+    @keyframes plBlink{
+      0%,84%,92%,100%{ transform:scaleY(1); } 88%{ transform:scaleY(.08); }
+    }
+    /* ท่าคลิก: ฟอร์มดีดขึ้น + ติ๊กเขียวestamp */
+    .pl-form-x{ transform-box:fill-box; transform-origin:50% 100%;
+                animation:plLift .56s cubic-bezier(.3,.9,.35,1) forwards; }
+    @keyframes plLift{
+      0%  { transform:translateY(0) rotate(0) scale(1); opacity:1; }
+      28% { transform:translateY(-13px) rotate(-5deg) scale(1.05); opacity:1; }
+      58% { transform:translateY(-2px) rotate(2deg) scale(1.01); opacity:1; }
+      100%{ transform:translateY(10px) rotate(0) scale(.9); opacity:.1; }
+    }
+    .pl-check{ animation:plCheck .56s ease-out forwards; transform-box:fill-box; transform-origin:50% 50%; }
+    @keyframes plCheck{
+      0%,35%{ transform:scale(.2); opacity:0; }
+      55%{ transform:scale(1.35); opacity:1; }
+      75%{ transform:scale(.95); }
+      100%{ transform:scale(1); opacity:1; }
+    }
+    .pl-ok{ transform-box:fill-box; transform-origin:50% 50%; animation:plOk .56s ease-out forwards; }
+    @keyframes plOk{
+      0%,40%{ transform:scale(.2); opacity:0; }
+      62%{ transform:scale(1.25); opacity:1; }
+      100%{ transform:scale(1.6); opacity:0; }
+    }
+    @media (prefers-reduced-motion: reduce){
+      .pl-look,.pl-blink,.pl-form-x,.pl-check,.pl-ok{ animation:none; }
+    }
+
+
+    /* ---- ตัวการ์ตูน "รายการ PR": คุณลุงหนวด + แว่นตาเดียว ---- */
+    .rl-fb{ transform-box:fill-box; }
+    .rl-look{ animation:rlLook 4s ease-in-out infinite; }
+    .rl-blink{ transform-origin:50% 50%; animation:rlBlink 4s ease-in-out infinite; }
+    @keyframes rlLook{
+      0%,10%{ transform:translate(0,0); } 16%,28%{ transform:translate(-4px,3px); }
+      34%,46%{ transform:translate(4px,3px); } 52%,60%{ transform:translate(-3px,4px); }
+      68%,100%{ transform:translate(0,0); }
+    }
+    @keyframes rlBlink{ 0%,84%,92%,100%{ transform:scaleY(1);} 88%{ transform:scaleY(.08);} }
+    .rl-stache{ transform-box:fill-box; animation:rlStache 4s ease-in-out infinite; }
+    .rl-stL{ transform-origin:100% 50%; animation:rlStL 4s ease-in-out infinite; }
+    .rl-stR{ transform-origin:0% 50%; animation:rlStR 4s ease-in-out infinite; }
+    @keyframes rlStache{
+      0%,18%,36%,60%,82%,100%{ transform:translateY(0);} 27%{ transform:translateY(-2px);} 68%{ transform:translateY(-3px);} 74%{ transform:translateY(1px);}
+    }
+    @keyframes rlStL{
+      0%,18%,100%{ transform:rotate(0);} 22%{ transform:rotate(8deg);} 26%{ transform:rotate(-3deg);}
+      30%{ transform:rotate(6deg);} 34%,60%{ transform:rotate(0);} 64%{ transform:rotate(14deg);}
+      68%{ transform:rotate(-6deg);} 72%{ transform:rotate(14deg);} 76%{ transform:rotate(-4deg);} 82%{ transform:rotate(0);}
+    }
+    @keyframes rlStR{
+      0%,18%,100%{ transform:rotate(0);} 22%{ transform:rotate(-3deg);} 26%{ transform:rotate(8deg);}
+      30%{ transform:rotate(-3deg);} 34%,60%{ transform:rotate(0);} 64%{ transform:rotate(-6deg);}
+      68%{ transform:rotate(14deg);} 72%{ transform:rotate(-6deg);} 76%{ transform:rotate(14deg);} 82%{ transform:rotate(0);}
+    }
+    /* ท่าคลิก: แว่นขยายซูมเข้าหา + ประกายทอง + หนวดหมุนติ้ว */
+    .rl-mono-x{ transform-box:fill-box; transform-origin:50% 50%;
+                animation:rlZoom .56s cubic-bezier(.3,.9,.35,1) forwards; }
+    @keyframes rlZoom{
+      0%  { transform:scale(1) translate(0,0); opacity:1; }
+      28% { transform:scale(1.42) translate(-6px,-5px); opacity:1; }
+      60% { transform:scale(1.85) translate(-9px,-8px); opacity:1; }
+      100%{ transform:scale(2.5) translate(-12px,-11px); opacity:0; }
+    }
+    .rl-flash{ transform-box:fill-box; transform-origin:50% 50%; animation:rlFlash .56s ease-out forwards; }
+    @keyframes rlFlash{
+      0%,25%{ transform:scale(.3); opacity:0; }
+      55%{ transform:scale(1.15); opacity:.9; }
+      100%{ transform:scale(2.1); opacity:0; }
+    }
+</style>
 
   <symbol id="mc-mascot" viewBox="10 14 200 240">
     <ellipse class="mc-shadow mc-fb" cx="110" cy="245" rx="62" ry="6" fill="#000" opacity=".25"/>
@@ -2815,211 +2897,175 @@
       </clipPath>
     </defs>
   </symbol>
+
   <symbol id="mc-openpr" viewBox="10 14 200 240">
-    <ellipse class="mc-shadow mc-fb" cx="110" cy="245" rx="62" ry="6" fill="#000" opacity=".25"/>
-    <g class="mc-bounce mc-fb">
-    <g transform="rotate(-3 110 160)">
-      <rect x="30" y="92" width="160" height="144" rx="40" fill="#FF9F43"/>
-      <g clip-path="url(#CLIPBopenpr)">
-        <g clip-path="url(#CLIPVopenpr)">
-          <rect x="0" y="190" width="220" height="60" fill="#E4E234"/>
-          <rect x="0" y="212" width="220" height="7" fill="#C9CED6"/>
-        </g>
-        <path d="M84 194 L110 228 L136 194 M110 228 V240" stroke="#B3AE17" stroke-width="3"
-              stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <defs>
+    <clipPath id="plBodyClip">
+      <circle cx="110" cy="162" r="74"/>
+    </clipPath>
+  </defs>
+  <ellipse  cx="110" cy="245" rx="58" ry="6" fill="#000" opacity=".25"/>
+  <g >
+    <!-- hair bun -->
+    <g >
+      <circle cx="108" cy="78" r="25" fill="#4B30A8"/>
+    </g>
+    <!-- pencil stuck through the bun -->
+    <g >
+      <g transform="translate(104,102) rotate(35)">
+        <rect x="-7" y="-58" width="14" height="9" rx="3" fill="#F5F1E3"/>
+        <rect x="-7" y="-49" width="14" height="5" fill="#BFA93A"/>
+        <rect x="-7" y="-44" width="14" height="44" fill="#EBD65C"/>
+        <path d="M-7 0 L7 0 L0 16 Z" fill="#F5F1E3"/>
+        <path d="M-2.5 9 L2.5 9 L0 16 Z" fill="#2a1f5c"/>
       </g>
     </g>
-      <g class="mc-hat mc-fb">
-        <path d="M52 104 C52 66 80 52 110 52 C140 52 168 66 168 104 Z" fill="#1E6BFF"/>
-        <rect x="42" y="98" width="136" height="11" rx="5.5" fill="#1553C7"/>
-        <path d="M170 100 L198 108 L198 117 L170 113 Z" fill="#1553C7"/>
-        <path d="M99 52 H121 V104 H99 Z" fill="#1E6BFF" opacity=".55"/>
-      </g>
-      <g transform="translate(0,-14)">
-      <g class="mc-glasses mc-fb">
-        <g transform="rotate(-4 110 172)">
-          <g fill="#009C89" stroke="#0f172a" stroke-width="5" stroke-linejoin="round">
-            <rect x="40" y="152" width="64" height="46" rx="10"/>
-            <rect x="116" y="158" width="52" height="38" rx="10"/>
-          </g>
-          <path d="M104 170 H116" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
-          <path class="mc-browL mc-fb" d="M40 150 L102 160" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
-          <path class="mc-browR mc-fb" d="M118 146 L168 134" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
-          <g class="mc-look mc-fb">
-            <ellipse class="mc-blink mc-fb" cx="72" cy="177" rx="10.5" ry="15" fill="#fff"/>
-            <circle class="mc-blink mc-fb" cx="142" cy="178" r="8" fill="#fff"/>
-          </g>
-          
-        </g>
+    <!-- body, hair fringe, request form -->
+    <g transform="rotate(2 110 160)">
+      <circle cx="110" cy="162" r="74" fill="#8B6CF0"/>
+      <g clip-path="url(#plBodyClip)">
+        <!-- side-swept fringe -->
+        <path d="M30 70 H190 V118 C174 112 152 98 128 102 C112 104 100 112 84 110 C66 108 48 116 30 122 Z" fill="#4B30A8"/>
+        <!-- request form held in front -->
+        <g class="pl-form">
+        <rect x="58" y="188" width="104" height="60" rx="9" fill="#F5F1E3"/>
+        <rect x="96" y="183" width="28" height="11" rx="4.5" fill="#2a1f5c"/>
+        <rect x="70" y="204" width="34" height="5" rx="2.5" fill="#8B6CF0" opacity=".5"/>
+        <rect  x="70" y="216" width="60" height="5" rx="2.5" fill="#8B6CF0" opacity=".35"/>
+        <rect  x="82" y="227" width="40" height="5" rx="2.5" fill="#8B6CF0" opacity=".35"/>
+        <path  d="M126 203 L133 210 L147 195" stroke="#8B6CF0" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
       </g>
       </g>
     </g>
-      <g class="acc acc-pen">
-        <g transform="translate(6,28) rotate(28 172 186)">
-          <rect x="163" y="140" width="18" height="72" rx="3" fill="#FBBF24" stroke="#0f172a" stroke-width="4.5"/>
-          <rect x="163" y="140" width="18" height="15" rx="3" fill="#F472B6" stroke="#0f172a" stroke-width="4.5"/>
-          <path d="M163 212 L172 232 L181 212 Z" fill="#FDE68A" stroke="#0f172a" stroke-width="4.5" stroke-linejoin="round"/>
-          <path d="M168.5 223 L172 232 L175.5 223 Z" fill="#0f172a"/>
-        </g>
+    <!-- face: soft blush, arched brows, lashes -->
+    <ellipse cx="68" cy="176" rx="9" ry="5" fill="#B9A3FF" opacity=".55"/>
+    <ellipse cx="152" cy="176" rx="9" ry="5" fill="#B9A3FF" opacity=".55"/>
+    <g >
+      <path d="M62 128 Q80 118 98 125" stroke="#2a1f5c" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M122 125 Q140 118 158 128" stroke="#2a1f5c" stroke-width="5" stroke-linecap="round" fill="none"/>
+    </g>
+    <g class="pl-look pl-fb">
+      <g transform="rotate(6 80 153)"><rect class="pl-blink pl-fb" x="73" y="136" width="15" height="34" rx="7.5" fill="#fff"/></g>
+      <g transform="rotate(-6 140 153)"><rect class="pl-blink pl-fb" x="132" y="136" width="15" height="34" rx="7.5" fill="#fff"/></g>
+      <g stroke="#2a1f5c" stroke-width="3.5" stroke-linecap="round" fill="none">
+        <path d="M71 143 L63 137 M70 150 L62 148"/>
+        <path d="M149 143 L157 137 M150 150 L158 148"/>
       </g>
-    <defs>
-      <clipPath id="CLIPBopenpr"><rect x="30" y="92" width="160" height="144" rx="40"/></clipPath>
-      <clipPath id="CLIPVopenpr"><path d="M0 194 L84 194 L110 228 L110 260 L0 260 Z M220 194 L136 194 L110 228 L110 260 L220 260 Z"/></clipPath>
-    </defs>
+    </g>
+  </g>
   </symbol>
   <symbol id="mc-openpr-x" viewBox="10 14 200 240">
-    <ellipse class="mc-shadow mc-fb" cx="110" cy="245" rx="62" ry="6" fill="#000" opacity=".25"/>
-    <g class="mc-bounce mc-fb">
-    <g transform="rotate(-3 110 160)">
-      <rect x="30" y="92" width="160" height="144" rx="40" fill="#FF9F43"/>
-      <g clip-path="url(#CLIPBopenprX)">
-        <g clip-path="url(#CLIPVopenprX)">
-          <rect x="0" y="190" width="220" height="60" fill="#E4E234"/>
-          <rect x="0" y="212" width="220" height="7" fill="#C9CED6"/>
-        </g>
-        <path d="M84 194 L110 228 L136 194 M110 228 V240" stroke="#B3AE17" stroke-width="3"
-              stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <defs>
+    <clipPath id="plBodyClip">
+      <circle cx="110" cy="162" r="74"/>
+    </clipPath>
+  </defs>
+  <ellipse  cx="110" cy="245" rx="58" ry="6" fill="#000" opacity=".25"/>
+  <g >
+    <!-- hair bun -->
+    <g >
+      <circle cx="108" cy="78" r="25" fill="#4B30A8"/>
+    </g>
+    <!-- pencil stuck through the bun -->
+    <g >
+      <g transform="translate(104,102) rotate(35)">
+        <rect x="-7" y="-58" width="14" height="9" rx="3" fill="#F5F1E3"/>
+        <rect x="-7" y="-49" width="14" height="5" fill="#BFA93A"/>
+        <rect x="-7" y="-44" width="14" height="44" fill="#EBD65C"/>
+        <path d="M-7 0 L7 0 L0 16 Z" fill="#F5F1E3"/>
+        <path d="M-2.5 9 L2.5 9 L0 16 Z" fill="#2a1f5c"/>
       </g>
     </g>
-      <g class="mc-hat mc-fb">
-        <path d="M52 104 C52 66 80 52 110 52 C140 52 168 66 168 104 Z" fill="#1E6BFF"/>
-        <rect x="42" y="98" width="136" height="11" rx="5.5" fill="#1553C7"/>
-        <path d="M170 100 L198 108 L198 117 L170 113 Z" fill="#1553C7"/>
-        <path d="M99 52 H121 V104 H99 Z" fill="#1E6BFF" opacity=".55"/>
-      </g>
-      <g transform="translate(0,-14)">
-      <g class="mc-glasses mc-fb">
-        <g transform="rotate(-4 110 172)">
-          <g fill="#009C89" stroke="#0f172a" stroke-width="5" stroke-linejoin="round">
-            <rect x="40" y="152" width="64" height="46" rx="10"/>
-            <rect x="116" y="158" width="52" height="38" rx="10"/>
-          </g>
-          <path d="M104 170 H116" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
-          <path class="mc-browL mc-fb" d="M40 150 L102 160" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
-          <path class="mc-browR mc-fb" d="M118 146 L168 134" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
-          <g class="mc-look mc-fb">
-            <ellipse class="mc-blink mc-fb" cx="72" cy="177" rx="10.5" ry="15" fill="#fff"/>
-            <circle class="mc-blink mc-fb" cx="142" cy="178" r="8" fill="#fff"/>
-          </g>
-          
-        </g>
+    <!-- body, hair fringe, request form -->
+    <g transform="rotate(2 110 160)">
+      <circle cx="110" cy="162" r="74" fill="#8B6CF0"/>
+      <g clip-path="url(#plBodyClip)">
+        <!-- side-swept fringe -->
+        <path d="M30 70 H190 V118 C174 112 152 98 128 102 C112 104 100 112 84 110 C66 108 48 116 30 122 Z" fill="#4B30A8"/>
+        <!-- request form held in front -->
+        <g class="pl-form pl-form-x">
+        <rect x="58" y="188" width="104" height="60" rx="9" fill="#F5F1E3"/>
+        <rect x="96" y="183" width="28" height="11" rx="4.5" fill="#2a1f5c"/>
+        <rect x="70" y="204" width="34" height="5" rx="2.5" fill="#8B6CF0" opacity=".5"/>
+        <rect  x="70" y="216" width="60" height="5" rx="2.5" fill="#8B6CF0" opacity=".35"/>
+        <rect  x="82" y="227" width="40" height="5" rx="2.5" fill="#8B6CF0" opacity=".35"/>
+        <path class="pl-check" d="M126 203 L133 210 L147 195" stroke="#16A34A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
       </g>
       </g>
     </g>
-      <g class="acc accx-pen acc-pen">
-        <g transform="translate(6,28) rotate(28 172 186)">
-          <rect x="163" y="140" width="18" height="72" rx="3" fill="#FBBF24" stroke="#0f172a" stroke-width="4.5"/>
-          <rect x="163" y="140" width="18" height="15" rx="3" fill="#F472B6" stroke="#0f172a" stroke-width="4.5"/>
-          <path d="M163 212 L172 232 L181 212 Z" fill="#FDE68A" stroke="#0f172a" stroke-width="4.5" stroke-linejoin="round"/>
-          <path d="M168.5 223 L172 232 L175.5 223 Z" fill="#0f172a"/>
-        </g>
+    <!-- face: soft blush, arched brows, lashes -->
+    <ellipse cx="68" cy="176" rx="9" ry="5" fill="#B9A3FF" opacity=".55"/>
+    <ellipse cx="152" cy="176" rx="9" ry="5" fill="#B9A3FF" opacity=".55"/>
+    <g >
+      <path d="M62 128 Q80 118 98 125" stroke="#2a1f5c" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M122 125 Q140 118 158 128" stroke="#2a1f5c" stroke-width="5" stroke-linecap="round" fill="none"/>
+    </g>
+    <g class="pl-look pl-fb">
+      <g transform="rotate(6 80 153)"><rect class="pl-blink pl-fb" x="73" y="136" width="15" height="34" rx="7.5" fill="#fff"/></g>
+      <g transform="rotate(-6 140 153)"><rect class="pl-blink pl-fb" x="132" y="136" width="15" height="34" rx="7.5" fill="#fff"/></g>
+      <g stroke="#2a1f5c" stroke-width="3.5" stroke-linecap="round" fill="none">
+        <path d="M71 143 L63 137 M70 150 L62 148"/>
+        <path d="M149 143 L157 137 M150 150 L158 148"/>
       </g>
-    <defs>
-      <clipPath id="CLIPBopenprX"><rect x="30" y="92" width="160" height="144" rx="40"/></clipPath>
-      <clipPath id="CLIPVopenprX"><path d="M0 194 L84 194 L110 228 L110 260 L0 260 Z M220 194 L136 194 L110 228 L110 260 L220 260 Z"/></clipPath>
-    </defs>
+    </g>
+  </g>
+  <g class="pl-ok">
+    <circle cx="150" cy="196" r="17" fill="#22C55E" opacity=".18"/>
+    <circle cx="150" cy="196" r="13" fill="#22C55E"/>
+    <path d="M144 196 L148 201 L157 191" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
   </symbol>
-  <symbol id="mc-prlist" viewBox="10 14 200 240">
-    <ellipse class="mc-shadow mc-fb" cx="110" cy="245" rx="62" ry="6" fill="#000" opacity=".25"/>
-    <g class="mc-bounce mc-fb">
-    <g transform="rotate(-3 110 160)">
-      <rect x="30" y="92" width="160" height="144" rx="40" fill="#8B7CF6"/>
-      <g clip-path="url(#CLIPBprlist)">
-        <g clip-path="url(#CLIPVprlist)">
-          <rect x="0" y="190" width="220" height="60" fill="#A5D8FF"/>
-          <rect x="0" y="212" width="220" height="7" fill="#C9CED6"/>
-        </g>
-        <path d="M84 194 L110 228 L136 194 M110 228 V240" stroke="#B3AE17" stroke-width="3"
-              stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </g>
-    </g>
-      <g class="mc-hat mc-fb">
-        <path d="M52 104 C52 66 80 52 110 52 C140 52 168 66 168 104 Z" fill="#4C1D95"/>
-        <rect x="42" y="98" width="136" height="11" rx="5.5" fill="#312E81"/>
-        <path d="M170 100 L198 108 L198 117 L170 113 Z" fill="#312E81"/>
-        <path d="M99 52 H121 V104 H99 Z" fill="#4C1D95" opacity=".55"/>
-      </g>
-      <g transform="translate(0,-14)">
-      <g class="mc-glasses mc-fb">
-        <g transform="rotate(-4 110 172)">
-          <g fill="#009C89" stroke="#0f172a" stroke-width="5" stroke-linejoin="round">
-            <rect x="40" y="152" width="64" height="46" rx="10"/>
-            <rect x="116" y="158" width="52" height="38" rx="10"/>
-          </g>
-          <path d="M104 170 H116" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
-          <path class="mc-browL mc-fb" d="M40 148 Q71 134 102 146" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
-          <path class="mc-browR mc-fb" d="M118 143 Q143 129 168 142" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
-          <g class="mc-look mc-fb">
-            <ellipse class="mc-blink mc-fb" cx="72" cy="177" rx="10.5" ry="15" fill="#fff"/>
-            <circle class="mc-blink mc-fb" cx="142" cy="178" r="8" fill="#fff"/>
-          </g>
-          
-        </g>
-      </g>
-      </g>
-    </g>
-      <g class="acc acc-paper">
-        <g transform="translate(3,28) rotate(-7 172 182)">
-          <rect x="146" y="142" width="58" height="76" rx="7" fill="#F8FAFC" stroke="#0f172a" stroke-width="4.5"/>
-          <path d="M157 160 H192 M157 174 H192 M157 188 H182 M157 202 H174"
-                stroke="#94A3B8" stroke-width="4.5" stroke-linecap="round"/>
-        </g>
-      </g>
-    <defs>
-      <clipPath id="CLIPBprlist"><rect x="30" y="92" width="160" height="144" rx="40"/></clipPath>
-      <clipPath id="CLIPVprlist"><path d="M0 194 L84 194 L110 228 L110 260 L0 260 Z M220 194 L136 194 L110 228 L110 260 L220 260 Z"/></clipPath>
-    </defs>
+
+  <symbol id="mc-prlist" viewBox="10 44 200 208">
+    <ellipse cx="110" cy="240" rx="64" ry="6" fill="#000" opacity=".22"/>
+  <!-- rounded triangle body -->
+  <path d="M110 56 C130 56 142 76 160 108 L196 178 C210 206 196 232 160 232 L60 232 C24 232 10 206 24 178 L60 108 C78 76 90 56 110 56 Z" fill="#4F9CFF"/>
+  <!-- bushy brows -->
+  <path d="M60 124 Q80 112 100 120" stroke="#F5F1E3" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M120 118 Q140 108 160 120" stroke="#F5F1E3" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <!-- eyes -->
+  <g class="rl-look rl-fb">
+    <g transform="rotate(5 82 152)"><rect class="rl-blink rl-fb" x="75" y="136" width="14" height="32" rx="7" fill="#fff"/></g>
+    <g transform="rotate(-5 138 152)"><rect class="rl-blink rl-fb" x="131" y="136" width="14" height="32" rx="7" fill="#fff"/></g>
+  </g>
+  <!-- monocle + chain (right eye) -->
+  <g class="rl-mono">
+    <circle cx="138" cy="152" r="25" fill="#fff" fill-opacity=".16" stroke="#BFA93A" stroke-width="5"/>
+    <path d="M155 171 C170 184 172 200 160 216" stroke="#BFA93A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <circle cx="160" cy="217" r="3.5" fill="#BFA93A"/>
+  </g>
+  <!-- handlebar mustache (two halves wiggle independently) -->
+  <g class="rl-stache">
+    <path class="rl-stL rl-fb" d="M110 190 C100 182 84 182 72 188 C62 194 58 204 66 208 C74 202 86 202 96 202 C102 202 106 200 110 196 Z" fill="#F5F1E3" stroke="#F5F1E3" stroke-width=".6"/>
+    <path class="rl-stR rl-fb" d="M110 196 C114 200 118 202 124 202 C134 202 146 202 154 208 C162 204 158 194 148 188 C136 182 120 182 110 190 Z" fill="#F5F1E3" stroke="#F5F1E3" stroke-width=".6"/>
+  </g>
   </symbol>
-  <symbol id="mc-prlist-x" viewBox="10 14 200 240">
-    <ellipse class="mc-shadow mc-fb" cx="110" cy="245" rx="62" ry="6" fill="#000" opacity=".25"/>
-    <g class="mc-bounce mc-fb">
-    <g transform="rotate(-3 110 160)">
-      <rect x="30" y="92" width="160" height="144" rx="40" fill="#8B7CF6"/>
-      <g clip-path="url(#CLIPBprlistX)">
-        <g clip-path="url(#CLIPVprlistX)">
-          <rect x="0" y="190" width="220" height="60" fill="#A5D8FF"/>
-          <rect x="0" y="212" width="220" height="7" fill="#C9CED6"/>
-        </g>
-        <path d="M84 194 L110 228 L136 194 M110 228 V240" stroke="#B3AE17" stroke-width="3"
-              stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </g>
-    </g>
-      <g class="mc-hat mc-fb">
-        <path d="M52 104 C52 66 80 52 110 52 C140 52 168 66 168 104 Z" fill="#4C1D95"/>
-        <rect x="42" y="98" width="136" height="11" rx="5.5" fill="#312E81"/>
-        <path d="M170 100 L198 108 L198 117 L170 113 Z" fill="#312E81"/>
-        <path d="M99 52 H121 V104 H99 Z" fill="#4C1D95" opacity=".55"/>
-      </g>
-      <g transform="translate(0,-14)">
-      <g class="mc-glasses mc-fb">
-        <g transform="rotate(-4 110 172)">
-          <g fill="#009C89" stroke="#0f172a" stroke-width="5" stroke-linejoin="round">
-            <rect x="40" y="152" width="64" height="46" rx="10"/>
-            <rect x="116" y="158" width="52" height="38" rx="10"/>
-          </g>
-          <path d="M104 170 H116" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
-          <path class="mc-browL mc-fb" d="M40 148 Q71 134 102 146" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
-          <path class="mc-browR mc-fb" d="M118 143 Q143 129 168 142" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
-          <g class="mc-look mc-fb">
-            <ellipse class="mc-blink mc-fb" cx="72" cy="177" rx="10.5" ry="15" fill="#fff"/>
-            <circle class="mc-blink mc-fb" cx="142" cy="178" r="8" fill="#fff"/>
-          </g>
-          
-        </g>
-      </g>
-      </g>
-    </g>
-      <g class="acc accx-paper acc-paper">
-        <g transform="translate(3,28) rotate(-7 172 182)">
-          <rect x="146" y="142" width="58" height="76" rx="7" fill="#F8FAFC" stroke="#0f172a" stroke-width="4.5"/>
-          <path d="M157 160 H192 M157 174 H192 M157 188 H182 M157 202 H174"
-                stroke="#94A3B8" stroke-width="4.5" stroke-linecap="round"/>
-        </g>
-      </g>
-    <defs>
-      <clipPath id="CLIPBprlistX"><rect x="30" y="92" width="160" height="144" rx="40"/></clipPath>
-      <clipPath id="CLIPVprlistX"><path d="M0 194 L84 194 L110 228 L110 260 L0 260 Z M220 194 L136 194 L110 228 L110 260 L220 260 Z"/></clipPath>
-    </defs>
+  <symbol id="mc-prlist-x" viewBox="10 44 200 208">
+    <ellipse cx="110" cy="240" rx="64" ry="6" fill="#000" opacity=".22"/>
+  <!-- rounded triangle body -->
+  <path d="M110 56 C130 56 142 76 160 108 L196 178 C210 206 196 232 160 232 L60 232 C24 232 10 206 24 178 L60 108 C78 76 90 56 110 56 Z" fill="#4F9CFF"/>
+  <!-- bushy brows -->
+  <path d="M60 124 Q80 112 100 120" stroke="#F5F1E3" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M120 118 Q140 108 160 120" stroke="#F5F1E3" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <!-- eyes -->
+  <g class="rl-look rl-fb">
+    <g transform="rotate(5 82 152)"><rect class="rl-blink rl-fb" x="75" y="136" width="14" height="32" rx="7" fill="#fff"/></g>
+    <g transform="rotate(-5 138 152)"><rect class="rl-blink rl-fb" x="131" y="136" width="14" height="32" rx="7" fill="#fff"/></g>
+  </g>
+  <!-- monocle + chain (right eye) -->
+  <g class="rl-mono rl-mono-x">
+    <circle cx="138" cy="152" r="25" fill="#fff" fill-opacity=".16" stroke="#BFA93A" stroke-width="5"/>
+    <path d="M155 171 C170 184 172 200 160 216" stroke="#BFA93A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <circle cx="160" cy="217" r="3.5" fill="#BFA93A"/>
+  </g>
+  <!-- handlebar mustache (two halves wiggle independently) -->
+  <g class="rl-stache">
+    <path class="rl-stL rl-fb" d="M110 190 C100 182 84 182 72 188 C62 194 58 204 66 208 C74 202 86 202 96 202 C102 202 106 200 110 196 Z" fill="#F5F1E3" stroke="#F5F1E3" stroke-width=".6"/>
+    <path class="rl-stR rl-fb" d="M110 196 C114 200 118 202 124 202 C134 202 146 202 154 208 C162 204 158 194 148 188 C136 182 120 182 110 190 Z" fill="#F5F1E3" stroke="#F5F1E3" stroke-width=".6"/>
+  </g>
+  <g class="rl-flash">
+    <circle cx="138" cy="152" r="30" fill="none" stroke="#FFE9A8" stroke-width="6"/>
+  </g>
   </symbol>
 </svg>
 
