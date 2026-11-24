@@ -1763,7 +1763,7 @@
   /* =====================================================================
      HUB — เมนูวงล้อ 3D เต็มหน้า
      ===================================================================== */
-  .wrap-hub{ max-width:100% !important; padding:0 24px 40px !important; }
+  .wrap-hub{ max-width:100% !important; padding:0 24px 0 !important; }
 
   .subnav{
     display:flex; align-items:center; gap:12px;
@@ -1787,7 +1787,8 @@
 
   .hub{
     display:flex; flex-direction:column; align-items:center;
-    padding:14px 0 40px;
+    padding:14px 0 120px;      /* เว้นที่ให้แทบด้านล่าง */
+    min-height:calc(100vh - 190px);
   }
   .hub-head{ text-align:center; margin-bottom:6px; }
   .hub-eyebrow{
@@ -1877,17 +1878,26 @@
   .hub-arrow.left{ left:2%; }
   .hub-arrow.right{ right:2%; }
 
-  .hub-dots{ display:flex; gap:9px; margin-top:10px; }
+  .hub-dock{
+    position:fixed; left:0; right:0; bottom:0; z-index:45;
+    display:flex; flex-direction:column; align-items:center; gap:9px;
+    padding:14px 0 18px;
+    background:linear-gradient(to top, var(--bg) 45%, transparent);
+    pointer-events:none;
+  }
+  .hub-dots{ display:flex; gap:9px; pointer-events:auto; }
   .hub-dot{
     width:9px; height:9px; border-radius:50%; cursor:pointer; padding:0;
     background:var(--mutedFaint); opacity:.55; border:0; transition:all .25s ease;
   }
   .hub-dot:hover{ opacity:1; }
   .hub-dot.on{ width:26px; border-radius:5px; opacity:1; background:var(--accent); box-shadow:0 0 12px rgba(45,212,191,.7); }
-  .hub-count{ font-size:11px; color:var(--mutedFaint); margin-top:10px; font-variant-numeric:tabular-nums; }
+  .hub-count{ font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums; letter-spacing:.04em; pointer-events:none; }
 
   @media(max-width:900px){
     .hub-stage{ height:400px; }
+    .hub{ padding-bottom:140px; }
+    .hub-dock{ padding:12px 0 14px; }
     .hub-card{ width:250px; height:300px; margin:-150px 0 0 -125px; transform:rotateY(calc(var(--i) * var(--step))) translateZ(300px); }
     .hub-blob{ width:86px; height:86px; }
     .hub-emo{ font-size:40px; }
@@ -1901,6 +1911,135 @@
   @media(prefers-reduced-motion:reduce){
     .hub-emo{ animation:none !important; }
     .hub-ring{ transition:none !important; }
+  }
+
+
+  /* =====================================================================
+     HUD REACTOR — ครึ่งซ้ายหน้า login (สไตล์ sci-fi / HUD)
+     ===================================================================== */
+  .hud{
+    position:relative; flex:1 1 auto; min-height:230px;
+    display:flex; align-items:center; justify-content:center;
+    margin:16px 0; opacity:0; animation:lgFade .9s .25s ease forwards;
+  }
+  .hud-stage{
+    position:relative; width:min(310px, 74%); aspect-ratio:1;
+    display:grid; place-items:center;
+    filter:drop-shadow(0 0 30px rgba(45,212,191,.18));
+  }
+  .hud-ring{ position:absolute; border-radius:50%; will-change:transform; }
+  .hud-ring.r1{
+    inset:13%;
+    border:1px solid rgba(45,212,191,.16);
+    border-top-color:rgba(45,212,191,.9);
+    border-bottom-color:rgba(45,212,191,.9);
+    animation:hudSpin 9s linear infinite;
+  }
+  .hud-ring.r2{
+    inset:1%;
+    border:1px dashed rgba(45,212,191,.25);
+    animation:hudSpin 30s linear infinite reverse;
+  }
+  .hud-ring.r3{
+    inset:30%;
+    border:1px solid rgba(245,166,35,.18);
+    border-left-color:rgba(245,166,35,.85);
+    border-right-color:rgba(245,166,35,.85);
+    animation:hudSpin 5.5s linear infinite reverse;
+  }
+  .hud-ticks{
+    position:absolute; inset:6%; border-radius:50%;
+    background:repeating-conic-gradient(from 0deg,
+      rgba(45,212,191,.55) 0deg 0.5deg, transparent 0.5deg 6deg);
+    -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 11px), #000 calc(100% - 10px));
+    mask:radial-gradient(farthest-side, transparent calc(100% - 11px), #000 calc(100% - 10px));
+    animation:hudSpin 90s linear infinite;
+    opacity:.75;
+  }
+  .hud-cross{ position:absolute; background:rgba(45,212,191,.28); }
+  .hud-cross.hx{ left:-6%; right:-6%; top:50%; height:1px; }
+  .hud-cross.hy{ top:-6%; bottom:-6%; left:50%; width:1px; }
+  .hud-core{
+    position:relative; width:31%; aspect-ratio:1; border-radius:50%;
+    display:grid; place-items:center;
+    background:radial-gradient(circle, rgba(45,212,191,.34), rgba(45,212,191,.07) 58%, transparent 72%);
+    animation:hudPulse 3s ease-in-out infinite;
+  }
+  .hud-core img{ width:54%; height:54%; object-fit:contain; filter:drop-shadow(0 0 14px rgba(45,212,191,.85)); }
+  .hud-core::after{
+    content:""; position:absolute; inset:-20%; border-radius:50%;
+    background:conic-gradient(from 0deg, transparent 0 76%, rgba(45,212,191,.9) 90%, transparent 98%);
+    -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+    mask:radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+    animation:hudSpin 2s linear infinite;
+  }
+  .hud-bracket{
+    position:absolute; width:26px; height:26px;
+    border:1.5px solid rgba(45,212,191,.55);
+  }
+  .hud-bracket.tl{ top:0; left:0; border-right:0; border-bottom:0; }
+  .hud-bracket.tr{ top:0; right:0; border-left:0; border-bottom:0; }
+  .hud-bracket.bl{ bottom:0; left:0; border-right:0; border-top:0; }
+  .hud-bracket.br{ bottom:0; right:0; border-left:0; border-top:0; }
+  .hud-data{
+    position:absolute; font-family:ui-monospace,'Courier New',monospace;
+    font-size:9px; letter-spacing:.14em; line-height:1.5; text-transform:uppercase;
+    color:rgba(45,212,191,.55);
+  }
+  .hud-data i{ display:block; font-style:normal; opacity:.75; }
+  .hud-data b{ color:rgba(45,212,191,.95); font-weight:600; }
+  .hud-data.dl{ left:40px; top:8px; }
+  .hud-data.dr{ right:40px; top:8px; text-align:right; }
+  .hud-data.db{ left:40px; bottom:8px; }
+  .hud-data.db b{ color:rgba(245,166,35,.9); }
+  .hud-scan{
+    position:absolute; inset:0; pointer-events:none; overflow:hidden;
+  }
+  .hud-scan::after{
+    content:""; position:absolute; left:-10%; right:-10%; height:1px;
+    background:linear-gradient(90deg, transparent, rgba(45,212,191,.55), transparent);
+    animation:hudScan 4.5s ease-in-out infinite;
+  }
+  @keyframes hudSpin{ to{ transform:rotate(360deg); } }
+  @keyframes hudPulse{
+    0%,100%{ transform:scale(1); opacity:.95; }
+    50%{ transform:scale(1.05); opacity:1; }
+  }
+  @keyframes hudScan{
+    0%{ top:-2%; opacity:0; }
+    12%{ opacity:1; }
+    88%{ opacity:1; }
+    100%{ top:102%; opacity:0; }
+  }
+  @keyframes lgFade{ to{ opacity:1; } }
+
+  /* ---------- มือถือ: HUD อยู่บนสุดแบบกะทัดรัด ---------- */
+  @media(max-width:860px){
+    .lg-wrap{ grid-template-columns:1fr !important; grid-template-rows:auto 1fr !important; }
+    .lg-left{
+      display:flex !important;
+      position:relative !important; inset:auto !important;
+      height:auto !important; min-height:0 !important;
+      padding:10px 20px 0 !important; margin:0 !important;
+      border-right:0 !important; border-bottom:0 !important;
+      justify-content:flex-start !important; overflow:visible !important;
+      background:none !important;
+    }
+    .lg-left .lg-hero, .lg-left .lg-list{ display:none !important; }
+    .lg-left .lg-brand{ display:flex !important; justify-content:center !important; width:100% !important; margin:0 0 2px !important; }
+    .lg-left .lg-brand .lg-name{ font-size:20px !important; }
+
+    .hud{ flex:0 0 auto !important; width:100% !important; height:158px; min-height:0 !important; margin:0 !important; }
+    .hud-stage{ width:min(160px, 44vw) !important; }
+    .hud-data, .hud-bracket{ display:none !important; }
+    .hud-cross.hx{ left:-2%; right:-2%; }
+    .hud-cross.hy{ top:-2%; bottom:-2%; }
+
+    .lg-right .lg-brand-m{ display:none !important; }
+    .lg-right{ padding-top:22px !important; }
+  }
+  @media(prefers-reduced-motion:reduce){
+    .hud-ring, .hud-ticks, .hud-core, .hud-core::after, .hud-scan::after, .hud{ animation:none !important; opacity:1; }
   }
 
 </style>
@@ -3549,10 +3688,12 @@ function renderHub(isAdmin, isApprove){
         <button class="hub-arrow right" id="hubNext" aria-label="ถัดไป"><i class="ti ti-chevron-right"></i></button>
       </div>
 
-      <div class="hub-dots">
-        ${keys.map((k, i) => `<button class="hub-dot ${i === hubIndex ? "on" : ""}" data-hubgo="${i}" aria-label="${(PAGE_META[k]||{}).label||k}"></button>`).join("")}
+      <div class="hub-dock">
+        <div class="hub-dots">
+          ${keys.map((k, i) => `<button class="hub-dot ${i === hubIndex ? "on" : ""}" data-hubgo="${i}" aria-label="${(PAGE_META[k]||{}).label||k}"></button>`).join("")}
+        </div>
+        <div class="hub-count">${hubIndex + 1} / ${n}</div>
       </div>
-      <div class="hub-count">${hubIndex + 1} / ${n}</div>
     </div>`;
 }
 
@@ -3721,6 +3862,26 @@ function renderLogin(){
       <section class="lg-left">
         <canvas class="lg-bg" id="lgCircuit" aria-hidden="true"></canvas>
         <div class="lg-brand"><img src="logo-mark.png" onerror="this.onerror=null;this.src='icon-192.png'" alt="SpareCube" class="lg-mark-img"><span class="lg-name"><span class="brand-spare">Spare</span><span class="brand-title-cube">Cube</span></span></div>
+
+        <div class="hud" aria-hidden="true">
+          <div class="hud-stage">
+            <span class="hud-ring r2"></span>
+            <span class="hud-ring r1"></span>
+            <span class="hud-ticks"></span>
+            <span class="hud-ring r3"></span>
+            <span class="hud-cross hx"></span>
+            <span class="hud-cross hy"></span>
+            <span class="hud-core"><img src="logo-mark.png" onerror="this.onerror=null;this.src='icon-192.png'" alt=""></span>
+          </div>
+          <span class="hud-bracket tl"></span>
+          <span class="hud-bracket tr"></span>
+          <span class="hud-bracket bl"></span>
+          <span class="hud-bracket br"></span>
+          <div class="hud-data dl"><i>SYS.STATUS</i><b>ONLINE</b></div>
+          <div class="hud-data dr"><i>REACTOR</i><b>98.4%</b></div>
+          <div class="hud-data db"><i>INVENTORY SYNC</i><b>READY</b></div>
+          <span class="hud-scan"></span>
+        </div>
 
         <div class="lg-hero">
           <div class="lg-headline">Manage spare parts <span class="shine">with clarity</span>, every step of the way.</div>
