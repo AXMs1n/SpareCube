@@ -229,7 +229,7 @@
   .machine-group-title{color:var(--machine);font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
   .machine-group.unassigned .machine-group-title{color:var(--mutedFaint);}
   .zoomable{cursor:zoom-in;touch-action:manipulation;}
-  .lightbox-overlay{position:fixed;inset:0;background:rgba(8,9,11,.92);z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;animation:lightboxFadeIn .22s ease;}
+  .lightbox-overlay{position:fixed;inset:0;background:rgba(8,9,11,.94);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;animation:lightboxFadeIn .22s ease;}
   .lightbox-overlay img{max-width:100%;max-height:100%;border-radius:10px;object-fit:contain;animation:lightboxPopIn .28s cubic-bezier(.22,1,.36,1);}
   .lightbox-close{position:absolute;top:16px;right:20px;background:rgba(20,22,26,.75);border:none;border-radius:8px;padding:8px 12px;color:var(--text);font-size:18px;cursor:pointer;}
   @keyframes lightboxFadeIn{
@@ -1496,7 +1496,8 @@
     display:flex; align-items:center; justify-content:center; font-size:44px; color:var(--mutedFaint);
     overflow:hidden;
   }
-  .pd-photo img{ width:100%; height:100%; object-fit:contain; }
+  .pd-photo img{ width:100%; height:100%; object-fit:contain; cursor:zoom-in; transition:transform .25s ease; }
+  .pd-photo img:active{ transform:scale(.985); }
   .pd-body{ padding:16px 18px 18px; }
   .pd-name{ font-size:19px; font-weight:700; line-height:1.32; letter-spacing:-.2px; }
   .pd-code{ font-size:12.5px; color:var(--mutedFaint); margin-top:4px; }
@@ -1801,7 +1802,7 @@
   .hub-hint{ font-size:12.5px; color:var(--muted); margin:0; letter-spacing:.01em; }
 
   .hub-stage{
-    position:relative; width:100%; height:384px; margin-top:6px;
+    position:relative; width:100%; height:500px; margin-top:10px;
     perspective:1500px; perspective-origin:50% 46%;
     display:flex; align-items:center; justify-content:center;
     touch-action:pan-y;           /* ลากแนวนอน = หมุนวงล้อ, แนวตั้ง = เลื่อนหน้า */
@@ -1814,8 +1815,8 @@
   }
   .hub-card{
     position:absolute; left:50%; top:50%;
-    width:250px; height:290px; margin:-145px 0 0 -125px;
-    transform: rotateY(calc(var(--i) * var(--step))) translateZ(330px);
+    width:310px; height:370px; margin:-185px 0 0 -155px;
+    transform: rotateY(calc(var(--i) * var(--step))) translateZ(430px);
     transform-style:preserve-3d; backface-visibility:hidden;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
     padding:22px 18px; cursor:pointer; text-align:center;
@@ -1835,14 +1836,14 @@
                0 0 42px -12px rgba(var(--tc),.5);
   }
   .hub-blob{
-    width:86px; height:86px; border-radius:50%;
-    display:grid; place-items:center; margin-bottom:4px;
+    width:112px; height:112px; border-radius:50%;
+    display:grid; place-items:center; margin-bottom:6px;
     background:rgba(var(--tc), .16);
     box-shadow:inset 0 0 0 1.5px rgba(var(--tc), .45);
     transition:transform .4s cubic-bezier(.22,1,.36,1), background .3s ease, box-shadow .3s ease;
   }
   .hub-emo{
-    font-size:40px; line-height:1;
+    font-size:52px; line-height:1;
     font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
     animation:hubFloat 5.6s ease-in-out infinite;
   }
@@ -1855,10 +1856,10 @@
     background:rgba(var(--tc), .26);
     box-shadow:inset 0 0 0 1.5px rgba(var(--tc), .7), 0 0 26px rgba(var(--tc), .45);
   }
-  .hub-label{ font-size:20px; font-weight:700; letter-spacing:-.2px; }
-  .hub-sub{ font-size:11.5px; color:var(--muted); line-height:1.5; max-width:190px; }
+  .hub-label{ font-size:24px; font-weight:700; letter-spacing:-.3px; }
+  .hub-sub{ font-size:12.5px; color:var(--muted); line-height:1.6; max-width:240px; }
   .hub-go{
-    margin-top:6px; font-size:11.5px; font-weight:600; color:rgba(var(--tc),1);
+    margin-top:8px; font-size:12.5px; font-weight:600; color:rgba(var(--tc),1);
     display:inline-flex; align-items:center; gap:5px;
     opacity:0; transform:translateY(4px); transition:all .3s ease;
   }
@@ -1886,11 +1887,11 @@
   .hub-count{ font-size:11px; color:var(--mutedFaint); margin-top:10px; font-variant-numeric:tabular-nums; }
 
   @media(max-width:900px){
-    .hub-stage{ height:340px; }
-    .hub-card{ width:210px; height:250px; margin:-125px 0 0 -105px; transform:rotateY(calc(var(--i) * var(--step))) translateZ(240px); }
-    .hub-blob{ width:68px; height:68px; }
-    .hub-emo{ font-size:32px; }
-    .hub-label{ font-size:17px; }
+    .hub-stage{ height:400px; }
+    .hub-card{ width:250px; height:300px; margin:-150px 0 0 -125px; transform:rotateY(calc(var(--i) * var(--step))) translateZ(300px); }
+    .hub-blob{ width:86px; height:86px; }
+    .hub-emo{ font-size:40px; }
+    .hub-label{ font-size:20px; }
     .hub-sub{ display:none; }
     .hub-arrow.left{ left:-6px; }
     .hub-arrow.right{ right:-6px; }
@@ -3513,6 +3514,7 @@ function startCircuitBg(canvas){
    HUB — เมนูเต็มจอแบบวงล้อ 3D (หมุนเลือก → คลิกเข้า)
    ===================================================================== */
 let hubIndex = 0;
+let hubTurns = 0;
 let hubDrag = null;
 
 function renderHub(isAdmin, isApprove){
@@ -3561,68 +3563,101 @@ function enterHubPage(key, idx){
   render();
 }
 
-function hubSet(idx, keys){
-  const n = keys.length;
-  hubIndex = ((idx % n) + n) % n;
-  const ring = document.getElementById("hubRing");
-  if (ring) ring.style.transform = `rotateY(${-hubIndex * (360 / n)}deg)`;
-  document.querySelectorAll(".hub-card").forEach((c, i) => c.classList.toggle("is-front", i === hubIndex));
+/* ---------------- วงล้อ: หมุนต่อเนื่อง (วนกลับได้ ไม่ตีกลับ) ---------------- */
+function hubCount(){ return document.querySelectorAll(".hub-card").length || 1; }
+function hubStepDeg(){ return 360 / hubCount(); }
+
+function hubRenderState(){
+  const cards = [...document.querySelectorAll(".hub-card")];
+  const n = cards.length || 1;
+  hubIndex = ((hubTurns % n) + n) % n;
+  cards.forEach((c, i) => c.classList.toggle("is-front", i === hubIndex));
   document.querySelectorAll(".hub-dot").forEach((d, i) => d.classList.toggle("on", i === hubIndex));
   const cnt = document.querySelector(".hub-count");
   if (cnt) cnt.textContent = `${hubIndex + 1} / ${n}`;
 }
 
+function hubApply(animate){
+  const ring = document.getElementById("hubRing");
+  if (!ring) return;
+  const step = hubStepDeg();
+  ring.style.transition = animate === false ? "none" : "";
+  ring.style.transform = `rotateY(${-hubTurns * step}deg)`;
+  hubRenderState();
+
+  // กันค่าองศาสะสมมากเกิน → รีเซ็ตเป็นค่าเทียบเท่าโดยไม่ให้เห็นการกระตุก
+  const n = hubCount();
+  if (Math.abs(hubTurns) > n * 5){
+    setTimeout(() => {
+      const r = document.getElementById("hubRing");
+      if (!r) return;
+      hubTurns = hubIndex;
+      r.style.transition = "none";
+      r.style.transform = `rotateY(${-hubTurns * step}deg)`;
+      requestAnimationFrame(() => { const rr = document.getElementById("hubRing"); if (rr) rr.style.transition = ""; });
+    }, 720);
+  }
+}
+
+function hubStep(delta){ hubTurns += delta; hubApply(true); }
+
+function hubGoto(idx){
+  const n = hubCount();
+  let diff = idx - hubIndex;
+  if (diff > n / 2) diff -= n;
+  if (diff < -n / 2) diff += n;
+  hubTurns += diff;
+  hubApply(true);
+}
+
 function bindHub(keys){
   const ring = document.getElementById("hubRing");
   if (!ring) return;
-  const n = keys.length;
-  ring.style.transform = `rotateY(${-hubIndex * (360 / n)}deg)`;
+  hubApply(false);
 
-  document.getElementById("hubPrev")?.addEventListener("click", (e) => { e.stopPropagation(); hubSet(hubIndex - 1, keys); });
-  document.getElementById("hubNext")?.addEventListener("click", (e) => { e.stopPropagation(); hubSet(hubIndex + 1, keys); });
+  document.getElementById("hubPrev")?.addEventListener("click", (e) => { e.stopPropagation(); hubStep(-1); });
+  document.getElementById("hubNext")?.addEventListener("click", (e) => { e.stopPropagation(); hubStep(1); });
   document.querySelectorAll("[data-hubgo]").forEach(el => el.addEventListener("click", (e) => {
-    e.stopPropagation(); hubSet(Number(el.dataset.hubgo), keys);
+    e.stopPropagation(); hubGoto(Number(el.dataset.hubgo));
   }));
 
   // ล้อเมาส์
   let lock = 0;
-  const stage = document.getElementById("hubStage");
-  stage?.addEventListener("wheel", (e) => {
+  document.getElementById("hubStage")?.addEventListener("wheel", (e) => {
     e.preventDefault();
     const now = Date.now();
     if (now < lock) return;
-    lock = now + 260;
-    hubSet(hubIndex + (e.deltaY > 0 || e.deltaX > 0 ? 1 : -1), keys);
+    lock = now + 240;
+    hubStep((e.deltaY > 0 || e.deltaX > 0) ? 1 : -1);
   }, { passive: false });
 
   // ลาก / ปัด
-  let startX = 0, startAngle = 0, dragging = false, moved = false;
+  let dragging = false, moved = false, startX = 0, startDeg = 0, lastDx = 0, downAt = 0;
   const onDown = (e) => {
-    dragging = true; moved = false;
+    dragging = true; moved = false; lastDx = 0;
     downAt = Date.now();
     startX = e.clientX;
-    startAngle = -hubIndex * (360 / n);
+    startDeg = -hubTurns * hubStepDeg();
     ring.style.transition = "none";
   };
   const onMove = (e) => {
     if (!dragging) return;
-    const dx = e.clientX - startX;
-    if (Math.abs(dx) > 6) moved = true;
-    ring.style.transform = `rotateY(${startAngle + dx * 0.32}deg)`;
+    lastDx = e.clientX - startX;
+    if (Math.abs(lastDx) > 6) moved = true;
+    ring.style.transform = `rotateY(${startDeg + lastDx * 0.32}deg)`;
   };
-  let downAt = 0;
   const onUp = (e) => {
     if (!dragging) return;
     dragging = false;
     ring.style.transition = "";
-    const m = /rotateY\((-?[\d.]+)deg\)/.exec(ring.style.transform || "rotateY(0deg)");
-    const deg = m ? parseFloat(m[1]) : -hubIndex * (360 / n);
-    hubSet(Math.round(-deg / (360 / n)), keys);
+    const steps = Math.round((lastDx * 0.32) / hubStepDeg());
+    hubTurns += steps;
+    hubApply(true);
     if (moved) { hubBlockClick(); return; }
 
-    // แตะสั้น ๆ บนการ์ดตรงกลาง → เข้าหน้านั้นทันที (ไม่ต้องรอ click)
+    // แตะสั้นบนการ์ดตรงกลาง → เข้าหน้านั้นทันที
     const card = e && e.target && e.target.closest ? e.target.closest(".hub-card") : null;
-    if (card && Date.now() - downAt < 600 && Number(card.dataset.idx) === hubIndex) {
+    if (card && Date.now() - downAt < 600 && Number(card.dataset.idx) === hubIndex){
       hubBlockClick();
       enterHubPage(card.dataset.hub, Number(card.dataset.idx));
     }
@@ -3633,14 +3668,14 @@ function bindHub(keys){
   ring.addEventListener("pointercancel", onUp);
   window.addEventListener("pointerup", onUp);
 
-  // คลิกการ์ด (delegate บน ring — กัน pointer capture กลืน click)
+  // คลิกการ์ด (delegate บน ring)
   ring.addEventListener("click", (e) => {
     const card = e.target.closest(".hub-card");
     if (!card) return;
     if (hubClickBlocked()) return;
     e.stopPropagation();
     const i = Number(card.dataset.idx);
-    if (i !== hubIndex) { hubSet(i, keys); return; }   // ยังไม่ใช่ใบกลาง → หมุนมาก่อน
+    if (i !== hubIndex) { hubGoto(i); return; }
     enterHubPage(card.dataset.hub, i);
   });
 
@@ -3648,17 +3683,17 @@ function bindHub(keys){
   document.addEventListener("keydown", hubKeysHandler);
   function hubKeysHandler(e){
     if (!document.getElementById("hubRing")) { document.removeEventListener("keydown", hubKeysHandler); return; }
-    if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); hubSet(hubIndex + 1, keys); }
-    if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); hubSet(hubIndex - 1, keys); }
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); hubStep(1); }
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); hubStep(-1); }
     if (e.key === "Enter") {
       const k = keys[hubIndex];
-      if (k) { view = k; render(); }
+      if (k) enterHubPage(k, hubIndex);
     }
   }
 }
 
 let hubBlockUntil = 0;
-function hubBlockClick(){ hubBlockUntil = Date.now() + 300; }
+function hubBlockClick(){ hubBlockUntil = Date.now() + 320; }
 function hubClickBlocked(){ return Date.now() < hubBlockUntil; }
 
 function renderLogin(){
