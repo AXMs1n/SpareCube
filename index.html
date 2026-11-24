@@ -2748,6 +2748,159 @@
       55%{ transform:scale(1.15); opacity:.9; }
       100%{ transform:scale(2.1); opacity:0; }
     }
+
+
+    /* ---- ตัวการ์ตูน "ภาพรวม": กระบอกกราฟ ---- */
+    .db-fb{ transform-box:fill-box; }
+    .db-look{ animation:dbLook 4s ease-in-out infinite; }
+    .db-blink{ transform-origin:50% 50%; animation:dbBlink 4s ease-in-out infinite; }
+    @keyframes dbLook{
+      0%,10%{ transform:translate(0,0);} 16%,28%{ transform:translate(-4px,2px);}
+      34%,46%{ transform:translate(4px,2px);} 52%,60%{ transform:translate(-3px,3px);}
+      68%,100%{ transform:translate(0,0);}
+    }
+    @keyframes dbBlink{ 0%,84%,92%,100%{ transform:scaleY(1);} 88%{ transform:scaleY(.08);} }
+    .db-bar{ transform-origin:50% 100%; animation:dbBar 4s ease-in-out infinite; }
+    .db-b2{ animation-name:dbBar2; }
+    .db-b3{ animation-name:dbBar3; }
+    @keyframes dbBar{ 0%,100%{ transform:scaleY(1);} 30%{ transform:scaleY(1.45);} 60%{ transform:scaleY(.7);} 80%{ transform:scaleY(1.2);} }
+    @keyframes dbBar2{ 0%,100%{ transform:scaleY(1);} 30%{ transform:scaleY(.6);} 60%{ transform:scaleY(1.35);} 80%{ transform:scaleY(.85);} }
+    @keyframes dbBar3{ 0%,100%{ transform:scaleY(1);} 30%{ transform:scaleY(1.3);} 60%{ transform:scaleY(1.7);} 80%{ transform:scaleY(.8);} }
+
+    /* ท่าคลิก: แท่งพุ่งขึ้นทีละแท่ง + ลูกศรเขียวเด้ง */
+    .db-bar-x{ transform-box:fill-box; transform-origin:50% 100%; animation:dbShoot .56s cubic-bezier(.3,.9,.35,1) forwards; }
+    .db-x2{ animation-delay:.07s; }
+    .db-x3{ animation-delay:.14s; }
+    @keyframes dbShoot{
+      0%  { transform:scaleY(1); opacity:1; }
+      32% { transform:scaleY(2.35); opacity:1; }
+      62% { transform:scaleY(1.5); opacity:1; }
+      100%{ transform:scaleY(0); opacity:0; }
+    }
+    .db-arrow{ transform-box:fill-box; transform-origin:50% 100%; animation:dbArrow .56s cubic-bezier(.3,1.1,.4,1) forwards; }
+    @keyframes dbArrow{
+      0%,38%{ transform:translateY(16px) scale(.3); opacity:0; }
+      62%{ transform:translateY(-4px) scale(1.18); opacity:1; }
+      80%{ transform:translateY(0) scale(1); opacity:1; }
+      100%{ transform:translateY(-10px) scale(1.05); opacity:0; }
+    }
+
+
+    /* ---- ตัวการ์ตูน "ประวัติ": ก้อนเมฆ + นาฬิกา ---- */
+    .hs-fb{ transform-box:fill-box; }
+    .hs-look{ animation:hsLook 4s ease-in-out infinite; }
+    .hs-blink{ transform-origin:50% 50%; animation:hsBlink 4s ease-in-out infinite; }
+    @keyframes hsLook{
+      0%,10%{ transform:translate(0,0);} 16%,28%{ transform:translate(-4px,2px);}
+      34%,46%{ transform:translate(4px,2px);} 52%,60%{ transform:translate(-3px,3px);}
+      68%,100%{ transform:translate(0,0);}
+    }
+    @keyframes hsBlink{ 0%,84%,92%,100%{ transform:scaleY(1);} 88%{ transform:scaleY(.08);} }
+
+    /* ท่าคลิก: นาฬิกาหลุดจากหัว หมุนติ้วลอยขึ้นแล้วจาง */
+    .hs-clock-x{ transform-box:fill-box; transform-origin:50% 50%;
+                 animation:hsSpin .56s cubic-bezier(.28,.9,.35,1) forwards; }
+    @keyframes hsSpin{
+      0%  { transform:translateY(0) rotate(0deg) scale(1); opacity:1; }
+      30% { transform:translateY(-15px) rotate(-145deg) scale(1.13); opacity:1; }
+      64% { transform:translateY(-26px) rotate(255deg) scale(1.05); opacity:1; }
+      100%{ transform:translateY(-42px) rotate(560deg) scale(.84); opacity:0; }
+    }
+
+
+    /* ---- ตัวการ์ตูน "ค่าซ่อมบำรุง": วงกลมเขียว + เหรียญ ---- */
+    .ct-fb{ transform-box:fill-box; }
+    .ct-look{ animation:ctLook 4s ease-in-out infinite; }
+    .ct-blink{ transform-origin:50% 50%; animation:ctBlink 4s ease-in-out infinite; }
+    @keyframes ctLook{
+      0%,10%{ transform:translate(0,0);} 16%,28%{ transform:translate(-4px,3px);}
+      34%,46%{ transform:translate(4px,3px);} 52%,60%{ transform:translate(-3px,4px);}
+      68%,100%{ transform:translate(0,0);}
+    }
+    @keyframes ctBlink{ 0%,84%,92%,100%{ transform:scaleY(1);} 88%{ transform:scaleY(.08);} }
+
+    /* ท่าคลิก: โยนเหรียญขึ้น + เหรียญร่วง */
+    .ct-bob{ transform-box:view-box; transform-origin:138px 112px;
+             animation:ctBob 3s ease-in-out infinite; }
+    @keyframes ctBob{ 0%,100%{ transform:rotate(9deg);} 50%{ transform:rotate(3deg);} }
+    .ct-coin-x{ transform-box:view-box; transform-origin:138px 112px;
+                animation:ctToss .56s cubic-bezier(.3,.9,.35,1) forwards; }
+    @keyframes ctToss{
+      0%  { transform:translateY(0) rotate(0deg) scale(1); opacity:1; }
+      32% { transform:translateY(-34px) rotate(200deg) scale(1.14); opacity:1; }
+      66% { transform:translateY(-8px) rotate(400deg) scale(1); opacity:1; }
+      100%{ transform:translateY(14px) rotate(560deg) scale(.45); opacity:0; }
+    }
+    .ct-drop{ opacity:0; }
+    .ct-d1{ transform:translate(66px,120px); animation:ctFall .56s ease-in .10s forwards; }
+    .ct-d2{ transform:translate(150px,116px); animation:ctFall .56s ease-in .18s forwards; }
+    .ct-d3{ transform:translate(108px,128px); animation:ctFall .56s ease-in .26s forwards; }
+    @keyframes ctFall{
+      0%  { opacity:0; translate:0 -14px; }
+      20% { opacity:1; }
+      100%{ opacity:0; translate:0 86px; }
+    }
+
+
+    /* ---- ตัวการ์ตูน "ผู้ใช้": หยดน้ำ + กิ๊บรูปคน ---- */
+    .us-fb{ transform-box:fill-box; }
+    .us-look{ animation:usLook 4s ease-in-out infinite; }
+    .us-blink{ transform-origin:50% 50%; animation:usBlink 4s ease-in-out infinite; }
+    @keyframes usLook{
+      0%,10%{ transform:translate(0,0);} 16%,28%{ transform:translate(-4px,3px);}
+      34%,46%{ transform:translate(4px,3px);} 52%,60%{ transform:translate(-3px,4px);}
+      68%,100%{ transform:translate(0,0);}
+    }
+    @keyframes usBlink{ 0%,84%,92%,100%{ transform:scaleY(1);} 88%{ transform:scaleY(.08);} }
+    .us-bob{ transform-box:view-box; transform-origin:142px 90px;
+             animation:usBob 3s ease-in-out infinite; }
+    @keyframes usBob{ 0%,100%{ transform:rotate(4deg);} 50%{ transform:rotate(-3deg);} }
+
+    /* ท่าคลิก: กิ๊บเด้งหลุด + ป้าย +1 */
+    .us-clip-x{ transform-box:view-box; transform-origin:142px 90px;
+                animation:usClip .56s cubic-bezier(.3,.9,.35,1) forwards; }
+    @keyframes usClip{
+      0%  { transform:translateY(0) rotate(0deg) scale(1); opacity:1; }
+      30% { transform:translateY(-18px) rotate(-24deg) scale(1.16); opacity:1; }
+      64% { transform:translateY(-26px) rotate(16deg) scale(1.08); opacity:1; }
+      100%{ transform:translateY(-40px) rotate(54deg) scale(.68); opacity:0; }
+    }
+    .us-badge{ transform-box:fill-box; transform-origin:50% 100%; animation:usBadge .56s cubic-bezier(.3,1.1,.4,1) forwards; }
+    @keyframes usBadge{
+      0%,34%{ transform:translateY(12px) scale(.3); opacity:0; }
+      62%{ transform:translateY(-2px) scale(1.18); opacity:1; }
+      82%{ transform:translateY(0) scale(1); opacity:1; }
+      100%{ transform:translateY(-14px) scale(1.02); opacity:0; }
+    }
+
+
+    /* ---- ตัวการ์ตูน "ตั้งค่า": ก้อนหินเทา + เฟือง ---- */
+    .st-fb{ transform-box:fill-box; }
+    .st-look{ animation:stLook 4s ease-in-out infinite; }
+    .st-blink{ transform-origin:50% 50%; animation:stBlink 4s ease-in-out infinite; }
+    @keyframes stLook{
+      0%,10%{ transform:translate(0,0);} 16%,28%{ transform:translate(-4px,3px);}
+      34%,46%{ transform:translate(4px,3px);} 52%,60%{ transform:translate(-3px,4px);}
+      68%,100%{ transform:translate(0,0);}
+    }
+    @keyframes stBlink{ 0%,84%,92%,100%{ transform:scaleY(1);} 88%{ transform:scaleY(.08);} }
+    .st-spin{ animation:stSpin 8s linear infinite; }
+    @keyframes stSpin{ to{ transform:rotate(360deg);} }
+
+    /* ท่าคลิก: เฟืองหมุนติ้วลอยขึ้น + วงแหวนกระแทก */
+    .st-gear-x{ animation:stGear .56s cubic-bezier(.3,.9,.35,1) forwards; }
+    @keyframes stGear{
+      0%  { transform:rotate(0deg) translateY(0) scale(1); opacity:1; }
+      34% { transform:rotate(265deg) translateY(-13px) scale(1.2); opacity:1; }
+      68% { transform:rotate(560deg) translateY(-22px) scale(1.06); opacity:1; }
+      100%{ transform:rotate(820deg) translateY(-34px) scale(.5); opacity:0; }
+    }
+    .st-ring{ transform-box:fill-box; transform-origin:50% 50%; animation:stRing .56s ease-out forwards; }
+    @keyframes stRing{
+      0%,22%{ transform:scale(.35); opacity:0; }
+      52%{ transform:scale(1.1); opacity:.85; }
+      100%{ transform:scale(1.9); opacity:0; }
+    }
 </style>
 
   <symbol id="mc-mascot" viewBox="10 14 200 240">
@@ -3065,6 +3218,292 @@
   </g>
   <g class="rl-flash">
     <circle cx="138" cy="152" r="30" fill="none" stroke="#FFE9A8" stroke-width="6"/>
+  </g>
+  </symbol>
+
+  <symbol id="mc-dashboard" viewBox="10 20 200 232">
+    <g>
+    <!-- cylinder: one flat shape with curved top and bottom -->
+    <path d="M42 90 A68 24 0 0 1 178 90 V196 A68 24 0 0 1 42 196 Z" fill="#FF9F2E"/>
+    <!-- bar-chart tuft -->
+    <rect class="db-bar db-b1 db-fb" x="95" y="50" width="9" height="22" rx="3.5" fill="#F5F1E3"/>
+    <rect class="db-bar db-b2 db-fb" x="106" y="38" width="9" height="34" rx="3.5" fill="#F5F1E3"/>
+    <rect class="db-bar db-b3 db-fb" x="117" y="54" width="9" height="18" rx="3.5" fill="#F5F1E3"/>
+    <!-- round eyes -->
+    <g class="db-look db-fb">
+      <circle class="db-blink db-fb" cx="80" cy="151" r="13" fill="#fff"/>
+      <circle class="db-blink db-fb" cx="136" cy="151" r="13" fill="#fff"/>
+    </g>
+    <!-- round glasses -->
+    <g fill="none" stroke="#3b2208" stroke-width="5">
+      <circle cx="80" cy="151" r="22"/>
+      <circle cx="136" cy="151" r="22"/>
+    </g>
+    <path d="M102 151 Q108 147 114 151" stroke="#3b2208" stroke-width="5" stroke-linecap="round" fill="none"/>
+  </g>
+  </symbol>
+  <symbol id="mc-dashboard-x" viewBox="10 20 200 232">
+    <g>
+    <!-- cylinder: one flat shape with curved top and bottom -->
+    <path d="M42 90 A68 24 0 0 1 178 90 V196 A68 24 0 0 1 42 196 Z" fill="#FF9F2E"/>
+    <!-- bar-chart tuft -->
+    <rect class="db-bar-x db-x1 db-b1 db-fb" x="95" y="50" width="9" height="22" rx="3.5" fill="#F5F1E3"/>
+    <rect class="db-bar-x db-x2 db-b2 db-fb" x="106" y="38" width="9" height="34" rx="3.5" fill="#F5F1E3"/>
+    <rect class="db-bar-x db-x3 db-b3" db-fb" x="117" y="54" width="9" height="18" rx="3.5" fill="#F5F1E3"/>
+    <!-- round eyes -->
+    <g class="db-look db-fb">
+      <circle class="db-blink db-fb" cx="80" cy="151" r="13" fill="#fff"/>
+      <circle class="db-blink db-fb" cx="136" cy="151" r="13" fill="#fff"/>
+    </g>
+    <!-- round glasses -->
+    <g fill="none" stroke="#3b2208" stroke-width="5">
+      <circle cx="80" cy="151" r="22"/>
+      <circle cx="136" cy="151" r="22"/>
+    </g>
+    <path d="M102 151 Q108 147 114 151" stroke="#3b2208" stroke-width="5" stroke-linecap="round" fill="none"/>
+  </g>
+    <g class="db-arrow">
+      <path d="M110 60 V28" stroke="#22C55E" stroke-width="8" stroke-linecap="round"/>
+      <path d="M92 44 L110 26 L128 44" stroke="#22C55E" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+  </symbol>
+
+  <symbol id="mc-history" viewBox="10 30 200 210">
+    <!-- cloud body: one flat shape -->
+  <g fill="#FF6FB0">
+    <rect x="40" y="140" width="140" height="80" rx="40"/>
+    <circle cx="78" cy="136" r="38"/>
+    <circle cx="122" cy="124" r="46"/>
+    <circle cx="158" cy="150" r="32"/>
+  </g>
+  <defs>
+    <clipPath id="hsCloudClip">
+      <rect x="40" y="140" width="140" height="80" rx="40"/>
+      <circle cx="78" cy="136" r="38"/>
+      <circle cx="122" cy="124" r="46"/>
+      <circle cx="158" cy="150" r="32"/>
+    </clipPath>
+  </defs>
+  <!-- clock strapped around the head (strap is clipped to the cloud) -->
+  <g clip-path="url(#hsCloudClip)">
+    <g transform="rotate(-6 110 112)">
+      <rect x="20" y="102" width="180" height="20" fill="#4a1636"/>
+      <path d="M26 112 H194" stroke="#F5F1E3" stroke-opacity=".5" stroke-width="2" stroke-dasharray="5 5"/>
+    </g>
+  </g>
+  <g transform="translate(120,110) rotate(-6)">
+    <circle r="21" fill="#F5F1E3" stroke="#4a1636" stroke-width="4.5"/>
+    <g stroke="#4a1636" stroke-width="2.5" stroke-linecap="round">
+      <path d="M0 -15.5 V-13 M15.5 0 H13 M0 15.5 V13 M-15.5 0 H-13"/>
+    </g>
+    <path d="M0 0 L-7 -4.5" stroke="#4a1636" stroke-width="3.8" stroke-linecap="round"/>
+    <path d="M0 0 V-12.5" stroke="#4a1636" stroke-width="3" stroke-linecap="round" transform="rotate(60)">
+      <animateTransform attributeName="transform" type="rotate" from="60 0 0" to="-300 0 0" dur="4s" repeatCount="indefinite"/>
+    </path>
+    <circle r="2.8" fill="#4a1636"/>
+  </g>
+  <!-- eyes -->
+  <g class="hs-look hs-fb">
+    <g transform="rotate(6 96 164)"><rect class="hs-blink hs-fb" x="89" y="146" width="14" height="36" rx="7" fill="#fff"/></g>
+    <g transform="rotate(-6 138 164)"><rect class="hs-blink hs-fb" x="131" y="146" width="14" height="36" rx="7" fill="#fff"/></g>
+  </g>
+  </symbol>
+  <symbol id="mc-history-x" viewBox="10 30 200 210">
+    <!-- cloud body: one flat shape -->
+  <g fill="#FF6FB0">
+    <rect x="40" y="140" width="140" height="80" rx="40"/>
+    <circle cx="78" cy="136" r="38"/>
+    <circle cx="122" cy="124" r="46"/>
+    <circle cx="158" cy="150" r="32"/>
+  </g>
+  <defs>
+    <clipPath id="hsCloudClip">
+      <rect x="40" y="140" width="140" height="80" rx="40"/>
+      <circle cx="78" cy="136" r="38"/>
+      <circle cx="122" cy="124" r="46"/>
+      <circle cx="158" cy="150" r="32"/>
+    </clipPath>
+  </defs>
+  <!-- clock strapped around the head (strap is clipped to the cloud) -->
+  <g clip-path="url(#hsCloudClip)">
+    <g transform="rotate(-6 110 112)">
+      <rect x="20" y="102" width="180" height="20" fill="#4a1636"/>
+      <path d="M26 112 H194" stroke="#F5F1E3" stroke-opacity=".5" stroke-width="2" stroke-dasharray="5 5"/>
+    </g>
+  </g>
+  <g class="hs-clock-x">
+  <g transform="translate(120,110) rotate(-6)">
+    <circle r="21" fill="#F5F1E3" stroke="#4a1636" stroke-width="4.5"/>
+    <g stroke="#4a1636" stroke-width="2.5" stroke-linecap="round">
+      <path d="M0 -15.5 V-13 M15.5 0 H13 M0 15.5 V13 M-15.5 0 H-13"/>
+    </g>
+    <path d="M0 0 L-7 -4.5" stroke="#4a1636" stroke-width="3.8" stroke-linecap="round"/>
+    <path d="M0 0 V-12.5" stroke="#4a1636" stroke-width="3" stroke-linecap="round" transform="rotate(60)">
+      <animateTransform attributeName="transform" type="rotate" from="60 0 0" to="-300 0 0" dur="4s" repeatCount="indefinite"/>
+    </path>
+    <circle r="2.8" fill="#4a1636"/>
+  </g>
+  </g>
+
+  <!-- eyes -->
+  <g class="hs-look hs-fb">
+    <g transform="rotate(6 96 164)"><rect class="hs-blink hs-fb" x="89" y="146" width="14" height="36" rx="7" fill="#fff"/></g>
+    <g transform="rotate(-6 138 164)"><rect class="hs-blink hs-fb" x="131" y="146" width="14" height="36" rx="7" fill="#fff"/></g>
+  </g>
+  </symbol>
+
+  <symbol id="mc-maintcost" viewBox="10 14 200 240">
+    <defs>
+    <radialGradient id="ctShine" cx="35%" cy="25%" r="70%">
+      <stop offset="0" stop-color="#5BE39A"/>
+      <stop offset="1" stop-color="#22B86B"/>
+    </radialGradient>
+  </defs>
+  <!-- body -->
+  <g transform="rotate(2 110 160)">
+    <circle cx="110" cy="162" r="74" fill="url(#ctShine)"/>
+  </g>
+  <!-- coin stuck on head -->
+  <g class="ct-bob">
+    <g transform="translate(138,102)">
+      <circle r="19" fill="#C98A0A"/>
+      <circle r="16.5" fill="#FFC21A"/>
+      <circle r="12" fill="none" stroke="#E8A400" stroke-width="1.8"/>
+      <text x="0" y="6.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="20" fill="#0E5B36">$</text>
+      <path d="M-9 -9 Q-4 -13 2 -12" stroke="#FFE49A" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    </g>
+  </g>
+  <!-- face -->
+  <g class="ct-look ct-fb">
+    <g transform="rotate(14 82 158)"><rect class="ct-blink ct-fb" x="74" y="140" width="16" height="36" rx="8" fill="#fff"/></g>
+    <g transform="rotate(-14 138 158)"><rect class="ct-blink ct-fb" x="130" y="140" width="16" height="36" rx="8" fill="#fff"/></g>
+  </g>
+  </symbol>
+  <symbol id="mc-maintcost-x" viewBox="10 14 200 240">
+    <defs>
+    <radialGradient id="ctShine" cx="35%" cy="25%" r="70%">
+      <stop offset="0" stop-color="#5BE39A"/>
+      <stop offset="1" stop-color="#22B86B"/>
+    </radialGradient>
+  </defs>
+  <!-- body -->
+  <g transform="rotate(2 110 160)">
+    <circle cx="110" cy="162" r="74" fill="url(#ctShine)"/>
+  </g>
+  <!-- coin stuck on head -->
+  <g class="ct-coin-x">
+    <g transform="translate(138,102)">
+      <circle r="19" fill="#C98A0A"/>
+      <circle r="16.5" fill="#FFC21A"/>
+      <circle r="12" fill="none" stroke="#E8A400" stroke-width="1.8"/>
+      <text x="0" y="6.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="20" fill="#0E5B36">$</text>
+      <path d="M-9 -9 Q-4 -13 2 -12" stroke="#FFE49A" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    </g>
+  </g>
+  <g class="ct-drop ct-d1"><circle r="8" fill="#FFC21A" stroke="#C98A0A" stroke-width="2"/></g>
+  <g class="ct-drop ct-d2"><circle r="6" fill="#FFC21A" stroke="#C98A0A" stroke-width="2"/></g>
+  <g class="ct-drop ct-d3"><circle r="7" fill="#FFC21A" stroke="#C98A0A" stroke-width="2"/></g>
+  <!-- face -->
+  <g class="ct-look ct-fb">
+    <g transform="rotate(14 82 158)"><rect class="ct-blink ct-fb" x="74" y="140" width="16" height="36" rx="8" fill="#fff"/></g>
+    <g transform="rotate(-14 138 158)"><rect class="ct-blink ct-fb" x="130" y="140" width="16" height="36" rx="8" fill="#fff"/></g>
+  </g>
+  </symbol>
+
+  <symbol id="mc-users" viewBox="10 14 200 240">
+    <!-- teardrop body -->
+  <path d="M110 30 C128 66 184 112 184 168 C184 208 152 240 110 240 C68 240 36 208 36 168 C36 112 92 66 110 30 Z" fill="#FFC21A"/>
+  <!-- hair clip with people icon -->
+  <g class="us-bob">
+    <g transform="translate(142,90) rotate(32)">
+      <!-- clip tongue gripping the head -->
+      <rect x="-19" y="6" width="38" height="8" rx="4" fill="#B87A00"/>
+      <!-- clip body -->
+      <rect x="-26" y="-12" width="52" height="24" rx="12" fill="#C98A0A"/>
+      <rect x="-23.5" y="-9.5" width="47" height="19" rx="9.5" fill="#fff"/>
+      <!-- hinge -->
+      <circle cx="-17" cy="0" r="2.2" fill="#C98A0A"/>
+      <!-- people icon -->
+      <g transform="rotate(-32) translate(3,0) scale(.58)">
+        <circle cx="6" cy="-7" r="4.5" fill="#E0A21A"/>
+        <path d="M-1 11 Q-1 1 6 1 Q14 1 14 11 Z" fill="#E0A21A"/>
+        <circle cx="-3" cy="-5" r="5.5" fill="#5A3B00"/>
+        <path d="M-13 12 Q-13 2 -3 2 Q7 2 7 12 Z" fill="#5A3B00"/>
+      </g>
+    </g>
+  </g>
+  <!-- eyes -->
+  <g class="us-look us-fb">
+    <g transform="rotate(14 82 170)"><rect class="us-blink us-fb" x="74" y="152" width="16" height="36" rx="8" fill="#fff"/></g>
+    <g transform="rotate(-14 138 170)"><rect class="us-blink us-fb" x="130" y="152" width="16" height="36" rx="8" fill="#fff"/></g>
+  </g>
+  </symbol>
+  <symbol id="mc-users-x" viewBox="10 14 200 240">
+    <!-- teardrop body -->
+  <path d="M110 30 C128 66 184 112 184 168 C184 208 152 240 110 240 C68 240 36 208 36 168 C36 112 92 66 110 30 Z" fill="#FFC21A"/>
+  <!-- hair clip with people icon -->
+  <g class="us-clip-x">
+    <g transform="translate(142,90) rotate(32)">
+      <!-- clip tongue gripping the head -->
+      <rect x="-19" y="6" width="38" height="8" rx="4" fill="#B87A00"/>
+      <!-- clip body -->
+      <rect x="-26" y="-12" width="52" height="24" rx="12" fill="#C98A0A"/>
+      <rect x="-23.5" y="-9.5" width="47" height="19" rx="9.5" fill="#fff"/>
+      <!-- hinge -->
+      <circle cx="-17" cy="0" r="2.2" fill="#C98A0A"/>
+      <!-- people icon -->
+      <g transform="rotate(-32) translate(3,0) scale(.58)">
+        <circle cx="6" cy="-7" r="4.5" fill="#E0A21A"/>
+        <path d="M-1 11 Q-1 1 6 1 Q14 1 14 11 Z" fill="#E0A21A"/>
+        <circle cx="-3" cy="-5" r="5.5" fill="#5A3B00"/>
+        <path d="M-13 12 Q-13 2 -3 2 Q7 2 7 12 Z" fill="#5A3B00"/>
+      </g>
+    </g>
+  </g>
+  <!-- eyes -->
+  <g class="us-look us-fb">
+    <g transform="rotate(14 82 170)"><rect class="us-blink us-fb" x="74" y="152" width="16" height="36" rx="8" fill="#fff"/></g>
+    <g transform="rotate(-14 138 170)"><rect class="us-blink us-fb" x="130" y="152" width="16" height="36" rx="8" fill="#fff"/></g>
+  </g>
+
+  <g class="us-badge">
+    <circle cx="146" cy="56" r="15" fill="#22C55E" stroke="#0f172a" stroke-width="3"/>
+    <text x="146" y="62" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="15" fill="#fff">+1</text>
+  </g>
+  </symbol>
+
+  <symbol id="mc-settings" viewBox="10 14 200 240">
+    <!-- asymmetric round body -->
+  <path d="M42 152 C38 104 80 78 118 82 C162 86 190 118 186 162 C184 206 148 236 104 232 C62 228 45 196 42 152 Z" fill="#A9B1BD"/>
+  <!-- gear on head -->
+  <g transform="translate(150,84)">
+    <g class="st-spin">
+      <path d="M16.08 -3.71 L21.79 -3.06 L21.79 3.06 L16.08 3.71 L13.99 8.74 L17.57 13.24 L13.24 17.57 L8.74 13.99 L3.71 16.08 L3.06 21.79 L-3.06 21.79 L-3.71 16.08 L-8.74 13.99 L-13.24 17.57 L-17.57 13.24 L-13.99 8.74 L-16.08 3.71 L-21.79 3.06 L-21.79 -3.06 L-16.08 -3.71 L-13.99 -8.74 L-17.57 -13.24 L-13.24 -17.57 L-8.74 -13.99 L-3.71 -16.08 L-3.06 -21.79 L3.06 -21.79 L3.71 -16.08 L8.74 -13.99 L13.24 -17.57 L17.57 -13.24 L13.99 -8.74 Z M7 0 A7 7 0 1 0 -7 0 A7 7 0 1 0 7 0 Z" fill="#4B5563" fill-rule="evenodd"/>
+    </g>
+  </g>
+  <!-- eyes: upright ovals -->
+  <g class="st-look st-fb">
+    <rect class="st-blink st-fb" x="84" y="142" width="16" height="38" rx="8" fill="#fff"/>
+    <rect class="st-blink st-fb" x="126" y="142" width="16" height="38" rx="8" fill="#fff"/>
+  </g>
+  </symbol>
+  <symbol id="mc-settings-x" viewBox="10 14 200 240">
+    <!-- asymmetric round body -->
+  <path d="M42 152 C38 104 80 78 118 82 C162 86 190 118 186 162 C184 206 148 236 104 232 C62 228 45 196 42 152 Z" fill="#A9B1BD"/>
+  <!-- gear on head -->
+  <g transform="translate(150,84)">
+    <g class="st-gear-x">
+      <path d="M16.08 -3.71 L21.79 -3.06 L21.79 3.06 L16.08 3.71 L13.99 8.74 L17.57 13.24 L13.24 17.57 L8.74 13.99 L3.71 16.08 L3.06 21.79 L-3.06 21.79 L-3.71 16.08 L-8.74 13.99 L-13.24 17.57 L-17.57 13.24 L-13.99 8.74 L-16.08 3.71 L-21.79 3.06 L-21.79 -3.06 L-16.08 -3.71 L-13.99 -8.74 L-17.57 -13.24 L-13.24 -17.57 L-8.74 -13.99 L-3.71 -16.08 L-3.06 -21.79 L3.06 -21.79 L3.71 -16.08 L8.74 -13.99 L13.24 -17.57 L17.57 -13.24 L13.99 -8.74 Z M7 0 A7 7 0 1 0 -7 0 A7 7 0 1 0 7 0 Z" fill="#4B5563" fill-rule="evenodd"/>
+    </g>
+  </g>
+  <!-- eyes: upright ovals -->
+  <g class="st-look st-fb">
+    <rect class="st-blink st-fb" x="84" y="142" width="16" height="38" rx="8" fill="#fff"/>
+    <rect class="st-blink st-fb" x="126" y="142" width="16" height="38" rx="8" fill="#fff"/>
+  </g>
+
+  <g class="st-ring">
+    <circle cx="150" cy="84" r="24" fill="none" stroke="#9CA3AF" stroke-width="5"/>
   </g>
   </symbol>
 </svg>
@@ -4683,7 +5122,12 @@ let hubDrag = null;
 const HUB_CHAR = {
   inventory: { id: "#mc-mascot",  fx: "#mc-happy" },
   openpr:    { id: "#mc-openpr",  fx: "#mc-openpr-x" },
-  prlist:    { id: "#mc-prlist",  fx: "#mc-prlist-x" }
+  prlist:    { id: "#mc-prlist",  fx: "#mc-prlist-x" },
+  dashboard: { id: "#mc-dashboard", fx: "#mc-dashboard-x" },
+  history:   { id: "#mc-history",   fx: "#mc-history-x" },
+  maintcost: { id: "#mc-maintcost", fx: "#mc-maintcost-x" },
+  users:     { id: "#mc-users",     fx: "#mc-users-x" },
+  settings:  { id: "#mc-settings",  fx: "#mc-settings-x" }
 };
 
 function renderHub(isAdmin, isApprove){
