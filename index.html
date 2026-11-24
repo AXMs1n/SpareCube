@@ -1804,7 +1804,9 @@
     position:relative; width:100%; height:384px; margin-top:6px;
     perspective:1500px; perspective-origin:50% 46%;
     display:flex; align-items:center; justify-content:center;
+    touch-action:pan-y;           /* ลากแนวนอน = หมุนวงล้อ, แนวตั้ง = เลื่อนหน้า */
   }
+  .hub-ring{ touch-action:pan-y; }
   .hub-ring{
     position:absolute; inset:0;
     transform-style:preserve-3d;
@@ -3552,6 +3554,13 @@ function renderHub(isAdmin, isApprove){
     </div>`;
 }
 
+function enterHubPage(key, idx){
+  if (!key) return;
+  view = key;
+  hubIndex = Number.isFinite(idx) ? idx : 0;
+  render();
+}
+
 function hubSet(idx, keys){
   const n = keys.length;
   hubIndex = ((idx % n) + n) % n;
@@ -3590,10 +3599,10 @@ function bindHub(keys){
   let startX = 0, startAngle = 0, dragging = false, moved = false;
   const onDown = (e) => {
     dragging = true; moved = false;
+    downAt = Date.now();
     startX = e.clientX;
     startAngle = -hubIndex * (360 / n);
     ring.style.transition = "none";
-    if (ring.setPointerCapture && e.pointerId !== undefined) { try { ring.setPointerCapture(e.pointerId); } catch(_){} }
   };
   const onMove = (e) => {
     if (!dragging) return;
@@ -3601,14 +3610,22 @@ function bindHub(keys){
     if (Math.abs(dx) > 6) moved = true;
     ring.style.transform = `rotateY(${startAngle + dx * 0.32}deg)`;
   };
-  const onUp = () => {
+  let downAt = 0;
+  const onUp = (e) => {
     if (!dragging) return;
     dragging = false;
     ring.style.transition = "";
     const m = /rotateY\((-?[\d.]+)deg\)/.exec(ring.style.transform || "rotateY(0deg)");
     const deg = m ? parseFloat(m[1]) : -hubIndex * (360 / n);
     hubSet(Math.round(-deg / (360 / n)), keys);
-    if (moved) hubBlockClick();
+    if (moved) { hubBlockClick(); return; }
+
+    // แตะสั้น ๆ บนการ์ดตรงกลาง → เข้าหน้านั้นทันที (ไม่ต้องรอ click)
+    const card = e && e.target && e.target.closest ? e.target.closest(".hub-card") : null;
+    if (card && Date.now() - downAt < 600 && Number(card.dataset.idx) === hubIndex) {
+      hubBlockClick();
+      enterHubPage(card.dataset.hub, Number(card.dataset.idx));
+    }
   };
   ring.addEventListener("pointerdown", onDown);
   ring.addEventListener("pointermove", onMove);
@@ -3616,17 +3633,15 @@ function bindHub(keys){
   ring.addEventListener("pointercancel", onUp);
   window.addEventListener("pointerup", onUp);
 
-  // คลิกการ์ด
-  document.querySelectorAll(".hub-card").forEach(el => {
-    el.addEventListener("click", (e) => {
-      if (hubClickBlocked()) return;
-      e.stopPropagation();
-      const i = Number(el.dataset.idx);
-      if (i !== hubIndex) { hubSet(i, keys); return; }   // ยังไม่ใช่ใบกลาง → หมุนมาก่อน
-      view = el.dataset.hub;
-      hubIndex = i;
-      render();
-    });
+  // คลิกการ์ด (delegate บน ring — กัน pointer capture กลืน click)
+  ring.addEventListener("click", (e) => {
+    const card = e.target.closest(".hub-card");
+    if (!card) return;
+    if (hubClickBlocked()) return;
+    e.stopPropagation();
+    const i = Number(card.dataset.idx);
+    if (i !== hubIndex) { hubSet(i, keys); return; }   // ยังไม่ใช่ใบกลาง → หมุนมาก่อน
+    enterHubPage(card.dataset.hub, i);
   });
 
   // คีย์บอร์ด
