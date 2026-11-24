@@ -1678,6 +1678,228 @@
     .boot-title, .boot-steps i::after, .boot-bar i, .boot-sub, .bo-dot{ animation:none !important; }
   }
 
+
+  /* =====================================================================
+     TABS — การ์ดอิโมจิ (ลอยเบา ๆ / ไม่หมุน)
+     ===================================================================== */
+  .tabs .tab{
+    display:inline-flex !important; align-items:center !important; gap:8px !important;
+    padding:6px 13px 6px 7px !important;
+    border-radius:999px !important;
+  }
+  .tab-blob{
+    position:relative; width:26px; height:26px; flex:0 0 26px;
+    display:grid; place-items:center; border-radius:50%;
+    background:rgba(var(--tc), .20);
+    box-shadow:inset 0 0 0 1px rgba(var(--tc), .48);
+    transition:transform .34s cubic-bezier(.22,1,.36,1), background .3s ease, box-shadow .3s ease;
+  }
+  .tab-emo{
+    font-size:13.5px; line-height:1; display:block;
+    font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+    animation:tabFloat 5.2s ease-in-out infinite;
+    will-change:transform;
+  }
+  .tabs .tab:nth-child(2) .tab-emo{ animation-delay:.55s; }
+  .tabs .tab:nth-child(3) .tab-emo{ animation-delay:1.1s; }
+  .tabs .tab:nth-child(4) .tab-emo{ animation-delay:1.65s; }
+  .tabs .tab:nth-child(5) .tab-emo{ animation-delay:2.2s; }
+  .tabs .tab:nth-child(6) .tab-emo{ animation-delay:2.75s; }
+  .tabs .tab:nth-child(7) .tab-emo{ animation-delay:3.3s; }
+  .tabs .tab:nth-child(8) .tab-emo{ animation-delay:3.85s; }
+  @keyframes tabFloat{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    35%{ transform:translateY(-2.5px) rotate(-3deg); }
+    70%{ transform:translateY(1px) rotate(2deg); }
+  }
+
+  .tab-label{ white-space:nowrap; }
+  .tabs .tab{ color:#A3AAB4; }
+  .tabs .tab:hover{ color:var(--text); }
+  .tabs .tab.active{ color:#fff; }
+
+  .tabs .tab:hover .tab-blob{
+    transform:translateY(-2px) scale(1.08);
+    background:rgba(var(--tc), .24);
+    box-shadow:inset 0 0 0 1px rgba(var(--tc), .5);
+  }
+  .tabs .tab:active .tab-blob{ transform:scale(.94); }
+
+  .tabs .tab.active .tab-blob{
+    background:rgba(var(--tc), .26);
+    box-shadow:inset 0 0 0 1px rgba(var(--tc), .6),
+               0 0 14px rgba(var(--tc), .45),
+               0 4px 12px -4px rgba(var(--tc), .55);
+    transform:translateY(-1px) scale(1.1);
+  }
+  .tabs .tab.active .tab-emo{ animation-duration:3.6s; }
+  .tabs .tab.active .tab-label{ font-weight:700; }
+
+  /* ชั้นเงาใต้แท็บที่เลือก — พาราแลกซ์เบา ๆ */
+  .tabs .tab.active::after{
+    content:""; position:absolute; left:50%; bottom:-2px; transform:translateX(-50%);
+    width:46%; height:2.5px; border-radius:3px;
+    background:linear-gradient(90deg, transparent, rgba(var(--tc), 1), transparent);
+    box-shadow:0 0 10px rgba(var(--tc), .75);
+    animation:tabUnderline 3.4s ease-in-out infinite;
+  }
+  @keyframes tabUnderline{
+    0%,100%{ opacity:.55; width:32%; }
+    50%{ opacity:1; width:52%; }
+  }
+  .tabs .tab{ position:relative; }
+
+  @media(prefers-reduced-motion:reduce){
+    .tab-emo, .tabs .tab.active::after{ animation:none !important; }
+  }
+  @media(max-width:700px){
+    .tab-blob{ width:23px; height:23px; flex:0 0 23px; }
+    .tab-emo{ font-size:12px; }
+    .tabs .tab{ gap:6px !important; padding:5px 11px 5px 6px !important; }
+  }
+
+
+  /* =====================================================================
+     HUB — เมนูวงล้อ 3D เต็มหน้า
+     ===================================================================== */
+  .wrap-hub{ max-width:100% !important; padding:0 24px 40px !important; }
+
+  .subnav{
+    display:flex; align-items:center; gap:12px;
+    padding:14px 0 0; margin-top:6px;
+  }
+  .subnav-back{
+    display:inline-flex; align-items:center; gap:7px; cursor:pointer;
+    background:var(--panelAlt); border:1px solid var(--border); border-radius:10px;
+    color:var(--text); font-family:'Prompt',sans-serif; font-size:12.5px; font-weight:600;
+    padding:8px 13px; transition:all .2s ease;
+  }
+  .subnav-back:hover{ border-color:var(--accent); color:var(--accent); transform:translateX(-2px); }
+  .subnav-back i{ font-size:14px; }
+  .subnav-sep{ width:1px; height:18px; background:var(--border); }
+  .subnav-cur{ font-size:14px; font-weight:600; letter-spacing:-.1px; }
+  .subnav-low{
+    margin-left:auto; font-size:11px; font-weight:600;
+    color:var(--danger); background:var(--dangerDim); border:1px solid rgba(240,71,62,.35);
+    padding:4px 10px; border-radius:999px;
+  }
+
+  .hub{
+    display:flex; flex-direction:column; align-items:center;
+    padding:14px 0 40px;
+  }
+  .hub-head{ text-align:center; margin-bottom:6px; }
+  .hub-eyebrow{
+    font-size:10.5px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--mutedFaint); margin-bottom:8px;
+  }
+  .hub-title{
+    font-size:30px; font-weight:700; letter-spacing:-.6px; margin:0 0 8px;
+    background:linear-gradient(96deg, var(--text) 30%, var(--accent) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hub-hint{ font-size:12.5px; color:var(--muted); margin:0; letter-spacing:.01em; }
+
+  .hub-stage{
+    position:relative; width:100%; height:384px; margin-top:6px;
+    perspective:1500px; perspective-origin:50% 46%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hub-ring{
+    position:absolute; inset:0;
+    transform-style:preserve-3d;
+    transition:transform .62s cubic-bezier(.22,1,.36,1);
+  }
+  .hub-card{
+    position:absolute; left:50%; top:50%;
+    width:250px; height:290px; margin:-145px 0 0 -125px;
+    transform: rotateY(calc(var(--i) * var(--step))) translateZ(330px);
+    transform-style:preserve-3d; backface-visibility:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    padding:22px 18px; cursor:pointer; text-align:center;
+    border-radius:22px;
+    background:linear-gradient(168deg, var(--panel), var(--panelAlt));
+    border:1px solid var(--border);
+    color:var(--text); font-family:'Prompt',sans-serif;
+    opacity:.72; filter:saturate(.62) brightness(.88);
+    transition:opacity .35s ease, filter .35s ease, border-color .35s ease, box-shadow .35s ease;
+  }
+  .hub-card:hover{ opacity:.92; filter:none; border-color:rgba(var(--tc),.45); }
+  .hub-card.is-front{
+    opacity:1; filter:none;
+    border-color:rgba(var(--tc),.6);
+    box-shadow:0 30px 60px -30px rgba(0,0,0,.9),
+               0 0 0 1px rgba(var(--tc),.22),
+               0 0 42px -12px rgba(var(--tc),.5);
+  }
+  .hub-blob{
+    width:86px; height:86px; border-radius:50%;
+    display:grid; place-items:center; margin-bottom:4px;
+    background:rgba(var(--tc), .16);
+    box-shadow:inset 0 0 0 1.5px rgba(var(--tc), .45);
+    transition:transform .4s cubic-bezier(.22,1,.36,1), background .3s ease, box-shadow .3s ease;
+  }
+  .hub-emo{
+    font-size:40px; line-height:1;
+    font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+    animation:hubFloat 5.6s ease-in-out infinite;
+  }
+  @keyframes hubFloat{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    40%{ transform:translateY(-5px) rotate(-4deg); }
+    75%{ transform:translateY(2px) rotate(3deg); }
+  }
+  .hub-card.is-front .hub-blob{
+    background:rgba(var(--tc), .26);
+    box-shadow:inset 0 0 0 1.5px rgba(var(--tc), .7), 0 0 26px rgba(var(--tc), .45);
+  }
+  .hub-label{ font-size:20px; font-weight:700; letter-spacing:-.2px; }
+  .hub-sub{ font-size:11.5px; color:var(--muted); line-height:1.5; max-width:190px; }
+  .hub-go{
+    margin-top:6px; font-size:11.5px; font-weight:600; color:rgba(var(--tc),1);
+    display:inline-flex; align-items:center; gap:5px;
+    opacity:0; transform:translateY(4px); transition:all .3s ease;
+  }
+  .hub-card.is-front .hub-go{ opacity:1; transform:translateY(0); }
+  .hub-card:not(.is-front) .hub-go{ display:none; }
+
+  .hub-arrow{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:5;
+    width:44px; height:44px; border-radius:50%; cursor:pointer;
+    background:var(--panel); border:1px solid var(--border); color:var(--muted);
+    display:flex; align-items:center; justify-content:center; font-size:19px;
+    transition:all .2s ease;
+  }
+  .hub-arrow:hover{ color:var(--accent); border-color:var(--accent); transform:translateY(-50%) scale(1.06); }
+  .hub-arrow.left{ left:2%; }
+  .hub-arrow.right{ right:2%; }
+
+  .hub-dots{ display:flex; gap:9px; margin-top:10px; }
+  .hub-dot{
+    width:9px; height:9px; border-radius:50%; cursor:pointer; padding:0;
+    background:var(--mutedFaint); opacity:.55; border:0; transition:all .25s ease;
+  }
+  .hub-dot:hover{ opacity:1; }
+  .hub-dot.on{ width:26px; border-radius:5px; opacity:1; background:var(--accent); box-shadow:0 0 12px rgba(45,212,191,.7); }
+  .hub-count{ font-size:11px; color:var(--mutedFaint); margin-top:10px; font-variant-numeric:tabular-nums; }
+
+  @media(max-width:900px){
+    .hub-stage{ height:340px; }
+    .hub-card{ width:210px; height:250px; margin:-125px 0 0 -105px; transform:rotateY(calc(var(--i) * var(--step))) translateZ(240px); }
+    .hub-blob{ width:68px; height:68px; }
+    .hub-emo{ font-size:32px; }
+    .hub-label{ font-size:17px; }
+    .hub-sub{ display:none; }
+    .hub-arrow.left{ left:-6px; }
+    .hub-arrow.right{ right:-6px; }
+    .hub-title{ font-size:24px; }
+    .hub-hint{ font-size:11px; padding:0 20px; }
+  }
+  @media(prefers-reduced-motion:reduce){
+    .hub-emo{ animation:none !important; }
+    .hub-ring{ transition:none !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -1775,7 +1997,7 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw16_aqSru0RxUw
 let parts = [];
 let history = [];
 let machines = [];
-let view = "inventory";
+let view = "hub";
 let lastRenderedView = null;
 let search = "";
 let zoneFilter = "";
@@ -3121,7 +3343,7 @@ function render(){
     : isApprove
       ? ["inventory", "openpr", "prlist"]
       : ["inventory", "openpr"];
-  if (allowedViews && !allowedViews.includes(view)) view = "inventory";
+  if (allowedViews && view !== "hub" && !allowedViews.includes(view)) view = "hub";
   const low = lowStockParts();
   const today = new Date().toDateString();
   const todayCount = history.filter(h => h.timestamp && (h.timestamp.toDate ? h.timestamp.toDate() : new Date(h.timestamp)).toDateString() === today).length;
@@ -3150,20 +3372,17 @@ function render(){
             ${isAdmin ? `<button class="btn btn-accent" id="btnAdd">+ เพิ่มอะไหล่</button>` : ""}
           </div>
         </div>
-        <div class="tabs">
-          ${tabBtn("inventory","คลัง")}
-          ${tabBtn("openpr","เปิด PR")}
-          ${(isAdmin || isApprove) ? tabBtn("prlist","รายการ PR") : ""}
-          ${isAdmin ? tabBtn("dashboard","ภาพรวม",low.length) : ""}
-          ${isAdmin ? tabBtn("history","ประวัติ") : ""}
-          ${isAdmin ? tabBtn("maintcost","ค่าซ่อมบำรุง") : ""}
-          
-          ${isAdmin ? tabBtn("users","ผู้ใช้") : ""}
-          ${isAdmin ? tabBtn("settings","ตั้งค่า") : ""}
-        </div>
+        ${view === "hub" ? "" : `
+        <div class="subnav">
+          <button class="subnav-back" id="btnHub"><i class="ti ti-layout-grid" aria-hidden="true"></i> เมนู</button>
+          <span class="subnav-sep"></span>
+          <span class="subnav-cur">${(TAB_LOOK[view]||{}).emo||""} ${(PAGE_META[view]||{}).label||""}</span>
+          ${low.length && view !== "dashboard" ? `<span class="subnav-low">สต็อกต่ำ ${low.length}</span>` : ""}
+        </div>`}
       </div>
     </div>
-    <div class="wrap content${viewChanged ? " view-enter" : ""}">
+    <div class="wrap content${viewChanged ? " view-enter" : ""}${view === "hub" ? " wrap-hub" : ""}">
+      ${view === "hub" ? renderHub(isAdmin, isApprove) : ""}
       ${view === "dashboard" ? renderDashboard(low, todayCount) : ""}
       ${view === "inventory" ? renderInventory() : ""}
       ${view === "history" ? renderHistory() : ""}
@@ -3288,6 +3507,145 @@ function startCircuitBg(canvas){
   }
 }
 
+/* =====================================================================
+   HUB — เมนูเต็มจอแบบวงล้อ 3D (หมุนเลือก → คลิกเข้า)
+   ===================================================================== */
+let hubIndex = 0;
+let hubDrag = null;
+
+function renderHub(isAdmin, isApprove){
+  const keys = hubKeys(isAdmin, isApprove);
+  if (hubIndex >= keys.length) hubIndex = 0;
+  const n = keys.length;
+  const step = 360 / n;
+
+  return `
+    <div class="hub">
+      <div class="hub-head">
+        <div class="hub-eyebrow">SpareCube</div>
+        <h1 class="hub-title">เลือกเมนู</h1>
+        <p class="hub-hint">ลากเพื่อหมุน · คลิกการ์ดตรงกลางเพื่อเข้า</p>
+      </div>
+
+      <div class="hub-stage" id="hubStage">
+        <div class="hub-ring" id="hubRing" style="--step:${step}deg">
+          ${keys.map((k, i) => {
+            const t = TAB_LOOK[k] || { emo: "•", rgb: "135,141,151" };
+            const m = PAGE_META[k] || { label: k, sub: "" };
+            return `<button class="hub-card ${i === hubIndex ? "is-front" : ""}" data-hub="${k}" data-idx="${i}"
+                            style="--i:${i}; --tc:${t.rgb}">
+              <span class="hub-blob"><span class="hub-emo">${t.emo}</span></span>
+              <span class="hub-label">${m.label}</span>
+              <span class="hub-sub">${m.sub}</span>
+              <span class="hub-go">เข้าสู่หน้านี้ <i class="ti ti-arrow-right"></i></span>
+            </button>`;
+          }).join("")}
+        </div>
+        <button class="hub-arrow left" id="hubPrev" aria-label="ก่อนหน้า"><i class="ti ti-chevron-left"></i></button>
+        <button class="hub-arrow right" id="hubNext" aria-label="ถัดไป"><i class="ti ti-chevron-right"></i></button>
+      </div>
+
+      <div class="hub-dots">
+        ${keys.map((k, i) => `<button class="hub-dot ${i === hubIndex ? "on" : ""}" data-hubgo="${i}" aria-label="${(PAGE_META[k]||{}).label||k}"></button>`).join("")}
+      </div>
+      <div class="hub-count">${hubIndex + 1} / ${n}</div>
+    </div>`;
+}
+
+function hubSet(idx, keys){
+  const n = keys.length;
+  hubIndex = ((idx % n) + n) % n;
+  const ring = document.getElementById("hubRing");
+  if (ring) ring.style.transform = `rotateY(${-hubIndex * (360 / n)}deg)`;
+  document.querySelectorAll(".hub-card").forEach((c, i) => c.classList.toggle("is-front", i === hubIndex));
+  document.querySelectorAll(".hub-dot").forEach((d, i) => d.classList.toggle("on", i === hubIndex));
+  const cnt = document.querySelector(".hub-count");
+  if (cnt) cnt.textContent = `${hubIndex + 1} / ${n}`;
+}
+
+function bindHub(keys){
+  const ring = document.getElementById("hubRing");
+  if (!ring) return;
+  const n = keys.length;
+  ring.style.transform = `rotateY(${-hubIndex * (360 / n)}deg)`;
+
+  document.getElementById("hubPrev")?.addEventListener("click", (e) => { e.stopPropagation(); hubSet(hubIndex - 1, keys); });
+  document.getElementById("hubNext")?.addEventListener("click", (e) => { e.stopPropagation(); hubSet(hubIndex + 1, keys); });
+  document.querySelectorAll("[data-hubgo]").forEach(el => el.addEventListener("click", (e) => {
+    e.stopPropagation(); hubSet(Number(el.dataset.hubgo), keys);
+  }));
+
+  // ล้อเมาส์
+  let lock = 0;
+  const stage = document.getElementById("hubStage");
+  stage?.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const now = Date.now();
+    if (now < lock) return;
+    lock = now + 260;
+    hubSet(hubIndex + (e.deltaY > 0 || e.deltaX > 0 ? 1 : -1), keys);
+  }, { passive: false });
+
+  // ลาก / ปัด
+  let startX = 0, startAngle = 0, dragging = false, moved = false;
+  const onDown = (e) => {
+    dragging = true; moved = false;
+    startX = e.clientX;
+    startAngle = -hubIndex * (360 / n);
+    ring.style.transition = "none";
+    if (ring.setPointerCapture && e.pointerId !== undefined) { try { ring.setPointerCapture(e.pointerId); } catch(_){} }
+  };
+  const onMove = (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 6) moved = true;
+    ring.style.transform = `rotateY(${startAngle + dx * 0.32}deg)`;
+  };
+  const onUp = () => {
+    if (!dragging) return;
+    dragging = false;
+    ring.style.transition = "";
+    const m = /rotateY\((-?[\d.]+)deg\)/.exec(ring.style.transform || "rotateY(0deg)");
+    const deg = m ? parseFloat(m[1]) : -hubIndex * (360 / n);
+    hubSet(Math.round(-deg / (360 / n)), keys);
+    if (moved) hubBlockClick();
+  };
+  ring.addEventListener("pointerdown", onDown);
+  ring.addEventListener("pointermove", onMove);
+  ring.addEventListener("pointerup", onUp);
+  ring.addEventListener("pointercancel", onUp);
+  window.addEventListener("pointerup", onUp);
+
+  // คลิกการ์ด
+  document.querySelectorAll(".hub-card").forEach(el => {
+    el.addEventListener("click", (e) => {
+      if (hubClickBlocked()) return;
+      e.stopPropagation();
+      const i = Number(el.dataset.idx);
+      if (i !== hubIndex) { hubSet(i, keys); return; }   // ยังไม่ใช่ใบกลาง → หมุนมาก่อน
+      view = el.dataset.hub;
+      hubIndex = i;
+      render();
+    });
+  });
+
+  // คีย์บอร์ด
+  document.addEventListener("keydown", hubKeysHandler);
+  function hubKeysHandler(e){
+    if (!document.getElementById("hubRing")) { document.removeEventListener("keydown", hubKeysHandler); return; }
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); hubSet(hubIndex + 1, keys); }
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); hubSet(hubIndex - 1, keys); }
+    if (e.key === "Enter") {
+      const k = keys[hubIndex];
+      if (k) { view = k; render(); }
+    }
+  }
+}
+
+let hubBlockUntil = 0;
+function hubBlockClick(){ hubBlockUntil = Date.now() + 300; }
+function hubClickBlocked(){ return Date.now() < hubBlockUntil; }
+
 function renderLogin(){
   const isFile = (location.protocol === "file:" || !location.hostname);
   return `
@@ -3379,9 +3737,43 @@ function renderNoAccess(){
   `;
 }
 
+/* อิโมจิ + สีประจำแท็บ (โทนพาสเทลแบบภาพการ์ตูนที่อ้างอิง) */
+const TAB_LOOK = {
+  inventory: { emo: "📦", rgb: "45,212,191"  },  // เทอร์คอยส์
+  openpr:    { emo: "📝", rgb: "167,139,250" },  // ม่วง
+  prlist:    { emo: "📋", rgb: "96,165,250"  },  // ฟ้า
+  dashboard: { emo: "📊", rgb: "245,166,35"  },  // ส้ม
+  history:   { emo: "🕘", rgb: "244,114,182" },  // ชมพู
+  maintcost: { emo: "💰", rgb: "52,211,153"  },  // เขียวมินต์
+  users:     { emo: "👥", rgb: "251,191,36"  },  // เหลือง
+  settings:  { emo: "⚙️", rgb: "148,163,184" },  // เทา
+};
+
+/* คำอธิบายเมนู (ใช้ในหน้า hub) */
+const PAGE_META = {
+  inventory: { label: "คลังอะไหล่",  sub: "ค้นหา ดูจำนวน และเบิกอะไหล่" },
+  openpr:    { label: "เปิด PR",      sub: "สร้างใบขอซื้อใหม่" },
+  prlist:    { label: "รายการ PR",    sub: "ติดตามและอนุมัติใบขอซื้อ" },
+  dashboard: { label: "ภาพรวม",       sub: "สต็อกต่ำและของที่ต้องสั่ง" },
+  history:   { label: "ประวัติ",      sub: "รายการเบิกย้อนหลัง" },
+  maintcost: { label: "ค่าซ่อมบำรุง", sub: "งบประมาณ · PO · เจ้าของงาน" },
+  users:     { label: "ผู้ใช้",       sub: "สิทธิ์การใช้งานในระบบ" },
+  settings:  { label: "ตั้งค่า",      sub: "เครื่องจักร · โซน · ส่งออก" },
+};
+
+function hubKeys(isAdmin, isApprove){
+  if (isAdmin) return ["inventory","openpr","prlist","dashboard","history","maintcost","users","settings"];
+  if (isApprove) return ["inventory","openpr","prlist"];
+  return ["inventory","openpr"];
+}
+
 function tabBtn(key, label, count){
-  const ic = {inventory:"building-warehouse", openpr:"file-plus", prlist:"list-details", dashboard:"layout-dashboard", history:"history", maintcost:"report-money", users:"users-group", settings:"settings"}[key];
-  return `<button class="tab ${view===key?"active":""}" data-tab="${key}">${ic ? `<i class="ti ti-${ic}" aria-hidden="true"></i>` : ""}${label}${count ? `<span class="badge">${count}</span>`:""}</button>`;
+  const t = TAB_LOOK[key] || { emo: "•", rgb: "135,141,151" };
+  return `<button class="tab ${view===key?"active":""}" data-tab="${key}" style="--tc:${t.rgb}">
+    <span class="tab-blob"><span class="tab-emo">${t.emo}</span></span>
+    <span class="tab-label">${label}</span>
+    ${count ? `<span class="badge">${count}</span>`:""}
+  </button>`;
 }
 
 function lowStockCardHtml(p){
@@ -5374,6 +5766,12 @@ let pendingPhotoBlob = null, pendingPhotoPreview = null;
 
 function bindEvents(){
   document.getElementById("btnTheme")?.addEventListener("click", toggleTheme);
+  if (view === "hub") bindHub(hubKeys(currentRole === "admin", currentRole === "approve"));
+  document.getElementById("btnHub")?.addEventListener("click", () => {
+    hubIndex = 0;
+    view = "hub";
+    render();
+  });
   document.getElementById("btnLogout")?.addEventListener("click", async () => {
     const ok = await showConfirm({
       title: "ออกจากระบบ?",
