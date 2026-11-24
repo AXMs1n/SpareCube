@@ -2492,14 +2492,15 @@
 
 
   /* ---- คลิกเข้าเมนู: กระโดด/กลิ้งในวงกลม ---- */
+  .hub-card.is-clipping .hub-blob{ overflow:hidden !important; }
   .hub-mascot.hop-out{ animation:mcHopOut .44s cubic-bezier(.32,.86,.34,1) both; }
   @keyframes mcHopOut{
-    0%  { transform:translate(0,0)      rotate(0deg)   scale(1);        opacity:1; }
-    20% { transform:translate(0,-24px)  rotate(-12deg) scale(1.08,1.14); opacity:1; }
-    46% { transform:translate(13px,-7px) rotate(14deg) scale(1.05,1.02); opacity:1; }
-    72% { transform:translate(25px, 1px) rotate(30deg) scale(1);         opacity:.72; }
-    89% { transform:translate(31px, 5px) rotate(40deg) scale(.96);       opacity:.32; }
-    100%{ transform:translate(34px, 7px) rotate(46deg) scale(.94);       opacity:0; }
+    0%  { transform:translate(0,0)       rotate(0deg)   scale(1);        opacity:1; }
+    18% { transform:translate(0,-18px)   rotate(-10deg) scale(1.06,1.11); opacity:1; }
+    42% { transform:translate(9px,-5px)  rotate(12deg)  scale(1.03,1.01); opacity:1; }
+    64% { transform:translate(16px, 1px)  rotate(24deg)  scale(.99);      opacity:.70; }
+    82% { transform:translate(21px, 4px)  rotate(31deg)  scale(.96);      opacity:.28; }
+    100%{ transform:translate(24px, 6px)  rotate(36deg)  scale(.94);      opacity:0; }
   }
   .hub-blob.blob-pop{ animation:mcBlobPop .42s cubic-bezier(.3,.9,.35,1) both; }
   @keyframes mcBlobPop{
@@ -4474,6 +4475,7 @@ function enterHubPage(key, idx){
     mascot.classList.remove("hop-out");
     void mascot.getBoundingClientRect();                  // รีสตาร์ท keyframe
     mascot.style.transform = "";
+    card.classList.add("is-clipping");
     mascot.classList.add("hop-out");
     wait = 440;
   } else {
