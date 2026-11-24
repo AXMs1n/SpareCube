@@ -2901,6 +2901,75 @@
       52%{ transform:scale(1.1); opacity:.85; }
       100%{ transform:scale(1.9); opacity:0; }
     }
+
+
+    /* =========================================================
+       บอททุกตัว: เอียงตามแรงเฉื่อย + หน้าตกใจ (คนละท่า)
+       ========================================================= */
+    /* ตาขยายตอนตกใจ */
+    .pl-blinkS,.rl-blinkS,.db-blinkS,.hs-blinkS,.ct-blinkS,.us-blinkS,.st-blinkS{
+      transform-box:fill-box; transform-origin:50% 50%;
+      transform:scale(1.22); animation:none !important;
+    }
+
+    /* ของในมือส่ายตอนหมุน — คนละแบบ */
+    .pl-form-s{ transform-box:fill-box; transform-origin:50% 100%; animation:sgForm .66s ease-in-out; }
+    @keyframes sgForm{ 0%,100%{ transform:rotate(0);} 25%{ transform:rotate(-9deg) translateY(-4px);} 60%{ transform:rotate(6deg);} }
+
+    .rl-mono-s{ transform-box:fill-box; transform-origin:50% 50%; animation:sgMono .66s ease-in-out; }
+    @keyframes sgMono{ 0%,100%{ transform:rotate(0) scale(1);} 30%{ transform:rotate(-16deg) scale(1.08);} 65%{ transform:rotate(10deg);} }
+
+    .db-bar-s{ transform-box:fill-box; transform-origin:50% 100%; animation:sgBar .5s ease-in-out; }
+    @keyframes sgBar{ 0%,100%{ transform:skewX(0) scaleY(1);} 30%{ transform:skewX(-12deg) scaleY(1.25);} 65%{ transform:skewX(9deg) scaleY(.85);} }
+
+    .hs-clock-s{ transform-box:view-box; transform-origin:120px 110px; animation:sgClock .7s cubic-bezier(.3,.9,.35,1); }
+    @keyframes sgClock{ 0%,100%{ transform:rotate(0);} 28%{ transform:rotate(-34deg);} 55%{ transform:rotate(20deg);} 78%{ transform:rotate(-9deg);} }
+
+    .ct-coin-s{ transform-box:view-box; transform-origin:138px 112px; animation:sgCoin .62s ease-in-out; }
+    @keyframes sgCoin{ 0%,100%{ transform:rotate(0);} 20%{ transform:rotate(38deg) translateY(-8px);} 45%{ transform:rotate(-30deg);} 70%{ transform:rotate(18deg);} }
+
+    .us-clip-s{ transform-box:view-box; transform-origin:142px 90px; animation:sgClip .68s ease-in-out; }
+    @keyframes sgClip{ 0%,100%{ transform:rotate(0);} 30%{ transform:rotate(26deg) translateY(-6px);} 62%{ transform:rotate(-14deg);} }
+
+    .st-gear-s{ transform-box:fill-box; transform-origin:50% 50%; animation:sgGear .8s linear; }
+    @keyframes sgGear{ 0%{ transform:rotate(0);} 100%{ transform:rotate(420deg);} }
+
+    /* ป้ายตกใจ */
+    .pl-bang,.rl-bang,.db-bang,.hs-bang,.ct-bang,.us-bang,.st-bang{
+      transform-box:fill-box; transform-origin:50% 100%;
+      animation:sgBang .66s ease-in-out;
+    }
+    @keyframes sgBang{ 0%{ transform:scale(.6) translateY(4px); opacity:0;} 30%{ transform:scale(1.15) translateY(-3px); opacity:1;} 100%{ transform:scale(1); opacity:1;} }
+
+    /* เอียงตัว — ใช้ตัวแปรร่วม แต่ค่าต่อตัวไม่เหมือนกัน */
+    .hub-mascot.lean-r{ animation:sgLeanR var(--ld,.66s) cubic-bezier(.26,.9,.3,1) both; }
+    .hub-mascot.lean-l{ animation:sgLeanL var(--ld,.66s) cubic-bezier(.26,.9,.3,1) both; }
+    @keyframes sgLeanR{
+      0%  { transform:rotate(0deg) translateX(0) scale(1,1); }
+      10% { transform:rotate(var(--la,26deg)) translateX(-8px) scale(.94,1.07); }
+      28% { transform:rotate(calc(var(--la,26deg) * .58)) translateX(-4px) scale(.97,1.03); }
+      48% { transform:rotate(calc(var(--la,26deg) * -.3)) translateX(3px) scale(1.03,.97); }
+      66% { transform:rotate(calc(var(--la,26deg) * .15)) translateX(-2px); }
+      82% { transform:rotate(calc(var(--la,26deg) * -.06)) translateX(1px); }
+      100%{ transform:rotate(0deg) translateX(0) scale(1,1); }
+    }
+    @keyframes sgLeanL{
+      0%  { transform:rotate(0deg) translateX(0) scale(1,1); }
+      10% { transform:rotate(calc(var(--la,26deg) * -1)) translateX(8px) scale(.94,1.07); }
+      28% { transform:rotate(calc(var(--la,26deg) * -.58)) translateX(4px) scale(.97,1.03); }
+      48% { transform:rotate(calc(var(--la,26deg) * .3)) translateX(-3px) scale(1.03,.97); }
+      66% { transform:rotate(calc(var(--la,26deg) * -.15)) translateX(2px); }
+      82% { transform:rotate(calc(var(--la,26deg) * .06)) translateX(-1px); }
+      100%{ transform:rotate(0deg) translateX(0) scale(1,1); }
+    }
+    /* ค่าเฉพาะตัว (ไม่แตะคลัง) */
+    .hub-mascot[data-key="openpr"]   { --la:20deg; --ld:.60s; }
+    .hub-mascot[data-key="prlist"]   { --la:15deg; --ld:.75s; }
+    .hub-mascot[data-key="dashboard"]{ --la:28deg; --ld:.50s; }
+    .hub-mascot[data-key="history"]  { --la:22deg; --ld:.70s; }
+    .hub-mascot[data-key="maintcost"]{ --la:30deg; --ld:.62s; }
+    .hub-mascot[data-key="users"]    { --la:18deg; --ld:.68s; }
+    .hub-mascot[data-key="settings"] { --la:12deg; --ld:.80s; }
 </style>
 
   <symbol id="mc-mascot" viewBox="10 14 200 240">
@@ -3291,7 +3360,7 @@
       <path d="M26 112 H194" stroke="#F5F1E3" stroke-opacity=".5" stroke-width="2" stroke-dasharray="5 5"/>
     </g>
   </g>
-  <g transform="translate(120,110) rotate(-6)">
+  <g class="hs-clock" transform="translate(120,110) rotate(-6)">
     <circle r="21" fill="#F5F1E3" stroke="#4a1636" stroke-width="4.5"/>
     <g stroke="#4a1636" stroke-width="2.5" stroke-linecap="round">
       <path d="M0 -15.5 V-13 M15.5 0 H13 M0 15.5 V13 M-15.5 0 H-13"/>
@@ -3332,7 +3401,7 @@
     </g>
   </g>
   <g class="hs-clock-x">
-  <g transform="translate(120,110) rotate(-6)">
+  <g class="hs-clock" transform="translate(120,110) rotate(-6)">
     <circle r="21" fill="#F5F1E3" stroke="#4a1636" stroke-width="4.5"/>
     <g stroke="#4a1636" stroke-width="2.5" stroke-linecap="round">
       <path d="M0 -15.5 V-13 M15.5 0 H13 M0 15.5 V13 M-15.5 0 H-13"/>
@@ -3506,6 +3575,252 @@
     <circle cx="150" cy="84" r="24" fill="none" stroke="#9CA3AF" stroke-width="5"/>
   </g>
   </symbol>
+
+  <symbol id="mc-settings-s" viewBox="10 14 200 240">
+    <!-- asymmetric round body -->
+  <path d="M42 152 C38 104 80 78 118 82 C162 86 190 118 186 162 C184 206 148 236 104 232 C62 228 45 196 42 152 Z" fill="#A9B1BD"/>
+  <!-- gear on head -->
+  <g transform="translate(150,84)">
+    <g class="st-gear-s">
+      <path d="M16.08 -3.71 L21.79 -3.06 L21.79 3.06 L16.08 3.71 L13.99 8.74 L17.57 13.24 L13.24 17.57 L8.74 13.99 L3.71 16.08 L3.06 21.79 L-3.06 21.79 L-3.71 16.08 L-8.74 13.99 L-13.24 17.57 L-17.57 13.24 L-13.99 8.74 L-16.08 3.71 L-21.79 3.06 L-21.79 -3.06 L-16.08 -3.71 L-13.99 -8.74 L-17.57 -13.24 L-13.24 -17.57 L-8.74 -13.99 L-3.71 -16.08 L-3.06 -21.79 L3.06 -21.79 L3.71 -16.08 L8.74 -13.99 L13.24 -17.57 L17.57 -13.24 L13.99 -8.74 Z M7 0 A7 7 0 1 0 -7 0 A7 7 0 1 0 7 0 Z" fill="#4B5563" fill-rule="evenodd"/>
+    </g>
+  </g>
+  <!-- eyes: upright ovals -->
+  <g class="st-look st-fb">
+    <rect class="st-blinkS st-fb" x="84" y="142" width="16" height="38" rx="8" fill="#fff"/>
+    <rect class="st-blinkS st-fb" x="126" y="142" width="16" height="38" rx="8" fill="#fff"/>
+  </g>
+    <g class="st-bang">
+    <path d="M186 40 l4 12 -4 4 -4 -4 Z" fill="#F59E0B" stroke="#B45309" stroke-width="1.6"/>
+    <circle cx="186" cy="64" r="2.8" fill="#F59E0B" stroke="#B45309" stroke-width="1.2"/>
+  </g>
+</symbol>
+
+  <symbol id="mc-users-s" viewBox="10 14 200 240">
+    <!-- teardrop body -->
+  <path d="M110 30 C128 66 184 112 184 168 C184 208 152 240 110 240 C68 240 36 208 36 168 C36 112 92 66 110 30 Z" fill="#FFC21A"/>
+  <!-- hair clip with people icon -->
+  <g class="us-clip-s">
+    <g transform="translate(142,90) rotate(32)">
+      <!-- clip tongue gripping the head -->
+      <rect x="-19" y="6" width="38" height="8" rx="4" fill="#B87A00"/>
+      <!-- clip body -->
+      <rect x="-26" y="-12" width="52" height="24" rx="12" fill="#C98A0A"/>
+      <rect x="-23.5" y="-9.5" width="47" height="19" rx="9.5" fill="#fff"/>
+      <!-- hinge -->
+      <circle cx="-17" cy="0" r="2.2" fill="#C98A0A"/>
+      <!-- people icon -->
+      <g transform="rotate(-32) translate(3,0) scale(.58)">
+        <circle cx="6" cy="-7" r="4.5" fill="#E0A21A"/>
+        <path d="M-1 11 Q-1 1 6 1 Q14 1 14 11 Z" fill="#E0A21A"/>
+        <circle cx="-3" cy="-5" r="5.5" fill="#5A3B00"/>
+        <path d="M-13 12 Q-13 2 -3 2 Q7 2 7 12 Z" fill="#5A3B00"/>
+      </g>
+    </g>
+  </g>
+  <!-- eyes -->
+  <g class="us-look us-fb">
+    <g transform="rotate(14 82 170)"><rect class="us-blinkS us-fb" x="74" y="152" width="16" height="36" rx="8" fill="#fff"/></g>
+    <g transform="rotate(-14 138 170)"><rect class="us-blinkS us-fb" x="130" y="152" width="16" height="36" rx="8" fill="#fff"/></g>
+  </g>
+    <g class="us-bang">
+    <path d="M186 40 l4 12 -4 4 -4 -4 Z" fill="#F59E0B" stroke="#B45309" stroke-width="1.6"/>
+    <circle cx="186" cy="64" r="2.8" fill="#F59E0B" stroke="#B45309" stroke-width="1.2"/>
+  </g>
+</symbol>
+
+  <symbol id="mc-maintcost-s" viewBox="10 14 200 240">
+    <defs>
+    <radialGradient id="ctShine" cx="35%" cy="25%" r="70%">
+      <stop offset="0" stop-color="#5BE39A"/>
+      <stop offset="1" stop-color="#22B86B"/>
+    </radialGradient>
+  </defs>
+  <!-- body -->
+  <g transform="rotate(2 110 160)">
+    <circle cx="110" cy="162" r="74" fill="url(#ctShine)"/>
+  </g>
+  <!-- coin stuck on head -->
+  <g class="ct-coin-s">
+    <g transform="translate(138,102)">
+      <circle r="19" fill="#C98A0A"/>
+      <circle r="16.5" fill="#FFC21A"/>
+      <circle r="12" fill="none" stroke="#E8A400" stroke-width="1.8"/>
+      <text x="0" y="6.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="20" fill="#0E5B36">$</text>
+      <path d="M-9 -9 Q-4 -13 2 -12" stroke="#FFE49A" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    </g>
+  </g>
+  <!-- face -->
+  <g class="ct-look ct-fb">
+    <g transform="rotate(14 82 158)"><rect class="ct-blinkS ct-fb" x="74" y="140" width="16" height="36" rx="8" fill="#fff"/></g>
+    <g transform="rotate(-14 138 158)"><rect class="ct-blinkS ct-fb" x="130" y="140" width="16" height="36" rx="8" fill="#fff"/></g>
+  </g>
+    <g class="ct-bang">
+    <path d="M186 40 l4 12 -4 4 -4 -4 Z" fill="#F59E0B" stroke="#B45309" stroke-width="1.6"/>
+    <circle cx="186" cy="64" r="2.8" fill="#F59E0B" stroke="#B45309" stroke-width="1.2"/>
+  </g>
+</symbol>
+
+  <symbol id="mc-history-s" viewBox="10 30 200 210">
+    <!-- cloud body: one flat shape -->
+  <g fill="#FF6FB0">
+    <rect x="40" y="140" width="140" height="80" rx="40"/>
+    <circle cx="78" cy="136" r="38"/>
+    <circle cx="122" cy="124" r="46"/>
+    <circle cx="158" cy="150" r="32"/>
+  </g>
+  <defs>
+    <clipPath id="hsCloudClip">
+      <rect x="40" y="140" width="140" height="80" rx="40"/>
+      <circle cx="78" cy="136" r="38"/>
+      <circle cx="122" cy="124" r="46"/>
+      <circle cx="158" cy="150" r="32"/>
+    </clipPath>
+  </defs>
+  <!-- clock strapped around the head (strap is clipped to the cloud) -->
+  <g clip-path="url(#hsCloudClip)">
+    <g transform="rotate(-6 110 112)">
+      <rect x="20" y="102" width="180" height="20" fill="#4a1636"/>
+      <path d="M26 112 H194" stroke="#F5F1E3" stroke-opacity=".5" stroke-width="2" stroke-dasharray="5 5"/>
+    </g>
+  </g>
+  <g class="hs-clock-s" transform="translate(120,110) rotate(-6)">
+    <circle r="21" fill="#F5F1E3" stroke="#4a1636" stroke-width="4.5"/>
+    <g stroke="#4a1636" stroke-width="2.5" stroke-linecap="round">
+      <path d="M0 -15.5 V-13 M15.5 0 H13 M0 15.5 V13 M-15.5 0 H-13"/>
+    </g>
+    <path d="M0 0 L-7 -4.5" stroke="#4a1636" stroke-width="3.8" stroke-linecap="round"/>
+    <path d="M0 0 V-12.5" stroke="#4a1636" stroke-width="3" stroke-linecap="round" transform="rotate(60)">
+      <animateTransform attributeName="transform" type="rotate" from="60 0 0" to="-300 0 0" dur="4s" repeatCount="indefinite"/>
+    </path>
+    <circle r="2.8" fill="#4a1636"/>
+  </g>
+  <!-- eyes -->
+  <g class="hs-look hs-fb">
+    <g transform="rotate(6 96 164)"><rect class="hs-blinkS hs-fb" x="89" y="146" width="14" height="36" rx="7" fill="#fff"/></g>
+    <g transform="rotate(-6 138 164)"><rect class="hs-blinkS hs-fb" x="131" y="146" width="14" height="36" rx="7" fill="#fff"/></g>
+  </g>
+    <g class="hs-bang">
+    <path d="M186 40 l4 12 -4 4 -4 -4 Z" fill="#F59E0B" stroke="#B45309" stroke-width="1.6"/>
+    <circle cx="186" cy="64" r="2.8" fill="#F59E0B" stroke="#B45309" stroke-width="1.2"/>
+  </g>
+</symbol>
+
+  <symbol id="mc-dashboard-s" viewBox="10 20 200 232">
+    <g>
+    <!-- cylinder: one flat shape with curved top and bottom -->
+    <path d="M42 90 A68 24 0 0 1 178 90 V196 A68 24 0 0 1 42 196 Z" fill="#FF9F2E"/>
+    <!-- bar-chart tuft -->
+    <rect class="db-bar-s db-b1 db-fb" x="95" y="50" width="9" height="22" rx="3.5" fill="#F5F1E3"/>
+    <rect class="db-bar-s db-b2 db-fb" x="106" y="38" width="9" height="34" rx="3.5" fill="#F5F1E3"/>
+    <rect class="db-bar-s db-b3 db-fb" x="117" y="54" width="9" height="18" rx="3.5" fill="#F5F1E3"/>
+    <!-- round eyes -->
+    <g class="db-look db-fb">
+      <circle class="db-blinkS db-fb" cx="80" cy="151" r="13" fill="#fff"/>
+      <circle class="db-blinkS db-fb" cx="136" cy="151" r="13" fill="#fff"/>
+    </g>
+    <!-- round glasses -->
+    <g fill="none" stroke="#3b2208" stroke-width="5">
+      <circle cx="80" cy="151" r="22"/>
+      <circle cx="136" cy="151" r="22"/>
+    </g>
+    <path d="M102 151 Q108 147 114 151" stroke="#3b2208" stroke-width="5" stroke-linecap="round" fill="none"/>
+  </g>
+    <g class="db-bang">
+    <path d="M186 40 l4 12 -4 4 -4 -4 Z" fill="#F59E0B" stroke="#B45309" stroke-width="1.6"/>
+    <circle cx="186" cy="64" r="2.8" fill="#F59E0B" stroke="#B45309" stroke-width="1.2"/>
+  </g>
+</symbol>
+
+  <symbol id="mc-prlist-s" viewBox="10 44 200 208">
+    <ellipse cx="110" cy="240" rx="64" ry="6" fill="#000" opacity=".22"/>
+  <!-- rounded triangle body -->
+  <path d="M110 56 C130 56 142 76 160 108 L196 178 C210 206 196 232 160 232 L60 232 C24 232 10 206 24 178 L60 108 C78 76 90 56 110 56 Z" fill="#4F9CFF"/>
+  <!-- bushy brows -->
+  <path d="M60 124 Q80 112 100 120" stroke="#F5F1E3" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M120 118 Q140 108 160 120" stroke="#F5F1E3" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <!-- eyes -->
+  <g class="rl-look rl-fb">
+    <g transform="rotate(5 82 152)"><rect class="rl-blinkS rl-fb" x="75" y="136" width="14" height="32" rx="7" fill="#fff"/></g>
+    <g transform="rotate(-5 138 152)"><rect class="rl-blinkS rl-fb" x="131" y="136" width="14" height="32" rx="7" fill="#fff"/></g>
+  </g>
+  <!-- monocle + chain (right eye) -->
+  <g class="rl-mono-s">
+    <circle cx="138" cy="152" r="25" fill="#fff" fill-opacity=".16" stroke="#BFA93A" stroke-width="5"/>
+    <path d="M155 171 C170 184 172 200 160 216" stroke="#BFA93A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <circle cx="160" cy="217" r="3.5" fill="#BFA93A"/>
+  </g>
+  <!-- handlebar mustache (two halves wiggle independently) -->
+  <g class="rl-stache">
+    <path class="rl-stL rl-fb" d="M110 190 C100 182 84 182 72 188 C62 194 58 204 66 208 C74 202 86 202 96 202 C102 202 106 200 110 196 Z" fill="#F5F1E3" stroke="#F5F1E3" stroke-width=".6"/>
+    <path class="rl-stR rl-fb" d="M110 196 C114 200 118 202 124 202 C134 202 146 202 154 208 C162 204 158 194 148 188 C136 182 120 182 110 190 Z" fill="#F5F1E3" stroke="#F5F1E3" stroke-width=".6"/>
+  </g>
+    <g class="rl-bang">
+    <path d="M186 40 l4 12 -4 4 -4 -4 Z" fill="#F59E0B" stroke="#B45309" stroke-width="1.6"/>
+    <circle cx="186" cy="64" r="2.8" fill="#F59E0B" stroke="#B45309" stroke-width="1.2"/>
+  </g>
+</symbol>
+
+  <symbol id="mc-openpr-s" viewBox="10 14 200 240">
+      <defs>
+    <clipPath id="plBodyClip">
+      <circle cx="110" cy="162" r="74"/>
+    </clipPath>
+  </defs>
+  <ellipse  cx="110" cy="245" rx="58" ry="6" fill="#000" opacity=".25"/>
+  <g >
+    <!-- hair bun -->
+    <g >
+      <circle cx="108" cy="78" r="25" fill="#4B30A8"/>
+    </g>
+    <!-- pencil stuck through the bun -->
+    <g >
+      <g transform="translate(104,102) rotate(35)">
+        <rect x="-7" y="-58" width="14" height="9" rx="3" fill="#F5F1E3"/>
+        <rect x="-7" y="-49" width="14" height="5" fill="#BFA93A"/>
+        <rect x="-7" y="-44" width="14" height="44" fill="#EBD65C"/>
+        <path d="M-7 0 L7 0 L0 16 Z" fill="#F5F1E3"/>
+        <path d="M-2.5 9 L2.5 9 L0 16 Z" fill="#2a1f5c"/>
+      </g>
+    </g>
+    <!-- body, hair fringe, request form -->
+    <g transform="rotate(2 110 160)">
+      <circle cx="110" cy="162" r="74" fill="#8B6CF0"/>
+      <g clip-path="url(#plBodyClip)">
+        <!-- side-swept fringe -->
+        <path d="M30 70 H190 V118 C174 112 152 98 128 102 C112 104 100 112 84 110 C66 108 48 116 30 122 Z" fill="#4B30A8"/>
+        <!-- request form held in front -->
+        <g class="pl-form-s">
+        <rect x="58" y="188" width="104" height="60" rx="9" fill="#F5F1E3"/>
+        <rect x="96" y="183" width="28" height="11" rx="4.5" fill="#2a1f5c"/>
+        <rect x="70" y="204" width="34" height="5" rx="2.5" fill="#8B6CF0" opacity=".5"/>
+        <rect  x="70" y="216" width="60" height="5" rx="2.5" fill="#8B6CF0" opacity=".35"/>
+        <rect  x="82" y="227" width="40" height="5" rx="2.5" fill="#8B6CF0" opacity=".35"/>
+        <path  d="M126 203 L133 210 L147 195" stroke="#8B6CF0" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </g>
+      </g>
+    </g>
+    <!-- face: soft blush, arched brows, lashes -->
+    <ellipse cx="68" cy="176" rx="9" ry="5" fill="#B9A3FF" opacity=".55"/>
+    <ellipse cx="152" cy="176" rx="9" ry="5" fill="#B9A3FF" opacity=".55"/>
+    <g >
+      <path d="M62 128 Q80 118 98 125" stroke="#2a1f5c" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M122 125 Q140 118 158 128" stroke="#2a1f5c" stroke-width="5" stroke-linecap="round" fill="none"/>
+    </g>
+    <g class="pl-look pl-fb">
+      <g transform="rotate(6 80 153)"><rect class="pl-blinkS pl-fb" x="73" y="136" width="15" height="34" rx="7.5" fill="#fff"/></g>
+      <g transform="rotate(-6 140 153)"><rect class="pl-blinkS pl-fb" x="132" y="136" width="15" height="34" rx="7.5" fill="#fff"/></g>
+      <g stroke="#2a1f5c" stroke-width="3.5" stroke-linecap="round" fill="none">
+        <path d="M71 143 L63 137 M70 150 L62 148"/>
+        <path d="M149 143 L157 137 M150 150 L158 148"/>
+      </g>
+    </g>
+  </g>
+    <g class="pl-bang">
+    <path d="M186 40 l4 12 -4 4 -4 -4 Z" fill="#F59E0B" stroke="#B45309" stroke-width="1.6"/>
+    <circle cx="186" cy="64" r="2.8" fill="#F59E0B" stroke="#B45309" stroke-width="1.2"/>
+  </g>
+</symbol>
 </svg>
 
 <div id="app">
@@ -4965,8 +5280,8 @@ function render(){
         <div class="subnav">
           <button class="subnav-back" id="btnHub"><i class="ti ti-layout-grid" aria-hidden="true"></i> เมนู</button>
           <span class="subnav-sep"></span>
-          <span class="subnav-cur">${view === "inventory"
-            ? `<svg class="mascot nav-mascot" viewBox="10 14 200 240" aria-hidden="true"><use href="#mc-happy"/></svg>`
+          <span class="subnav-cur">${HUB_CHAR[view]
+            ? `<svg class="mascot nav-mascot" viewBox="${HUB_CHAR[view].vb}" aria-hidden="true"><use href="${HUB_CHAR[view].nav}"/></svg>`
             : (TAB_LOOK[view]||{}).emo||""} ${(PAGE_META[view]||{}).label||""}</span>
           ${low.length && view !== "dashboard" ? `<span class="subnav-low">สต็อกต่ำ ${low.length}</span>` : ""}
         </div>`}
@@ -5120,14 +5435,14 @@ let hubDrag = null;
 
 /* การ์ตูนประจำเมนู + ท่าตอนคลิก (fx) */
 const HUB_CHAR = {
-  inventory: { id: "#mc-mascot",  fx: "#mc-happy" },
-  openpr:    { id: "#mc-openpr",  fx: "#mc-openpr-x" },
-  prlist:    { id: "#mc-prlist",  fx: "#mc-prlist-x" },
-  dashboard: { id: "#mc-dashboard", fx: "#mc-dashboard-x" },
-  history:   { id: "#mc-history",   fx: "#mc-history-x" },
-  maintcost: { id: "#mc-maintcost", fx: "#mc-maintcost-x" },
-  users:     { id: "#mc-users",     fx: "#mc-users-x" },
-  settings:  { id: "#mc-settings",  fx: "#mc-settings-x" }
+  inventory: { id: "#mc-mascot",    fx: "#mc-happy",     nav: "#mc-happy",     vb: "10 14 200 240" },
+  openpr:    { id: "#mc-openpr",    fx: "#mc-openpr-x",  nav: "#mc-openpr",    vb: "10 14 200 240" },
+  prlist:    { id: "#mc-prlist",    fx: "#mc-prlist-x",  nav: "#mc-prlist",    vb: "10 44 200 208" },
+  dashboard: { id: "#mc-dashboard", fx: "#mc-dashboard-x", nav: "#mc-dashboard", vb: "10 20 200 232" },
+  history:   { id: "#mc-history",   fx: "#mc-history-x", nav: "#mc-history",   vb: "10 30 200 210" },
+  maintcost: { id: "#mc-maintcost", fx: "#mc-maintcost-x", nav: "#mc-maintcost", vb: "10 14 200 240" },
+  users:     { id: "#mc-users",     fx: "#mc-users-x",   nav: "#mc-users",     vb: "10 14 200 240" },
+  settings:  { id: "#mc-settings",  fx: "#mc-settings-x", nav: "#mc-settings", vb: "10 14 200 240" }
 };
 
 function renderHub(isAdmin, isApprove){
@@ -5153,7 +5468,7 @@ function renderHub(isAdmin, isApprove){
             return `<button class="hub-card ${i === hubIndex ? "is-front" : ""}" data-hub="${k}" data-idx="${i}"
                             style="--i:${i}; --tc:${t.rgb}">
               <span class="hub-blob">${ch
-                ? `<svg class="mascot hub-mascot" data-fx="${ch.fx}" viewBox="10 14 200 240" aria-hidden="true"><use href="${ch.id}"/></svg>`
+                ? `<svg class="mascot hub-mascot" data-key="${k}" data-fx="${ch.fx}" viewBox="10 14 200 240" aria-hidden="true"><use href="${ch.id}"/></svg>`
                 : `<span class="hub-emo">${t.emo}</span>`}</span>
               <span class="hub-label">${m.label}</span>
               <span class="hub-sub">${m.sub}</span>
@@ -5270,10 +5585,11 @@ function hubStep(delta){
 /* กดปุ่มลูกศร = ให้ความรู้สึกเหมือนลากนิ้ว (เอียงค้างก่อน แล้วดีดกลับ) */
 let mcSpinLock = 0;
 function mcButtonSpin(dir){
-  const el = mcMascotEl();
+  const n = hubCount();
+  const el = mcElAt(((hubIndex + dir) % n + n) % n) || mcMascotEl();
   if (!el) return;
   mcSpinLock = Date.now() + 300;
-  mcFace("#mc-shock");
+  mcFace(el, true);
   clearTimeout(mcShockTimer);
   el.classList.remove("lean-r", "lean-l", "hop-out");
   el.style.transition = "transform .16s cubic-bezier(.3,.9,.4,1)";
@@ -5289,25 +5605,41 @@ function mcButtonSpin(dir){
 
 /* ---- ตัวการ์ตูน: หน้าตกใจ + เอนตามแรงเฉื่อย ---- */
 let mcShockTimer = 0;
-function mcMascotEl(){ return document.querySelector('.hub-card[data-hub="inventory"] .hub-mascot'); }
-function mcFace(name){
-  const el = mcMascotEl();
-  const u = el && el.querySelector("use");
-  if (u && u.getAttribute("href") !== name) u.setAttribute("href", name);
+function mcElAt(i){
+  const c = document.querySelector(`.hub-card[data-idx="${i}"]`);
+  return c ? c.querySelector(".hub-mascot") : null;
+}
+function mcMascotEl(){
+  return mcElAt(hubIndex)
+      || document.querySelector(".hub-card.is-front .hub-mascot")
+      || document.querySelector(".hub-card .hub-mascot");
+}
+function mcKeyOf(el){
+  return (el && el.dataset && el.dataset.key) || "inventory";
+}
+function mcFace(el, shocked){
+  if (!el) return;
+  const k = mcKeyOf(el);
+  const id = shocked ? (k === "inventory" ? "#mc-shock" : `#mc-${k}-s`) : `#mc-${k}`;
+  const u = el.querySelector("use");
+  if (u && u.getAttribute("href") !== id) u.setAttribute("href", id);
 }
 function mcInertia(dir){
   const el = mcMascotEl();
   if (!el) return;
-  mcFace("#mc-shock");
+  const k = mcKeyOf(el);
+  mcFace(el, true);
   el.classList.remove("lean-r", "lean-l");
-  void el.offsetWidth;                       // รีสตาร์ท keyframe
-  el.classList.add(dir > 0 ? "lean-r" : "lean-l");
   el.style.transform = "";
+  const cls = dir > 0 ? "lean-r" : "lean-l";
+  if (k === "inventory"){
+    // บอทคลัง: ใช้ท่าเดิมทุกอย่าง (ตามที่สั่ง ห้ามเปลี่ยน)
+    el.classList.add(cls);
+  } else {
+    el.classList.add(cls);
+  }
   clearTimeout(mcShockTimer);
-  mcShockTimer = setTimeout(() => {
-    mcFace("#mc-mascot");
-    el.classList.remove("lean-r", "lean-l");
-  }, 700);
+  mcShockTimer = setTimeout(() => { mcFace(el, false); el.classList.remove("lean-r", "lean-l"); }, 760);
 }
 
 function hubGoto(idx){
@@ -5355,7 +5687,7 @@ function bindHub(keys){
     if (Math.abs(lastDx) > 6) moved = true;
     const mel = mcMascotEl();
     if (mel && Math.abs(lastDx) > 4){
-      mcFace("#mc-shock");
+      mcFace(mel, true);
       mel.classList.remove("lean-r", "lean-l");
       const tilt = Math.max(-30, Math.min(30, lastDx * 0.16));
       mel.style.transform = `rotate(${tilt}deg) translateX(${-tilt * 0.32}px) scale(.97,1.04)`;
@@ -5372,7 +5704,7 @@ function bindHub(keys){
     hubTurns += steps;
     hubApply(true);
     if (steps) mcInertia(steps > 0 ? 1 : -1);
-    else { mcFace("#mc-mascot"); }
+    else { const m2 = mcMascotEl(); mcFace(m2, false); }
     if (moved) { hubBlockClick(); return; }
 
     // แตะสั้นบนการ์ดตรงกลาง → เข้าหน้านั้นทันที
