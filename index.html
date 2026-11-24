@@ -2490,6 +2490,26 @@
     .mc-sweat, .mc-bang, .mc-eyeS1, .mc-eyeS2{ animation:none; }
   }
 
+
+  /* ---- คลิกเข้าเมนู: กระโดด/กลิ้งในวงกลม ---- */
+  .hub-mascot.hop-out{ animation:mcHopOut .44s cubic-bezier(.32,.86,.34,1) both; }
+  @keyframes mcHopOut{
+    0%  { transform:translate(0,0) rotate(0deg) scale(1); opacity:1; }
+    22% { transform:translate(0,-26px) rotate(-12deg) scale(1.10,1.16); opacity:1; }
+    48% { transform:translate(22px,-10px) rotate(18deg) scale(1.06,1.02); opacity:1; }
+    74% { transform:translate(52px, 6px) rotate(42deg) scale(.98); opacity:.75; }
+    100%{ transform:translate(86px,14px) rotate(70deg) scale(.88); opacity:0; }
+  }
+  .hub-blob.blob-pop{ animation:mcBlobPop .42s cubic-bezier(.3,.9,.35,1) both; }
+  @keyframes mcBlobPop{
+    0%  { transform:scale(1) rotate(0); opacity:1; }
+    30% { transform:scale(1.18) rotate(-8deg); opacity:1; }
+    100%{ transform:scale(1.4) rotate(16deg); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hub-mascot.hop-out, .hub-blob.blob-pop{ animation:none !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -2727,16 +2747,6 @@
   </symbol>
 </svg>
 
-<div id="mcEnter" aria-hidden="true">
-  <div class="mc-flash"></div>
-  <div class="mc-jump">
-    <svg class="mascot" viewBox="10 14 200 240" aria-hidden="true"><use href="#mc-happy"/></svg>
-  </div>
-  <span class="mc-spark s1">✦</span>
-  <span class="mc-spark s2">✧</span>
-  <span class="mc-spark s3">✦</span>
-  <span class="mc-spark s4">✧</span>
-</div>
 <div id="app">
   <div class="wrap" style="padding-top:80px;text-align:center;color:var(--mutedFaint);">กำลังโหลด...</div>
 </div>
@@ -4389,33 +4399,45 @@ function renderHub(isAdmin, isApprove){
 }
 
 let mcEnterBusy = false;
-function playMcEnter(){
-  return new Promise((resolve) => {
-    const box = document.getElementById("mcEnter");
-    const app = document.getElementById("app");
-    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!box || reduce) { resolve(); return; }
-    box.classList.remove("on");
-    void box.offsetWidth;                 // รีสตาร์ทอนิเมชัน
-    box.classList.add("on");
-    setTimeout(() => { app?.classList.add("leaving"); }, 980);
-    setTimeout(() => { app?.classList.remove("leaving"); }, 1500);
-    setTimeout(() => { box.classList.remove("on"); resolve(); }, 2000);
-  });
-}
 
+/* คลิกเข้าเมนู: ตัวการ์ตูน "ดีใจ" กระโดด/กลิ้งออกในวงกลม แล้วสลับหน้าทันที */
 function enterHubPage(key, idx){
   if (!key) return;
   if (mcEnterBusy) return;
-  mcEnterBusy = true;
+
   const go = () => {
+    mcEnterBusy = false;
     view = key;
     hubIndex = Number.isFinite(idx) ? idx : 0;
-    mcEnterBusy = false;
     render();
   };
-  const fallback = setTimeout(() => { if (mcEnterBusy) { mcEnterBusy = false; go(); } }, 2800);
-  playMcEnter().then(() => { clearTimeout(fallback); if (mcEnterBusy) { mcEnterBusy = false; go(); } });
+
+  const card = (Number.isFinite(idx) ? document.querySelector(`.hub-card[data-idx="${idx}"]`) : null)
+            || document.querySelector(".hub-card.is-front");
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!card || reduce) { go(); return; }
+
+  const mascot = card.querySelector(".hub-mascot");
+  let wait = 420;
+
+  if (mascot){
+    clearTimeout(mcShockTimer);
+    const u = mascot.querySelector("use");
+    if (u) u.setAttribute("href", "#mc-happy");          // หน้าดีใจ
+    mascot.classList.remove("lean-l", "lean-r");
+    mascot.classList.remove("hop-out");
+    void mascot.getBoundingClientRect();                  // รีสตาร์ท keyframe
+    mascot.style.transform = "";
+    mascot.classList.add("hop-out");
+    wait = 440;
+  } else {
+    const blob = card.querySelector(".hub-blob");
+    if (blob){ blob.classList.remove("blob-pop"); void blob.getBoundingClientRect(); blob.classList.add("blob-pop"); }
+  }
+
+  mcEnterBusy = true;
+  setTimeout(go, wait);
 }
 
 /* ---------------- วงล้อ: หมุนต่อเนื่อง (วนกลับได้ ไม่ตีกลับ) ---------------- */

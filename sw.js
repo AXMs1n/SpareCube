@@ -6,7 +6,7 @@
 //      ทำให้ไฟล์ CSS ของฟอนต์ไม่เคยถูกแคช → ออฟไลน์ฟอนต์หลุด)
 //   4) จำกัดจำนวนไฟล์ในแคช ไม่ให้โตไม่หยุด
 
-const CACHE_NAME = "sparecube-shell-v35";
+const CACHE_NAME = "sparecube-shell-v36";
 
 const APP_SHELL = [
   "./",
