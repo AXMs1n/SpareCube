@@ -2258,6 +2258,97 @@
     body.vw-list .part-card .withdraw-btn{ width:76px !important; font-size:11px !important; padding:7px 0 !important; }
   }
 
+
+  /* =====================================================================
+     มุมมอง "ตาราง" — เรียงซ้าย→ขวา ต่อท้ายลงบรรทัดถัดไป (แทนลิสต์แนวตั้ง)
+     ===================================================================== */
+  body.vw-list .hg-strip{
+    display:grid !important;
+    grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)) !important;
+    gap:12px !important;
+    padding:0 !important; margin:0 !important;
+    overflow:visible !important; scroll-snap-type:none !important;
+    cursor:default;
+  }
+  body.vw-list .hg-strip > .part-card{
+    display:flex !important; align-items:center !important; gap:14px !important;
+    width:auto !important; max-width:none !important; min-height:0 !important;
+    padding:12px 14px !important;
+    opacity:1 !important; filter:none !important; transform:none !important;
+    border:1px solid var(--border) !important; border-radius:14px !important;
+    background:var(--panel) !important; box-shadow:none !important;
+  }
+  body.vw-list .hg-strip > .part-card:hover{
+    transform:none !important; border-color:var(--mutedFaint) !important;
+    background:var(--panel) !important;
+  }
+  body.vw-list .part-card .part-photo{
+    grid-area:auto !important;
+    width:72px !important; height:72px !important; flex:0 0 72px !important;
+    border-radius:12px !important; margin:0 !important;
+  }
+  body.vw-list .part-card .part-body{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) max-content !important;
+    grid-template-areas:"name gauge" "code btn" !important;
+    align-items:center !important;
+    column-gap:10px !important; row-gap:8px !important;
+  }
+  body.vw-list .part-card .part-name{
+    grid-area:name !important; align-self:auto !important;
+    font-size:14.5px !important; font-weight:600 !important; color:var(--text) !important;
+    white-space:normal !important; overflow:hidden !important;
+    display:-webkit-box !important; -webkit-line-clamp:2 !important; -webkit-box-orient:vertical !important;
+    line-height:1.32 !important;
+  }
+  body.vw-list .part-card .part-code{
+    grid-area:code !important; align-self:auto !important;
+    font-size:11.5px !important; color:var(--mutedFaint) !important;
+    white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important;
+  }
+  body.vw-list .part-card .gauge-top{
+    grid-area:gauge !important;
+    display:flex !important; flex-direction:row !important; align-items:baseline !important;
+    justify-content:flex-end !important; gap:5px !important;
+  }
+  body.vw-list .part-card .gauge-top > span:first-child{ font-size:24px !important; line-height:1 !important; }
+  body.vw-list .part-card .gauge-top > span:last-child{ font-size:10.5px !important; color:var(--mutedFaint) !important; }
+  body.vw-list .part-card .withdraw-btn{
+    grid-area:btn !important; justify-self:end !important; align-self:end !important;
+    width:auto !important; padding:7px 13px !important; font-size:12px !important;
+    border-radius:8px !important; margin:0 !important;
+  }
+  body.vw-list .hg-arrow{ display:none !important; }
+
+  /* มือถือ: 2 คอลัมน์ เรียงซ้าย→ขวา ต่อบรรทัด */
+  @media(max-width:700px){
+    body.vw-list .hg-strip{
+      grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+      gap:10px !important; padding:0 !important;
+    }
+    body.vw-list .hg-strip > .part-card{
+      display:flex !important; flex-direction:column !important; align-items:stretch !important;
+      gap:9px !important; padding:9px !important;
+    }
+    body.vw-list .part-card .part-photo{
+      width:100% !important; height:92px !important; flex:none !important; border-radius:9px !important;
+    }
+    body.vw-list .part-card .part-body{
+      display:flex !important; flex-direction:column !important; gap:6px !important;
+    }
+    body.vw-list .part-card .part-name{
+      font-size:12.5px !important; line-height:1.3 !important; -webkit-line-clamp:2 !important;
+    }
+    body.vw-list .part-card .part-code{ font-size:10px !important; }
+    body.vw-list .part-card .gauge-top{ justify-content:flex-start !important; gap:4px !important; }
+    body.vw-list .part-card .gauge-top > span:first-child{ font-size:19px !important; }
+    body.vw-list .part-card .gauge-top > span:last-child{ font-size:9.5px !important; }
+    body.vw-list .part-card .withdraw-btn{
+      width:100% !important; justify-content:center !important; padding:6px 0 !important; font-size:11px !important;
+    }
+    body.vw-list .edit-btn{ top:4px !important; right:4px !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -3725,7 +3816,7 @@ function render(){
               <div style="font-size:12px;font-weight:600;">${esc(currentName)}</div>
               <div style="font-size:10px;color:${isAdmin?'var(--warn)':(isApprove?'#C09EFC':'var(--muted)')};">${isAdmin?"Admin":(isApprove?"Approve":"User")}</div>
             </div>
-            ${view === "inventory" ? `<button class="btn btn-ghost" id="btnViewMode" title="สลับมุมมอง: การ์ด / รายการ" style="padding:8px;"><i class="ti ${invListMode() ? "ti-carousel-horizontal" : "ti-list"}" aria-hidden="true"></i></button>` : ""}
+            ${view === "inventory" ? `<button class="btn btn-ghost" id="btnViewMode" title="สลับมุมมอง: การ์ดเลื่อน / ตาราง" style="padding:8px;"><i class="ti ${invListMode() ? "ti-carousel-horizontal" : "ti-list"}" aria-hidden="true"></i></button>` : ""}
             <button class="btn btn-ghost" id="btnTheme" title="สลับกลางวัน / กลางคืน" style="padding:8px;"><i class="ti ${themeIcon()}" aria-hidden="true"></i></button>
             <button class="btn btn-ghost" id="btnLogout" title="ออกจากระบบ / สลับผู้ใช้" style="padding:8px;"><i class="ti ti-logout" aria-hidden="true"></i></button>
             ${isAdmin ? `<button class="btn btn-accent" id="btnAdd">+ เพิ่มอะไหล่</button>` : ""}
