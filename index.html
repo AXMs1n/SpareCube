@@ -1825,9 +1825,12 @@
     border:1px solid var(--border);
     color:var(--text); font-family:'Prompt',sans-serif;
     opacity:.72; filter:saturate(.62) brightness(.88);
+    will-change:transform, opacity, filter;
+    backface-visibility:hidden;
     transition:opacity .35s ease, filter .35s ease, border-color .35s ease, box-shadow .35s ease;
   }
-  .hub-card:hover{ opacity:.92; filter:none; border-color:rgba(var(--tc),.45); }
+  .hub-card:hover{ border-color:rgba(var(--tc),.42); }
+  .hub-ring.rotating .hub-card{ pointer-events:none; }
   .hub-card.is-front{
     opacity:1; filter:none;
     border-color:rgba(var(--tc),.6);
@@ -1845,12 +1848,9 @@
   .hub-emo{
     font-size:52px; line-height:1;
     font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
-    animation:hubFloat 5.6s ease-in-out infinite;
-  }
-  @keyframes hubFloat{
-    0%,100%{ transform:translateY(0) rotate(0deg); }
-    40%{ transform:translateY(-5px) rotate(-4deg); }
-    75%{ transform:translateY(2px) rotate(3deg); }
+    display:block;
+    transform:translateZ(0);     /* ล็อกให้ raster นิ่ง ไม่สั่นตอนวงล้อหมุน */
+    backface-visibility:hidden;
   }
   .hub-card.is-front .hub-blob{
     background:rgba(var(--tc), .26);
@@ -3567,26 +3567,44 @@ function enterHubPage(key, idx){
 function hubCount(){ return document.querySelectorAll(".hub-card").length || 1; }
 function hubStepDeg(){ return 360 / hubCount(); }
 
-function hubRenderState(){
+let hubVisualTimer = 0;
+
+/* อัปเดตเฉพาะ "สถานะที่เห็น" (ไฮไลต์การ์ด/จุด) — เรียกหลังวงล้อหมุนจบเท่านั้น */
+function hubVisualState(){
   const cards = [...document.querySelectorAll(".hub-card")];
   const n = cards.length || 1;
   hubIndex = ((hubTurns % n) + n) % n;
   cards.forEach((c, i) => c.classList.toggle("is-front", i === hubIndex));
   document.querySelectorAll(".hub-dot").forEach((d, i) => d.classList.toggle("on", i === hubIndex));
-  const cnt = document.querySelector(".hub-count");
-  if (cnt) cnt.textContent = `${hubIndex + 1} / ${n}`;
 }
 
 function hubApply(animate){
   const ring = document.getElementById("hubRing");
   if (!ring) return;
   const step = hubStepDeg();
+  const n = hubCount();
+
+  // อัปเดตดัชนี (logic) ทันที แต่ "ไฮไลต์" ค่อยเปลี่ยนหลังหมุนจบ → ไอคอนไม่กระตุกกลางทาง
+  hubIndex = ((hubTurns % n) + n) % n;
+  const cnt = document.querySelector(".hub-count");
+  if (cnt) cnt.textContent = `${hubIndex + 1} / ${n}`;
+
   ring.style.transition = animate === false ? "none" : "";
   ring.style.transform = `rotateY(${-hubTurns * step}deg)`;
-  hubRenderState();
+
+  if (animate === false){
+    hubVisualState();
+  } else {
+    ring.classList.add("rotating");
+    clearTimeout(hubVisualTimer);
+    hubVisualTimer = setTimeout(() => {
+      const r = document.getElementById("hubRing");
+      if (r) r.classList.remove("rotating");
+      hubVisualState();
+    }, 600);
+  }
 
   // กันค่าองศาสะสมมากเกิน → รีเซ็ตเป็นค่าเทียบเท่าโดยไม่ให้เห็นการกระตุก
-  const n = hubCount();
   if (Math.abs(hubTurns) > n * 5){
     setTimeout(() => {
       const r = document.getElementById("hubRing");
