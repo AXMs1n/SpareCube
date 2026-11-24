@@ -2494,11 +2494,12 @@
   /* ---- คลิกเข้าเมนู: กระโดด/กลิ้งในวงกลม ---- */
   .hub-mascot.hop-out{ animation:mcHopOut .44s cubic-bezier(.32,.86,.34,1) both; }
   @keyframes mcHopOut{
-    0%  { transform:translate(0,0) rotate(0deg) scale(1); opacity:1; }
-    22% { transform:translate(0,-26px) rotate(-12deg) scale(1.10,1.16); opacity:1; }
-    48% { transform:translate(22px,-10px) rotate(18deg) scale(1.06,1.02); opacity:1; }
-    74% { transform:translate(52px, 6px) rotate(42deg) scale(.98); opacity:.75; }
-    100%{ transform:translate(86px,14px) rotate(70deg) scale(.88); opacity:0; }
+    0%  { transform:translate(0,0)      rotate(0deg)   scale(1);        opacity:1; }
+    20% { transform:translate(0,-24px)  rotate(-12deg) scale(1.08,1.14); opacity:1; }
+    46% { transform:translate(13px,-7px) rotate(14deg) scale(1.05,1.02); opacity:1; }
+    72% { transform:translate(25px, 1px) rotate(30deg) scale(1);         opacity:.72; }
+    89% { transform:translate(31px, 5px) rotate(40deg) scale(.96);       opacity:.32; }
+    100%{ transform:translate(34px, 7px) rotate(46deg) scale(.94);       opacity:0; }
   }
   .hub-blob.blob-pop{ animation:mcBlobPop .42s cubic-bezier(.3,.9,.35,1) both; }
   @keyframes mcBlobPop{
@@ -2508,6 +2509,16 @@
   }
   @media (prefers-reduced-motion: reduce){
     .hub-mascot.hop-out, .hub-blob.blob-pop{ animation:none !important; }
+  }
+
+
+  /* ---- ไอคอนการ์ตูนในหัวข้อหน้า ---- */
+  .subnav-cur{ display:inline-flex; align-items:center; gap:7px; }
+  .nav-mascot{
+    width:27px; height:27px; flex:none; display:block;
+    transform-origin:50% 88%;
+    filter:drop-shadow(0 2px 7px rgba(0,0,0,.4));
+    will-change:transform;
   }
 
 </style>
@@ -4204,7 +4215,9 @@ function render(){
         <div class="subnav">
           <button class="subnav-back" id="btnHub"><i class="ti ti-layout-grid" aria-hidden="true"></i> เมนู</button>
           <span class="subnav-sep"></span>
-          <span class="subnav-cur">${(TAB_LOOK[view]||{}).emo||""} ${(PAGE_META[view]||{}).label||""}</span>
+          <span class="subnav-cur">${view === "inventory"
+            ? `<svg class="mascot nav-mascot" viewBox="10 14 200 240" aria-hidden="true"><use href="#mc-happy"/></svg>`
+            : (TAB_LOOK[view]||{}).emo||""} ${(PAGE_META[view]||{}).label||""}</span>
           ${low.length && view !== "dashboard" ? `<span class="subnav-low">สต็อกต่ำ ${low.length}</span>` : ""}
         </div>`}
       </div>
@@ -4228,6 +4241,7 @@ function render(){
   `;
   bindEvents();
   syncOverlays();
+  initNavMascot();
 }
 
 /* ======================================================
@@ -4398,6 +4412,37 @@ function renderHub(isAdmin, isApprove){
     </div>`;
 }
 
+/* -------- ตัวการ์ตูนในหัวข้อหน้า: กระโดด/กลิ้งไปมาแบบสุ่ม -------- */
+let navMascotToken = 0;
+function initNavMascot(){
+  const el = document.querySelector(".nav-mascot");
+  if (!el) return;
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const my = ++navMascotToken;
+  let x = 0, r = 0;
+  const alive = () => my === navMascotToken && el.isConnected;
+
+  const hop = () => {
+    if (!alive()) return;
+    const nx = Math.max(-24, Math.min(24, x + (Math.random() * 2 - 1) * 17));
+    const nr = (Math.random() * 2 - 1) * 26;
+    const dur = 1100 + Math.random() * 1200;
+    const anim = el.animate([
+      { transform: `translate(${x}px,0) rotate(${r}deg) scale(1,1)` },
+      { transform: `translate(${(x + nx) / 2}px,-8px) rotate(${(r + nr) / 2}deg) scale(1.12,1.05)`, offset: 0.45 },
+      { transform: `translate(${nx}px,0) rotate(${nr}deg) scale(1,1)` }
+    ], { duration: dur, easing: "ease-in-out", fill: "forwards" });
+    x = nx; r = nr;
+    anim.onfinish = () => setTimeout(hop, 160 + Math.random() * 520);
+  };
+
+  el.animate([
+    { transform: "translateY(16px) scale(.25) rotate(-25deg)", opacity: 0 },
+    { transform: "translateY(-7px) scale(1.16) rotate(8deg)", opacity: 1, offset: 0.6 },
+    { transform: "translateY(0) scale(1) rotate(0deg)", opacity: 1 }
+  ], { duration: 430, easing: "cubic-bezier(.2,1.2,.4,1)" }).onfinish = () => setTimeout(hop, 90);
+}
+
 let mcEnterBusy = false;
 
 /* คลิกเข้าเมนู: ตัวการ์ตูน "ดีใจ" กระโดด/กลิ้งออกในวงกลม แล้วสลับหน้าทันที */
@@ -4494,7 +4539,31 @@ function hubApply(animate){
   }
 }
 
-function hubStep(delta){ hubTurns += delta; hubApply(true); mcInertia(delta > 0 ? 1 : -1); }
+function hubStep(delta){
+  hubTurns += delta;
+  hubApply(true);
+  if (Date.now() > mcSpinLock) mcInertia(delta > 0 ? 1 : -1);
+}
+
+/* กดปุ่มลูกศร = ให้ความรู้สึกเหมือนลากนิ้ว (เอียงค้างก่อน แล้วดีดกลับ) */
+let mcSpinLock = 0;
+function mcButtonSpin(dir){
+  const el = mcMascotEl();
+  if (!el) return;
+  mcSpinLock = Date.now() + 300;
+  mcFace("#mc-shock");
+  clearTimeout(mcShockTimer);
+  el.classList.remove("lean-r", "lean-l", "hop-out");
+  el.style.transition = "transform .16s cubic-bezier(.3,.9,.4,1)";
+  el.style.transform = dir > 0
+    ? "rotate(21deg) translateX(-6px) scale(.96,1.05)"
+    : "rotate(-21deg) translateX(6px) scale(.96,1.05)";
+  setTimeout(() => {
+    el.style.transition = "";
+    el.style.transform = "";
+    mcInertia(dir);
+  }, 190);
+}
 
 /* ---- ตัวการ์ตูน: หน้าตกใจ + เอนตามแรงเฉื่อย ---- */
 let mcShockTimer = 0;
@@ -4533,8 +4602,8 @@ function bindHub(keys){
   if (!ring) return;
   hubApply(false);
 
-  document.getElementById("hubPrev")?.addEventListener("click", (e) => { e.stopPropagation(); hubStep(-1); });
-  document.getElementById("hubNext")?.addEventListener("click", (e) => { e.stopPropagation(); hubStep(1); });
+  document.getElementById("hubPrev")?.addEventListener("click", (e) => { e.stopPropagation(); mcButtonSpin(-1); hubStep(-1); });
+  document.getElementById("hubNext")?.addEventListener("click", (e) => { e.stopPropagation(); mcButtonSpin(1); hubStep(1); });
   document.querySelectorAll("[data-hubgo]").forEach(el => el.addEventListener("click", (e) => {
     e.stopPropagation(); hubGoto(Number(el.dataset.hubgo));
   }));
