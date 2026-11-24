@@ -2546,9 +2546,10 @@
 <svg id="mc-sprite" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
   <style>
     .mc-fb{ transform-box:fill-box; }
-    .mc-shadow{ transform-origin:50% 50%; animation:mcShadow 4s ease-in-out infinite; }
-    .mc-bounce{ transform-origin:50% 100%; animation:mcBounce 4s ease-in-out infinite; }
-    .mc-hat{ transform-origin:50% 100%; animation:mcHat 4s ease-in-out infinite; }
+    /* ปิดการกระโดดทั้งตัว / หมวกสะบัด / เงาขยับ — เหลือเฉพาะ ตา + คิ้ว */
+    .mc-shadow{ transform-origin:50% 50%; animation:none; }
+    .mc-bounce{ transform-origin:50% 100%; animation:none; }
+    .mc-hat{ transform-origin:50% 100%; animation:none; }
     .mc-glasses{ animation:mcGlasses 4s ease-in-out infinite; }
     .mc-look{ animation:mcLook 4s ease-in-out infinite; }
     .mc-blink{ transform-origin:50% 50%; animation:mcBlink 4s ease-in-out infinite; }
@@ -2608,6 +2609,63 @@
       .mc-glasses, .mc-look, .mc-blink,
       .mc-browR, .mc-browL{ animation:none; }
     }
+
+    /* ---- ของในมือขยับเบาๆ ---- */
+    .acc{ transform-box:fill-box; }
+    .acc-pen{ transform-origin:50% 90%; animation:penIdle 3.4s ease-in-out infinite; }
+    @keyframes penIdle{ 0%,100%{ transform:rotate(0);} 45%{ transform:rotate(-8deg) translateY(-3px);} }
+    .acc-paper{ transform-origin:50% 12%; animation:paperIdle 3.8s ease-in-out infinite; }
+    @keyframes paperIdle{ 0%,100%{ transform:rotate(0);} 42%{ transform:rotate(6deg);} 72%{ transform:rotate(-3deg);} }
+    .acc-chart .bar{ transform-box:fill-box; transform-origin:50% 100%; }
+    .bar1{ animation:barIdle 2.6s ease-in-out infinite; }
+    .bar2{ animation:barIdle 2.6s ease-in-out infinite .18s; }
+    .bar3{ animation:barIdle 2.6s ease-in-out infinite .36s; }
+    @keyframes barIdle{ 0%,100%{ transform:scaleY(1);} 50%{ transform:scaleY(.6);} }
+    .acc-clock .hand-h{ transform-box:view-box; animation:clockH 16s steps(4) infinite; }
+    .acc-clock .hand-m{ transform-box:view-box; animation:clockM 6s steps(6) infinite; }
+    @keyframes clockH{ to{ transform:rotate(90deg);} }
+    @keyframes clockM{ to{ transform:rotate(360deg);} }
+    .acc-coin{ transform-box:fill-box; transform-origin:50% 50%; animation:coinIdle 3s ease-in-out infinite; }
+    @keyframes coinIdle{ 0%,100%{ transform:translateY(0) scaleX(1);} 45%{ transform:translateY(-6px) scaleX(.78);} }
+    .acc-gear{ transform-box:fill-box; transform-origin:50% 50%; animation:gearIdle 10s linear infinite; }
+    @keyframes gearIdle{ to{ transform:rotate(360deg);} }
+    .acc-headset{ transform-box:fill-box; animation:hsIdle 2.8s ease-in-out infinite; }
+    @keyframes hsIdle{ 0%,100%{ opacity:1;} 50%{ opacity:.7;} }
+
+    /* ---- ท่าตอนคลิก ---- */
+    .accx-pen{ transform-box:fill-box; transform-origin:50% 10%; animation:penDrop .56s cubic-bezier(.4,0,.7,1) forwards; }
+    @keyframes penDrop{
+      0%{ transform:rotate(0) translate(0,0); opacity:1; }
+      32%{ transform:rotate(-42deg) translate(-14px,-18px); opacity:1; }
+      100%{ transform:rotate(165deg) translate(-34px,86px); opacity:0; }
+    }
+    .accx-paper{ transform-box:fill-box; transform-origin:50% 0%; animation:paperDrop .56s cubic-bezier(.4,0,.7,1) forwards; }
+    @keyframes paperDrop{
+      0%{ transform:rotate(0) translate(0,0); opacity:1; }
+      28%{ transform:rotate(-14deg) translate(-10px,-16px); opacity:1; }
+      100%{ transform:rotate(38deg) translate(-28px,92px); opacity:0; }
+    }
+    .accx-chart .bar{ transform-box:fill-box; transform-origin:50% 100%; }
+    .accx-chart .bar1{ animation:barPop .5s ease-out forwards; }
+    .accx-chart .bar2{ animation:barPop .5s ease-out .05s forwards; }
+    .accx-chart .bar3{ animation:barPop .5s ease-out .1s forwards; }
+    @keyframes barPop{ 0%{ transform:scaleY(1);} 45%{ transform:scaleY(1.6);} 100%{ transform:scaleY(0);} }
+    .accx-clock .hand-h{ transform-box:view-box; animation:clockSpin .54s ease-in forwards; }
+    .accx-clock .hand-m{ transform-box:view-box; animation:clockSpinF .54s ease-in forwards; }
+    @keyframes clockSpin{ to{ transform:rotate(320deg);} }
+    @keyframes clockSpinF{ to{ transform:rotate(1140deg);} }
+    .accx-coin{ transform-box:fill-box; transform-origin:50% 50%; animation:coinFlip .54s ease-out forwards; }
+    @keyframes coinFlip{
+      0%{ transform:translateY(0) scaleX(1); opacity:1; }
+      38%{ transform:translateY(-30px) scaleX(.18); opacity:1; }
+      68%{ transform:translateY(-8px) scaleX(1); opacity:.9; }
+      100%{ transform:translateY(8px) scaleX(.35); opacity:0; }
+    }
+    .accx-gear{ transform-box:fill-box; transform-origin:50% 50%; animation:gearBurst .54s cubic-bezier(.3,.8,.4,1) forwards; }
+    @keyframes gearBurst{ 0%{ transform:rotate(0) scale(1); opacity:1;} 60%{ transform:rotate(280deg) scale(1.22); opacity:1;} 100%{ transform:rotate(440deg) scale(.35); opacity:0;} }
+    .accx-headset{ transform-box:fill-box; animation:hsPing .54s ease-out forwards; }
+    @keyframes hsPing{ 0%{ transform:scale(1); opacity:1;} 45%{ transform:scale(1.09); opacity:1;} 100%{ transform:scale(1.42); opacity:0;} }
+
   </style>
 
   <symbol id="mc-mascot" viewBox="10 14 200 240">
@@ -2755,6 +2813,212 @@
       <clipPath id="mcVestClipS">
         <path d="M0 194 L84 194 L110 228 L110 260 L0 260 Z M220 194 L136 194 L110 228 L110 260 L220 260 Z"/>
       </clipPath>
+    </defs>
+  </symbol>
+  <symbol id="mc-openpr" viewBox="10 14 200 240">
+    <ellipse class="mc-shadow mc-fb" cx="110" cy="245" rx="62" ry="6" fill="#000" opacity=".25"/>
+    <g class="mc-bounce mc-fb">
+    <g transform="rotate(-3 110 160)">
+      <rect x="30" y="92" width="160" height="144" rx="40" fill="#FF9F43"/>
+      <g clip-path="url(#CLIPBopenpr)">
+        <g clip-path="url(#CLIPVopenpr)">
+          <rect x="0" y="190" width="220" height="60" fill="#E4E234"/>
+          <rect x="0" y="212" width="220" height="7" fill="#C9CED6"/>
+        </g>
+        <path d="M84 194 L110 228 L136 194 M110 228 V240" stroke="#B3AE17" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </g>
+    </g>
+      <g class="mc-hat mc-fb">
+        <path d="M52 104 C52 66 80 52 110 52 C140 52 168 66 168 104 Z" fill="#1E6BFF"/>
+        <rect x="42" y="98" width="136" height="11" rx="5.5" fill="#1553C7"/>
+        <path d="M170 100 L198 108 L198 117 L170 113 Z" fill="#1553C7"/>
+        <path d="M99 52 H121 V104 H99 Z" fill="#1E6BFF" opacity=".55"/>
+      </g>
+      <g transform="translate(0,-14)">
+      <g class="mc-glasses mc-fb">
+        <g transform="rotate(-4 110 172)">
+          <g fill="#009C89" stroke="#0f172a" stroke-width="5" stroke-linejoin="round">
+            <rect x="40" y="152" width="64" height="46" rx="10"/>
+            <rect x="116" y="158" width="52" height="38" rx="10"/>
+          </g>
+          <path d="M104 170 H116" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
+          <path class="mc-browL mc-fb" d="M40 150 L102 160" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
+          <path class="mc-browR mc-fb" d="M118 146 L168 134" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
+          <g class="mc-look mc-fb">
+            <ellipse class="mc-blink mc-fb" cx="72" cy="177" rx="10.5" ry="15" fill="#fff"/>
+            <circle class="mc-blink mc-fb" cx="142" cy="178" r="8" fill="#fff"/>
+          </g>
+          
+        </g>
+      </g>
+      </g>
+    </g>
+      <g class="acc acc-pen">
+        <g transform="translate(6,28) rotate(28 172 186)">
+          <rect x="163" y="140" width="18" height="72" rx="3" fill="#FBBF24" stroke="#0f172a" stroke-width="4.5"/>
+          <rect x="163" y="140" width="18" height="15" rx="3" fill="#F472B6" stroke="#0f172a" stroke-width="4.5"/>
+          <path d="M163 212 L172 232 L181 212 Z" fill="#FDE68A" stroke="#0f172a" stroke-width="4.5" stroke-linejoin="round"/>
+          <path d="M168.5 223 L172 232 L175.5 223 Z" fill="#0f172a"/>
+        </g>
+      </g>
+    <defs>
+      <clipPath id="CLIPBopenpr"><rect x="30" y="92" width="160" height="144" rx="40"/></clipPath>
+      <clipPath id="CLIPVopenpr"><path d="M0 194 L84 194 L110 228 L110 260 L0 260 Z M220 194 L136 194 L110 228 L110 260 L220 260 Z"/></clipPath>
+    </defs>
+  </symbol>
+  <symbol id="mc-openpr-x" viewBox="10 14 200 240">
+    <ellipse class="mc-shadow mc-fb" cx="110" cy="245" rx="62" ry="6" fill="#000" opacity=".25"/>
+    <g class="mc-bounce mc-fb">
+    <g transform="rotate(-3 110 160)">
+      <rect x="30" y="92" width="160" height="144" rx="40" fill="#FF9F43"/>
+      <g clip-path="url(#CLIPBopenprX)">
+        <g clip-path="url(#CLIPVopenprX)">
+          <rect x="0" y="190" width="220" height="60" fill="#E4E234"/>
+          <rect x="0" y="212" width="220" height="7" fill="#C9CED6"/>
+        </g>
+        <path d="M84 194 L110 228 L136 194 M110 228 V240" stroke="#B3AE17" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </g>
+    </g>
+      <g class="mc-hat mc-fb">
+        <path d="M52 104 C52 66 80 52 110 52 C140 52 168 66 168 104 Z" fill="#1E6BFF"/>
+        <rect x="42" y="98" width="136" height="11" rx="5.5" fill="#1553C7"/>
+        <path d="M170 100 L198 108 L198 117 L170 113 Z" fill="#1553C7"/>
+        <path d="M99 52 H121 V104 H99 Z" fill="#1E6BFF" opacity=".55"/>
+      </g>
+      <g transform="translate(0,-14)">
+      <g class="mc-glasses mc-fb">
+        <g transform="rotate(-4 110 172)">
+          <g fill="#009C89" stroke="#0f172a" stroke-width="5" stroke-linejoin="round">
+            <rect x="40" y="152" width="64" height="46" rx="10"/>
+            <rect x="116" y="158" width="52" height="38" rx="10"/>
+          </g>
+          <path d="M104 170 H116" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
+          <path class="mc-browL mc-fb" d="M40 150 L102 160" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
+          <path class="mc-browR mc-fb" d="M118 146 L168 134" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
+          <g class="mc-look mc-fb">
+            <ellipse class="mc-blink mc-fb" cx="72" cy="177" rx="10.5" ry="15" fill="#fff"/>
+            <circle class="mc-blink mc-fb" cx="142" cy="178" r="8" fill="#fff"/>
+          </g>
+          
+        </g>
+      </g>
+      </g>
+    </g>
+      <g class="acc accx-pen acc-pen">
+        <g transform="translate(6,28) rotate(28 172 186)">
+          <rect x="163" y="140" width="18" height="72" rx="3" fill="#FBBF24" stroke="#0f172a" stroke-width="4.5"/>
+          <rect x="163" y="140" width="18" height="15" rx="3" fill="#F472B6" stroke="#0f172a" stroke-width="4.5"/>
+          <path d="M163 212 L172 232 L181 212 Z" fill="#FDE68A" stroke="#0f172a" stroke-width="4.5" stroke-linejoin="round"/>
+          <path d="M168.5 223 L172 232 L175.5 223 Z" fill="#0f172a"/>
+        </g>
+      </g>
+    <defs>
+      <clipPath id="CLIPBopenprX"><rect x="30" y="92" width="160" height="144" rx="40"/></clipPath>
+      <clipPath id="CLIPVopenprX"><path d="M0 194 L84 194 L110 228 L110 260 L0 260 Z M220 194 L136 194 L110 228 L110 260 L220 260 Z"/></clipPath>
+    </defs>
+  </symbol>
+  <symbol id="mc-prlist" viewBox="10 14 200 240">
+    <ellipse class="mc-shadow mc-fb" cx="110" cy="245" rx="62" ry="6" fill="#000" opacity=".25"/>
+    <g class="mc-bounce mc-fb">
+    <g transform="rotate(-3 110 160)">
+      <rect x="30" y="92" width="160" height="144" rx="40" fill="#8B7CF6"/>
+      <g clip-path="url(#CLIPBprlist)">
+        <g clip-path="url(#CLIPVprlist)">
+          <rect x="0" y="190" width="220" height="60" fill="#A5D8FF"/>
+          <rect x="0" y="212" width="220" height="7" fill="#C9CED6"/>
+        </g>
+        <path d="M84 194 L110 228 L136 194 M110 228 V240" stroke="#B3AE17" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </g>
+    </g>
+      <g class="mc-hat mc-fb">
+        <path d="M52 104 C52 66 80 52 110 52 C140 52 168 66 168 104 Z" fill="#4C1D95"/>
+        <rect x="42" y="98" width="136" height="11" rx="5.5" fill="#312E81"/>
+        <path d="M170 100 L198 108 L198 117 L170 113 Z" fill="#312E81"/>
+        <path d="M99 52 H121 V104 H99 Z" fill="#4C1D95" opacity=".55"/>
+      </g>
+      <g transform="translate(0,-14)">
+      <g class="mc-glasses mc-fb">
+        <g transform="rotate(-4 110 172)">
+          <g fill="#009C89" stroke="#0f172a" stroke-width="5" stroke-linejoin="round">
+            <rect x="40" y="152" width="64" height="46" rx="10"/>
+            <rect x="116" y="158" width="52" height="38" rx="10"/>
+          </g>
+          <path d="M104 170 H116" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
+          <path class="mc-browL mc-fb" d="M40 148 Q71 134 102 146" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
+          <path class="mc-browR mc-fb" d="M118 143 Q143 129 168 142" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
+          <g class="mc-look mc-fb">
+            <ellipse class="mc-blink mc-fb" cx="72" cy="177" rx="10.5" ry="15" fill="#fff"/>
+            <circle class="mc-blink mc-fb" cx="142" cy="178" r="8" fill="#fff"/>
+          </g>
+          
+        </g>
+      </g>
+      </g>
+    </g>
+      <g class="acc acc-paper">
+        <g transform="translate(3,28) rotate(-7 172 182)">
+          <rect x="146" y="142" width="58" height="76" rx="7" fill="#F8FAFC" stroke="#0f172a" stroke-width="4.5"/>
+          <path d="M157 160 H192 M157 174 H192 M157 188 H182 M157 202 H174"
+                stroke="#94A3B8" stroke-width="4.5" stroke-linecap="round"/>
+        </g>
+      </g>
+    <defs>
+      <clipPath id="CLIPBprlist"><rect x="30" y="92" width="160" height="144" rx="40"/></clipPath>
+      <clipPath id="CLIPVprlist"><path d="M0 194 L84 194 L110 228 L110 260 L0 260 Z M220 194 L136 194 L110 228 L110 260 L220 260 Z"/></clipPath>
+    </defs>
+  </symbol>
+  <symbol id="mc-prlist-x" viewBox="10 14 200 240">
+    <ellipse class="mc-shadow mc-fb" cx="110" cy="245" rx="62" ry="6" fill="#000" opacity=".25"/>
+    <g class="mc-bounce mc-fb">
+    <g transform="rotate(-3 110 160)">
+      <rect x="30" y="92" width="160" height="144" rx="40" fill="#8B7CF6"/>
+      <g clip-path="url(#CLIPBprlistX)">
+        <g clip-path="url(#CLIPVprlistX)">
+          <rect x="0" y="190" width="220" height="60" fill="#A5D8FF"/>
+          <rect x="0" y="212" width="220" height="7" fill="#C9CED6"/>
+        </g>
+        <path d="M84 194 L110 228 L136 194 M110 228 V240" stroke="#B3AE17" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </g>
+    </g>
+      <g class="mc-hat mc-fb">
+        <path d="M52 104 C52 66 80 52 110 52 C140 52 168 66 168 104 Z" fill="#4C1D95"/>
+        <rect x="42" y="98" width="136" height="11" rx="5.5" fill="#312E81"/>
+        <path d="M170 100 L198 108 L198 117 L170 113 Z" fill="#312E81"/>
+        <path d="M99 52 H121 V104 H99 Z" fill="#4C1D95" opacity=".55"/>
+      </g>
+      <g transform="translate(0,-14)">
+      <g class="mc-glasses mc-fb">
+        <g transform="rotate(-4 110 172)">
+          <g fill="#009C89" stroke="#0f172a" stroke-width="5" stroke-linejoin="round">
+            <rect x="40" y="152" width="64" height="46" rx="10"/>
+            <rect x="116" y="158" width="52" height="38" rx="10"/>
+          </g>
+          <path d="M104 170 H116" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
+          <path class="mc-browL mc-fb" d="M40 148 Q71 134 102 146" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
+          <path class="mc-browR mc-fb" d="M118 143 Q143 129 168 142" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
+          <g class="mc-look mc-fb">
+            <ellipse class="mc-blink mc-fb" cx="72" cy="177" rx="10.5" ry="15" fill="#fff"/>
+            <circle class="mc-blink mc-fb" cx="142" cy="178" r="8" fill="#fff"/>
+          </g>
+          
+        </g>
+      </g>
+      </g>
+    </g>
+      <g class="acc accx-paper acc-paper">
+        <g transform="translate(3,28) rotate(-7 172 182)">
+          <rect x="146" y="142" width="58" height="76" rx="7" fill="#F8FAFC" stroke="#0f172a" stroke-width="4.5"/>
+          <path d="M157 160 H192 M157 174 H192 M157 188 H182 M157 202 H174"
+                stroke="#94A3B8" stroke-width="4.5" stroke-linecap="round"/>
+        </g>
+      </g>
+    <defs>
+      <clipPath id="CLIPBprlistX"><rect x="30" y="92" width="160" height="144" rx="40"/></clipPath>
+      <clipPath id="CLIPVprlistX"><path d="M0 194 L84 194 L110 228 L110 260 L0 260 Z M220 194 L136 194 L110 228 L110 260 L220 260 Z"/></clipPath>
     </defs>
   </symbol>
 </svg>
@@ -4369,6 +4633,13 @@ let hubIndex = 0;
 let hubTurns = 0;
 let hubDrag = null;
 
+/* การ์ตูนประจำเมนู + ท่าตอนคลิก (fx) */
+const HUB_CHAR = {
+  inventory: { id: "#mc-mascot",  fx: "#mc-happy" },
+  openpr:    { id: "#mc-openpr",  fx: "#mc-openpr-x" },
+  prlist:    { id: "#mc-prlist",  fx: "#mc-prlist-x" }
+};
+
 function renderHub(isAdmin, isApprove){
   const keys = hubKeys(isAdmin, isApprove);
   if (hubIndex >= keys.length) hubIndex = 0;
@@ -4388,11 +4659,11 @@ function renderHub(isAdmin, isApprove){
           ${keys.map((k, i) => {
             const t = TAB_LOOK[k] || { emo: "•", rgb: "135,141,151" };
             const m = PAGE_META[k] || { label: k, sub: "" };
-            const isBox = (k === "inventory");
+            const ch = HUB_CHAR[k];
             return `<button class="hub-card ${i === hubIndex ? "is-front" : ""}" data-hub="${k}" data-idx="${i}"
                             style="--i:${i}; --tc:${t.rgb}">
-              <span class="hub-blob">${isBox
-                ? `<svg class="mascot hub-mascot" viewBox="10 14 200 240" aria-hidden="true"><use href="#mc-mascot"/></svg>`
+              <span class="hub-blob">${ch
+                ? `<svg class="mascot hub-mascot" data-fx="${ch.fx}" viewBox="10 14 200 240" aria-hidden="true"><use href="${ch.id}"/></svg>`
                 : `<span class="hub-emo">${t.emo}</span>`}</span>
               <span class="hub-label">${m.label}</span>
               <span class="hub-sub">${m.sub}</span>
@@ -4414,42 +4685,14 @@ function renderHub(isAdmin, isApprove){
 }
 
 /* -------- ตัวการ์ตูนในหัวข้อหน้า: กระโดด/กลิ้งไปมาแบบสุ่ม -------- */
-let navMascotToken = 0;
-function initNavMascot(){
-  const el = document.querySelector(".nav-mascot");
-  if (!el) return;
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const my = ++navMascotToken;
-  let x = 0, r = 0;
-  const alive = () => my === navMascotToken && el.isConnected;
-
-  const hop = () => {
-    if (!alive()) return;
-    const nx = Math.max(-24, Math.min(24, x + (Math.random() * 2 - 1) * 17));
-    const nr = (Math.random() * 2 - 1) * 26;
-    const dur = 1100 + Math.random() * 1200;
-    const anim = el.animate([
-      { transform: `translate(${x}px,0) rotate(${r}deg) scale(1,1)` },
-      { transform: `translate(${(x + nx) / 2}px,-8px) rotate(${(r + nr) / 2}deg) scale(1.12,1.05)`, offset: 0.45 },
-      { transform: `translate(${nx}px,0) rotate(${nr}deg) scale(1,1)` }
-    ], { duration: dur, easing: "ease-in-out", fill: "forwards" });
-    x = nx; r = nr;
-    anim.onfinish = () => setTimeout(hop, 160 + Math.random() * 520);
-  };
-
-  el.animate([
-    { transform: "translateY(16px) scale(.25) rotate(-25deg)", opacity: 0 },
-    { transform: "translateY(-7px) scale(1.16) rotate(8deg)", opacity: 1, offset: 0.6 },
-    { transform: "translateY(0) scale(1) rotate(0deg)", opacity: 1 }
-  ], { duration: 430, easing: "cubic-bezier(.2,1.2,.4,1)" }).onfinish = () => setTimeout(hop, 90);
-}
+/* ตัวการ์ตูนในหัวข้อ: ไม่ขยับตัวแล้ว — เหลือแค่ตากะพริบ/กวาดตา/คิ้วขยับจาก SVG */
+function initNavMascot(){ /* ปิดการกระโดดตามคำขอ (กันเวียนหัว) */ }
 
 let mcEnterBusy = false;
 
 /* คลิกเข้าเมนู: ตัวการ์ตูน "ดีใจ" กระโดด/กลิ้งออกในวงกลม แล้วสลับหน้าทันที */
 function enterHubPage(key, idx){
-  if (!key) return;
-  if (mcEnterBusy) return;
+  if (!key || mcEnterBusy) return;
 
   const go = () => {
     mcEnterBusy = false;
@@ -4460,31 +4703,18 @@ function enterHubPage(key, idx){
 
   const card = (Number.isFinite(idx) ? document.querySelector(`.hub-card[data-idx="${idx}"]`) : null)
             || document.querySelector(".hub-card.is-front");
+  const svg = card ? card.querySelector(".hub-mascot") : null;
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  if (!card || reduce) { go(); return; }
-
-  const mascot = card.querySelector(".hub-mascot");
-  let wait = 420;
-
-  if (mascot){
-    clearTimeout(mcShockTimer);
-    const u = mascot.querySelector("use");
-    if (u) u.setAttribute("href", "#mc-happy");          // หน้าดีใจ
-    mascot.classList.remove("lean-l", "lean-r");
-    mascot.classList.remove("hop-out");
-    void mascot.getBoundingClientRect();                  // รีสตาร์ท keyframe
-    mascot.style.transform = "";
-    card.classList.add("is-clipping");
-    mascot.classList.add("hop-out");
-    wait = 440;
-  } else {
-    const blob = card.querySelector(".hub-blob");
-    if (blob){ blob.classList.remove("blob-pop"); void blob.getBoundingClientRect(); blob.classList.add("blob-pop"); }
-  }
+  if (!svg || reduce || !svg.dataset.fx) { go(); return; }
 
   mcEnterBusy = true;
-  setTimeout(go, wait);
+  clearTimeout(mcShockTimer);
+  svg.classList.remove("lean-l", "lean-r");
+  svg.style.transform = "";
+  const u = svg.querySelector("use");
+  if (u) u.setAttribute("href", svg.dataset.fx);   // ท่าเฉพาะตัว
+  setTimeout(go, 560);
 }
 
 /* ---------------- วงล้อ: หมุนต่อเนื่อง (วนกลับได้ ไม่ตีกลับ) ---------------- */
