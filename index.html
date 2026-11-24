@@ -2349,6 +2349,17 @@
     body.vw-list .edit-btn{ top:4px !important; right:4px !important; }
   }
 
+
+  /* ---- ตัวการ์ตูนแทนรูปกล่อง ---- */
+  .part-photo .mascot,
+  .part-photo > svg.mascot{
+    width:100%; height:100%; display:block;
+    object-fit:contain;
+  }
+  .hg-strip > .part-card .part-photo{ background:rgba(45,212,191,.06) !important; }
+  .pd-photo .mascot{ width:74%; height:74%; display:block; }
+  .thumb-ph .mascot{ width:86%; height:86%; display:block; }
+
 </style>
 </head>
 <body>
@@ -2369,6 +2380,121 @@
   <div class="door-siren door-siren-bottom"></div>
 </div>
 
+
+<svg id="mc-sprite" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
+  <style>
+    .mc-fb{ transform-box:fill-box; }
+    .mc-shadow{ transform-origin:50% 50%; animation:mcShadow 4s ease-in-out infinite; }
+    .mc-bounce{ transform-origin:50% 100%; animation:mcBounce 4s ease-in-out infinite; }
+    .mc-hat{ transform-origin:50% 100%; animation:mcHat 4s ease-in-out infinite; }
+    .mc-glasses{ animation:mcGlasses 4s ease-in-out infinite; }
+    .mc-look{ animation:mcLook 4s ease-in-out infinite; }
+    .mc-blink{ transform-origin:50% 50%; animation:mcBlink 4s ease-in-out infinite; }
+    .mc-browR{ transform-origin:50% 50%; animation:mcBrowR 4s ease-in-out infinite; }
+    .mc-browL{ transform-origin:50% 50%; animation:mcBrowL 4s ease-in-out infinite; }
+
+    @keyframes mcBounce{
+      0%,100%{ transform:translateY(0) scale(1,1); }
+      8%{ transform:translateY(0) scale(1.07,.92); }
+      20%{ transform:translateY(-16px) scale(.96,1.06); }
+      32%{ transform:translateY(0) scale(1.08,.9); }
+      38%{ transform:translateY(0) scale(.98,1.02); }
+      44%{ transform:translateY(0) scale(1,1); }
+    }
+    @keyframes mcShadow{
+      0%,100%,44%{ transform:scaleX(1); opacity:.25; }
+      20%{ transform:scaleX(.78); opacity:.14; }
+    }
+    @keyframes mcHat{
+      0%,100%{ transform:translateY(0) rotate(0); }
+      8%{ transform:translateY(3px) rotate(0); }
+      20%{ transform:translateY(-7px) rotate(-6deg); }
+      32%{ transform:translateY(2px) rotate(5deg); }
+      40%{ transform:rotate(-3deg); }
+      48%{ transform:rotate(1.5deg); }
+      56%{ transform:rotate(0); }
+    }
+    @keyframes mcGlasses{
+      0%,60%{ transform:translateY(0); }
+      80%{ transform:translateY(4px); }
+      84%{ transform:translateY(-2px); }
+      88%{ transform:translateY(0); }
+    }
+    @keyframes mcLook{
+      0%,50%{ transform:translateX(0); }
+      55%,68%{ transform:translateX(-5px); }
+      72%,84%{ transform:translateX(5px); }
+      90%,100%{ transform:translateX(0); }
+    }
+    @keyframes mcBlink{
+      0%,91%,98%,100%{ transform:scaleY(1); }
+      94.5%{ transform:scaleY(.08); }
+    }
+    @keyframes mcBrowR{
+      0%,40%{ transform:translateY(0) rotate(0); }
+      50%{ transform:translateY(-5px) rotate(-6deg); }
+      56%{ transform:translateY(-2px) rotate(-2deg); }
+      62%{ transform:translateY(-5px) rotate(-8deg); }
+      70%,100%{ transform:translateY(0) rotate(0); }
+    }
+    @keyframes mcBrowL{
+      0%,40%,70%,100%{ transform:translateY(0); }
+      50%,62%{ transform:translateY(2px); }
+    }
+    @media (prefers-reduced-motion: reduce){
+      .mc-shadow, .mc-bounce, .mc-hat,
+      .mc-glasses, .mc-look, .mc-blink,
+      .mc-browR, .mc-browL{ animation:none; }
+    }
+  </style>
+
+  <symbol id="mc-mascot" viewBox="10 14 200 240">
+    <ellipse class="mc-shadow mc-fb" cx="110" cy="245" rx="62" ry="6" fill="#000" opacity=".25"/>
+    <g class="mc-bounce mc-fb">
+      <g transform="rotate(-3 110 160)">
+        <rect x="30" y="92" width="160" height="144" rx="40" fill="#00BBA7"/>
+        <g clip-path="url(#mcBodyClip)">
+          <g clip-path="url(#mcVestClip)">
+            <rect x="0" y="190" width="220" height="60" fill="#E4E234"/>
+            <rect x="0" y="212" width="220" height="7" fill="#C9CED6"/>
+          </g>
+          <path d="M84 194 L110 228 L136 194 M110 228 V240" stroke="#B3AE17" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </g>
+      </g>
+
+      <g class="mc-hat mc-fb">
+        <path d="M52 104 C52 66 80 52 110 52 C140 52 168 66 168 104 Z" fill="#1E6BFF"/>
+        <rect x="99" y="52" width="22" height="52" rx="8" fill="#2F7CFF"/>
+        <path d="M64 92 C66 76 78 66 92 62" stroke="#fff" stroke-opacity=".45" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <rect x="42" y="98" width="136" height="11" rx="5.5" fill="#1553C7"/>
+      </g>
+
+      <g transform="translate(0,-14)">
+        <g class="mc-glasses mc-fb">
+          <g transform="rotate(-4 110 172)">
+            <g fill="#009C89" stroke="#0f172a" stroke-width="5" stroke-linejoin="round">
+              <rect x="40" y="152" width="64" height="46" rx="10"/>
+              <rect x="116" y="158" width="52" height="38" rx="10"/>
+            </g>
+            <path d="M104 170 H116" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
+            <path class="mc-browL mc-fb" d="M40 150 L102 160" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
+            <path class="mc-browR mc-fb" d="M118 146 L168 134" stroke="#0f172a" stroke-width="9" stroke-linecap="round" fill="none"/>
+            <g class="mc-look mc-fb">
+              <ellipse class="mc-blink mc-fb" cx="72" cy="177" rx="10.5" ry="15" fill="#fff"/>
+              <circle class="mc-blink mc-fb" cx="142" cy="178" r="8" fill="#fff"/>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <defs>
+      <clipPath id="mcBodyClip"><rect x="30" y="92" width="160" height="144" rx="40"/></clipPath>
+      <clipPath id="mcVestClip">
+        <path d="M0 194 L84 194 L110 228 L110 260 L0 260 Z M220 194 L136 194 L110 228 L110 260 L220 260 Z"/>
+      </clipPath>
+    </defs>
+  </symbol>
+</svg>
 <div id="app">
   <div class="wrap" style="padding-top:80px;text-align:center;color:var(--mutedFaint);">กำลังโหลด...</div>
 </div>
@@ -4423,7 +4549,7 @@ function renderPartDetail(){
       <div class="modal pd-modal">
         <button class="pd-close" id="closePartDetail" aria-label="ปิด">✕</button>
         <div class="pd-photo">
-          ${p.photo ? `<img src="${p.photo}" class="zoomable" alt="">` : `<span>📦</span>`}
+          ${p.photo ? `<img src="${p.photo}" class="zoomable" alt="">` : `<svg class="mascot pd-mascot" viewBox="10 14 200 240" aria-hidden="true"><use href="#mc-mascot"/></svg>`}
         </div>
         <div class="pd-body">
           <div class="pd-name">${esc(p.name)}</div>
@@ -4467,7 +4593,7 @@ function partCardHtml(p){
   return `
     <div class="part-card" data-detail="${p.id}" role="button" tabindex="0">
       <div class="part-photo" data-photo="${p.id}" title="${p.photo ? "ดูรูปใหญ่" : "ไม่มีรูป"}">
-        ${p.photo ? `<img src="${p.photo}">` : "📦"}
+        ${p.photo ? `<img src="${p.photo}">` : `<svg class="mascot" viewBox="10 14 200 240" aria-hidden="true"><use href="#mc-mascot"/></svg>`}
         ${currentRole === "admin" ? `<button class="edit-btn" data-edit="${p.id}">✎</button>` : ""}
       </div>
       <div class="part-body">
