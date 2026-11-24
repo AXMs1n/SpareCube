@@ -2360,6 +2360,24 @@
   .pd-photo .mascot{ width:74%; height:74%; display:block; }
   .thumb-ph .mascot{ width:86%; height:86%; display:block; }
 
+
+  /* ---- ตัวการ์ตูนบนการ์ดเมนู "คลังอะไหล่" ---- */
+  .hub-blob .hub-mascot{
+    width:96% !important; height:96% !important; display:block;
+    filter:drop-shadow(0 6px 14px rgba(0,0,0,.45));
+  }
+  .hub-card[data-hub="inventory"] .hub-blob{
+    background:rgba(var(--tc), .10) !important;
+    box-shadow:inset 0 0 0 1.5px rgba(var(--tc), .38) !important;
+  }
+  .hub-card[data-hub="inventory"].is-front .hub-blob{
+    background:rgba(var(--tc), .16) !important;
+    box-shadow:inset 0 0 0 1.5px rgba(var(--tc), .6), 0 0 26px rgba(var(--tc), .4) !important;
+  }
+  @media(max-width:900px){
+    .hub-blob .hub-mascot{ width:100% !important; height:100% !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -4121,9 +4139,12 @@ function renderHub(isAdmin, isApprove){
           ${keys.map((k, i) => {
             const t = TAB_LOOK[k] || { emo: "•", rgb: "135,141,151" };
             const m = PAGE_META[k] || { label: k, sub: "" };
+            const isBox = (k === "inventory");
             return `<button class="hub-card ${i === hubIndex ? "is-front" : ""}" data-hub="${k}" data-idx="${i}"
                             style="--i:${i}; --tc:${t.rgb}">
-              <span class="hub-blob"><span class="hub-emo">${t.emo}</span></span>
+              <span class="hub-blob">${isBox
+                ? `<svg class="mascot hub-mascot" viewBox="10 14 200 240" aria-hidden="true"><use href="#mc-mascot"/></svg>`
+                : `<span class="hub-emo">${t.emo}</span>`}</span>
               <span class="hub-label">${m.label}</span>
               <span class="hub-sub">${m.sub}</span>
               <span class="hub-go">เข้าสู่หน้านี้ <i class="ti ti-arrow-right"></i></span>
