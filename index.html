@@ -1356,10 +1356,11 @@
   .hg-strip{
     position:relative;
     --card-w:334px;
+    --cw: min(var(--card-w), 86vw);         /* ความกว้างจริงของการ์ด (ใช้ทั้งขนาดและระยะเว้น) */
     display:flex; gap:14px; align-items:center;
     overflow-x:auto; overflow-y:hidden;
     scroll-snap-type:x mandatory; scroll-behavior:smooth;
-    padding:10px calc(50% - var(--card-w) / 2) 18px; margin:0;
+    padding:10px calc((100% - var(--cw)) / 2) 18px; margin:0;
     scrollbar-width:none; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
     cursor:grab;
   }
@@ -1370,7 +1371,7 @@
   .hg-strip > .part-card{
     cursor:pointer;
     flex:0 0 auto;
-    width:334px; max-width:86vw;
+    width:var(--cw);
     scroll-snap-align:center;
     display:flex; align-items:center; gap:14px;
     padding:14px 15px !important;
@@ -1457,8 +1458,8 @@
     .inv-select{ width:100%; height:42px; min-width:0; font-size:12.5px; }
     .inv-count{ display:none; }
 
-    .hg-strip{ --card-w:274px; gap:10px; padding:8px calc(50% - var(--card-w) / 2) 14px; }
-    .hg-strip > .part-card{ width:274px; max-width:80vw; padding:11px !important; gap:10px; }
+    .hg-strip{ --card-w:274px; --cw:min(var(--card-w), 84vw); gap:10px; padding:8px calc((100% - var(--cw)) / 2) 14px; }
+    .hg-strip > .part-card{ width:var(--cw); padding:11px !important; gap:10px; }
     .hg-strip > .part-card.is-center{ transform:scale(1.05); }
     .hg-strip > .part-card .part-photo{ width:70px !important; height:70px !important; flex:0 0 70px !important; border-radius:11px !important; }
     .hg-strip > .part-card .part-photo span{ font-size:24px; }
@@ -2136,6 +2137,49 @@
     .nuc-ico, .nuc-core, .nuc-node, .orbit .spin, .hud-travel, .viz i::before{ animation:none !important; opacity:1; }
   }
 
+
+  /* =====================================================================
+     มุมมอง "รายการ" — เหมาะกับเครื่องที่มีอะไหล่เป็นร้อย
+     ===================================================================== */
+  body.vw-list .hg-strip{
+    display:flex !important; flex-direction:column; gap:0;
+    padding:0 !important; margin:0 !important;
+    overflow:visible !important; scroll-snap-type:none !important;
+    cursor:default;
+  }
+  body.vw-list .hg-strip > .part-card{
+    width:auto !important; max-width:none !important;
+    opacity:1 !important; filter:none !important; transform:none !important;
+    border:0 !important; border-bottom:1px solid var(--border) !important;
+    border-radius:0 !important; background:transparent !important;
+    box-shadow:none !important;
+    padding:12px 4px !important; gap:14px;
+  }
+  body.vw-list .hg-strip > .part-card:last-child{ border-bottom:0 !important; }
+  body.vw-list .hg-strip > .part-card:hover{ transform:none !important; background:rgba(255,255,255,.02) !important; }
+  body.vw-list .hg-strip > .part-card .part-photo{
+    width:70px !important; height:70px !important; flex:0 0 70px !important; border-radius:11px !important;
+    box-shadow:none;
+  }
+  body.vw-list .hg-strip > .part-card .part-body{
+    grid-template-columns:minmax(0,1fr) max-content !important;
+    grid-template-areas:"name gauge" "code btn" !important;
+    column-gap:12px !important; row-gap:8px !important;
+  }
+  body.vw-list .hg-strip > .part-card .part-name{
+    font-size:15px !important; color:var(--text) !important; font-weight:600 !important;
+    -webkit-line-clamp:2;
+  }
+  body.vw-list .hg-strip > .part-card .part-code{ font-size:12px !important; }
+  body.vw-list .hg-strip > .part-card .gauge-top > span:first-child{ font-size:24px !important; }
+  body.vw-list .hg-arrow{ display:none !important; }
+
+  @media(max-width:700px){
+    body.vw-list .hg-strip > .part-card{ padding:10px 2px !important; gap:12px; }
+    body.vw-list .hg-strip > .part-card .part-photo{ width:62px !important; height:62px !important; flex:0 0 62px !important; }
+    body.vw-list .hg-strip > .part-card .part-name{ font-size:14px !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -2164,7 +2208,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, collection, doc, getDoc, setDoc, getDocs, onSnapshot, addDoc, updateDoc, deleteDoc,
+  getFirestore, collection, doc, getDoc, setDoc, getDocs, onSnapshot, addDoc, updateDoc, deleteDoc, where,
   runTransaction, serverTimestamp, query, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
@@ -3603,6 +3647,7 @@ function render(){
               <div style="font-size:12px;font-weight:600;">${esc(currentName)}</div>
               <div style="font-size:10px;color:${isAdmin?'var(--warn)':(isApprove?'#C09EFC':'var(--muted)')};">${isAdmin?"Admin":(isApprove?"Approve":"User")}</div>
             </div>
+            ${view === "inventory" ? `<button class="btn btn-ghost" id="btnViewMode" title="สลับมุมมอง: การ์ด / รายการ" style="padding:8px;"><i class="ti ${invListMode() ? "ti-carousel-horizontal" : "ti-list"}" aria-hidden="true"></i></button>` : ""}
             <button class="btn btn-ghost" id="btnTheme" title="สลับกลางวัน / กลางคืน" style="padding:8px;"><i class="ti ${themeIcon()}" aria-hidden="true"></i></button>
             <button class="btn btn-ghost" id="btnLogout" title="ออกจากระบบ / สลับผู้ใช้" style="padding:8px;"><i class="ti ti-logout" aria-hidden="true"></i></button>
             ${isAdmin ? `<button class="btn btn-accent" id="btnAdd">+ เพิ่มอะไหล่</button>` : ""}
@@ -3746,6 +3791,18 @@ function startCircuitBg(canvas){
 /* =====================================================================
    HUB — เมนูเต็มจอแบบวงล้อ 3D (หมุนเลือก → คลิกเข้า)
    ===================================================================== */
+/* มุมมองหน้ารายการ: "carousel" (การ์ดเลื่อน) หรือ "list" (แถวเรียง เหมาะกับของเยอะ) */
+function invListMode(){ return document.body.classList.contains("vw-list"); }
+function setInvMode(mode){
+  const list = mode === "list";
+  document.body.classList.toggle("vw-list", list);
+  localStorage.setItem("wk_view_mode", list ? "list" : "carousel");
+  render();
+}
+(function restoreInvMode(){
+  try { if (localStorage.getItem("wk_view_mode") === "list") document.body.classList.add("vw-list"); } catch (_) {}
+})();
+
 let hubIndex = 0;
 let hubTurns = 0;
 let hubDrag = null;
@@ -5932,15 +5989,33 @@ async function loadProfile(u){
   authError = "";
   if (!u) { userProfile = null; currentRole = null; currentName = ""; return; }
   try {
+    let d = null, docId = u.uid, uidMismatch = false;
+
     const snap = await getDoc(doc(db, "users", u.uid));
-    if (!snap.exists()) { userProfile = null; return; }
-    const d = snap.data() || {};
+    if (snap.exists()) {
+      d = snap.data() || {};
+    } else if (u.email) {
+      // สำรอง: หาเอกสารที่ผูกด้วย "อีเมล" เผื่อ UID ที่บันทึกไว้พิมพ์ผิด 1 ตัว
+      try {
+        const q = await getDocs(query(collection(db, "users"), where("email", "==", u.email), limit(1)));
+        if (!q.empty) {
+          d = q.docs[0].data() || {};
+          docId = q.docs[0].id;
+          uidMismatch = (docId !== u.uid);
+        }
+      } catch (_) { /* อ่านไม่ได้ = ไม่มีสิทธิ์ fallback */ }
+    }
+
+    if (!d) { userProfile = null; return; }
     if (d.active === false) { userProfile = null; return; }
     const role = VALID_ROLES.includes(d.role) ? d.role : "user";
-    userProfile = { uid: u.uid, ...d, role, email: d.email || u.email || "" };
+    userProfile = { uid: u.uid, docId, uidMismatch, ...d, role, email: d.email || u.email || "" };
     currentRole = role;
     currentName = String(d.name || u.displayName || u.email || "").trim();
     localStorage.setItem("wk_name", currentName);
+    if (uidMismatch){
+      setTimeout(() => showToast("⚠️ UID ในระบบไม่ตรง — เข้าใช้ได้ผ่านอีเมล (แจ้งผู้ดูแลให้แก้ UID)"), 900);
+    }
   } catch (e) {
     userProfile = null;
     authError = "อ่านสิทธิ์ไม่สำเร็จ: " + ((e && e.message) ? e.message : e);
@@ -5983,6 +6058,17 @@ async function loadUsers(){
   } finally {
     usersLoading = false;
     if (view === "users") render();
+  }
+}
+
+async function deleteUserDoc(id){
+  try {
+    await deleteDoc(doc(db, "users", id));
+    showToast("ลบผู้ใช้แล้ว");
+    usersLoaded = false;
+    await loadUsers();
+  } catch (e) {
+    showToast("ลบไม่สำเร็จ: " + ((e && e.message) ? e.message : e));
   }
 }
 
@@ -6039,6 +6125,19 @@ function bindUsersEvents(){
   document.querySelectorAll("[data-user-toggle]").forEach(el => el.addEventListener("click", () => {
     toggleUserActive(el.dataset.userToggle, el.dataset.userActive === "1");
   }));
+  document.querySelectorAll("[data-user-del]").forEach(el => el.addEventListener("click", async () => {
+    const id = el.dataset.userDel, label = el.dataset.userLabel || id;
+    const ok = await showConfirm({
+      title: "ลบผู้ใช้นี้?",
+      message: label + " · UID: " + id + " · ลบถาวร (เข้าใช้งานไม่ได้อีกจนกว่าจะเพิ่มใหม่)",
+      confirmText: "ลบผู้ใช้", icon: "ti-trash", danger: true,
+    });
+    if (ok) deleteUserDoc(id);
+  }));
+  document.querySelectorAll("[data-copy-uid]").forEach(el => el.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(el.dataset.copyUid); showToast("คัดลอก UID แล้ว"); }
+    catch (_) { showToast("คัดลอกไม่สำเร็จ — กดค้างเลือกข้อความแทน"); }
+  }));
 }
 
 function renderUsers(){
@@ -6064,6 +6163,9 @@ function renderUsers(){
           <div class="truncate" style="font-size:13px;font-weight:600;">${esc(u.name || "(ไม่มีชื่อ)")}${isMe ? ` <span style="color:var(--accent);font-size:10.5px;font-weight:600;">(คุณ)</span>` : ""}</div>
           <div class="truncate" style="color:var(--muted);font-size:11px;">${esc(u.email || "-")}</div>
           <div class="truncate mono" style="color:var(--mutedFaint);font-size:10px;">uid: ${esc(u.id)}</div>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <button data-copy-uid="${esc(u.id)}" class="btn btn-ghost" style="padding:3px 8px;font-size:10px;" title="คัดลอก UID"><i class="ti ti-copy" aria-hidden="true"></i> คัดลอก UID</button>
+          </div>
         </div>
         <div style="display:flex;gap:5px;flex-wrap:wrap;">
           ${VALID_ROLES.map(r => `<button data-user-role="${esc(r)}" data-user-id="${esc(u.id)}"
@@ -6073,6 +6175,10 @@ function renderUsers(){
           class="btn ${active ? "btn-danger" : "btn-ghost"}" style="padding:6px 10px;font-size:11.5px;" title="${active ? "ปิดสิทธิ์" : "เปิดสิทธิ์"}">
           <i class="ti ${active ? "ti-lock" : "ti-lock-open"}" aria-hidden="true"></i> ${active ? "ปิดสิทธิ์" : "เปิดสิทธิ์"}
         </button>
+        ${isMe ? "" : `<button data-user-del="${esc(u.id)}" data-user-label="${esc(u.name || u.email || u.id)}"
+          class="btn btn-danger" style="padding:6px 10px;font-size:11.5px;" title="ลบผู้ใช้นี้ออกจากระบบ">
+          <i class="ti ti-trash" aria-hidden="true"></i> ลบ
+        </button>`}
       </div>`;
   }).join("");
 
@@ -6114,6 +6220,9 @@ function renderUsers(){
 let pendingPhotoBlob = null, pendingPhotoPreview = null;
 
 function bindEvents(){
+  document.getElementById("btnViewMode")?.addEventListener("click", () => {
+    setInvMode(invListMode() ? "carousel" : "list");
+  });
   document.getElementById("btnTheme")?.addEventListener("click", toggleTheme);
   if (view === "hub") bindHub(hubKeys(currentRole === "admin", currentRole === "approve"));
   document.getElementById("btnHub")?.addEventListener("click", () => {
