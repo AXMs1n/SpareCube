@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>สแกน AI · SpareCube</title>
+<meta name="theme-color" content="#0b1220">
+<style>
+  :root{ --bg:#0b1220; --panel:#121b2c; --line:#22304a; --txt:#e8eef9; --mut:#8fa3bf; --acc:#2ee6a6; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{ margin:0; background:radial-gradient(1200px 600px at 50% -10%,#132139,var(--bg));
+        color:var(--txt); font-family:system-ui,-apple-system,'Prompt',sans-serif; }
+  header{ display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--line); }
+  header a{ color:var(--txt); text-decoration:none; font-size:20px; line-height:1; }
+  header b{ font-size:15px; }
+  header small{ color:var(--mut); font-size:11px; display:block; margin-top:2px; }
+  .wrap{ padding:14px; max-width:760px; margin:0 auto; }
+  .stage{ position:relative; width:100%; aspect-ratio:3/4; background:#0a101c; border:1px solid var(--line);
+          border-radius:16px; overflow:hidden; display:grid; place-items:center; }
+  .stage video, .stage canvas{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
+  .stage canvas{ pointer-events:none; }
+  .hint{ color:var(--mut); font-size:13px; text-align:center; padding:0 24px; line-height:1.6; }
+  .bar{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  button, label.btn{ flex:1 1 140px; text-align:center; cursor:pointer; border:1px solid var(--line);
+     background:var(--panel); color:var(--txt); padding:12px 14px; border-radius:12px; font-size:14px; font-weight:600;
+     font-family:inherit; }
+  button.primary{ background:var(--acc); border-color:var(--acc); color:#04231a; }
+  button:disabled{ opacity:.45; }
+  .stat{ display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-size:12px; color:var(--mut); }
+  .stat b{ color:var(--txt); font-variant-numeric:tabular-nums; }
+  .out{ margin-top:14px; display:grid; gap:8px; }
+  .row{ display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--line);
+        border-radius:12px; padding:10px 12px; }
+  .row .nm{ flex:1; }
+  .row .pct{ font-variant-numeric:tabular-nums; color:var(--acc); font-weight:700; }
+  .row .mini{ height:4px; background:#1b2740; border-radius:3px; margin-top:6px; overflow:hidden; }
+  .row .mini i{ display:block; height:100%; background:var(--acc); width:0; }
+  .note{ margin-top:16px; font-size:12px; color:var(--mut); line-height:1.7; border-top:1px solid var(--line); padding-top:12px; }
+  input[type=file]{ display:none; }
+</style>
+</head>
+<body>
+<header>
+  <a href="./index.html" aria-label="ย้อนกลับ">←</a>
+  <div><b>สแกน AI (ทดลอง)</b><small>โมเดลฟรี 80 ชนิด · ไว้เรียนรู้ระบบก่อน</small></div>
+</header>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <video id="v" playsinline muted></video>
+    <canvas id="c"></canvas>
+    <div class="hint" id="hint">กด “เปิดกล้อง” หรือ “เลือกรูป” เพื่อเริ่ม<br>รอบแรกจะโหลดโมเดล ~6 MB</div>
+  </div>
+
+  <div class="bar">
+    <button class="primary" id="btnCam">เปิดกล้อง</button>
+    <label class="btn" for="file">เลือกรูป</label>
+    <input id="file" type="file" accept="image/*" capture="environment">
+  </div>
+  <div class="bar">
+    <button id="btnFlip">สลับกล้อง</button>
+    <button id="btnStop">หยุด</button>
+  </div>
+
+  <div class="stat">
+    <span>โหลดโมเดล <b id="sLoad">–</b></span>
+    <span>ตอบสนอง <b id="sInf">–</b></span>
+    <span>FPS <b id="sFps">–</b></span>
+    <span>พบ <b id="sN">–</b></span>
+  </div>
+
+  <div class="out" id="out"></div>
+
+  <div class="note">
+    <b>นี่คือด่านทดสอบระบบ</b> — ยังไม่รู้จักอะไหล่ (โมเดล COCO 80 ชนิด: คน/เก้าอี้/ขวด ฯลฯ)<br>
+    ใช้ดูว่า “มือถือคุณโหลดโมเดลเร็วพอไหม + ตอบสนองกี่ ms” ก่อนลงทุนเก็บรูปอะไหล่จริง<br>
+    ขั้นต่อไป: เอาโมเดล YOLO ที่เทรนเองมาแทนในช่องเดียวกันนี้
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+<script>
+(function(){
+  const v = document.getElementById('v');
+  const cv = document.getElementById('c');
+  const ctx = cv.getContext('2d');
+  const hint = document.getElementById('hint');
+  const out = document.getElementById('out');
+  const sLoad = document.getElementById('sLoad');
+  const sInf = document.getElementById('sInf');
+  const sFps = document.getElementById('sFps');
+  const sN = document.getElementById('sN');
+
+  let model = null, stream = null, facing = 'environment', running = false, raf = 0;
+  let frames = 0, fpsAt = 0;
+
+  async function ensureModel(){
+    if (model) return model;
+    hint.style.display = '';
+    const t0 = performance.now();
+    const tick = setInterval(() => {
+      hint.innerHTML = 'กำลังโหลดโมเดล… <b>' + Math.round((performance.now() - t0) / 1000) + ' วิ</b>' +
+        '<br><small>ครั้งแรกครั้งเดียว (~4.5 MB) ครั้งต่อไปเปิดเร็วเพราะแคชไว้</small>';
+    }, 250);
+    try{
+      model = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
+      sLoad.textContent = (Math.round(performance.now() - t0) / 1000).toFixed(1) + ' วิ';
+      hint.style.display = 'none';
+    }catch(e){
+      clearInterval(tick);
+      hint.innerHTML = 'โหลดโมเดลไม่สำเร็จ: ' + (e && e.message ? e.message : e) +
+        '<br><small>เน็ตช้า/โดนบล็อก — กด “เปิดกล้อง” อีกครั้งเพื่อลองใหม่</small>';
+      return null;
+    }
+    clearInterval(tick);
+    return model;
+  }
+
+  function drawBoxes(preds, W, H){
+    cv.width = W; cv.height = H;
+    ctx.clearRect(0, 0, W, H);
+    ctx.lineWidth = Math.max(3, W / 200);
+    ctx.font = `600 ${Math.max(14, W / 32)}px system-ui`;
+    preds.forEach(p => {
+      const [x, y, w, h] = p.bbox;
+      ctx.strokeStyle = '#2ee6a6';
+      ctx.strokeRect(x, y, w, h);
+      const label = p.class + ' ' + Math.round(p.score * 100) + '%';
+      const tw = ctx.measureText(label).width + 14;
+      ctx.fillStyle = 'rgba(46,230,166,.92)';
+      ctx.fillRect(x, Math.max(0, y - 26), tw, 26);
+      ctx.fillStyle = '#04231a';
+      ctx.fillText(label, x + 7, Math.max(18, y - 8));
+    });
+  }
+
+  function renderList(preds){
+    sN.textContent = preds.length;
+    if (!preds.length){ out.innerHTML = '<div class="row"><span class="nm" style="color:#8fa3bf">ไม่พบวัตถุที่โมเดลรู้จัก — ลองขยับให้วัตถุอยู่กลางจอ</span></div>'; return; }
+    out.innerHTML = preds.slice(0, 5).map(p => {
+      const pct = Math.round(p.score * 100);
+      return `<div class="row"><span class="nm">${p.class}<span class="mini"><i style="width:${pct}%"></i></span></span><span class="pct">${pct}%</span></div>`;
+    }).join('');
+  }
+
+  async function detect(source, W, H){
+    const t0 = performance.now();
+    const preds = await model.detect(source, 20, 0.45);
+    sInf.textContent = Math.round(performance.now() - t0) + ' ms';
+    drawBoxes(preds, W, H);
+    renderList(preds);
+  }
+
+  async function loop(){
+    if (!running) return;
+    if (v.readyState >= 2){
+      await detect(v, v.videoWidth, v.videoHeight);
+      frames++;
+      const now = performance.now();
+      if (now - fpsAt > 700){ sFps.textContent = (frames / ((now - fpsAt) / 1000)).toFixed(1); frames = 0; fpsAt = now; }
+    }
+    raf = requestAnimationFrame(loop);
+  }
+
+  async function openCam(){
+    try{
+      await ensureModel();
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false
+      });
+      v.srcObject = stream;
+      await v.play();
+      running = true; frames = 0; fpsAt = performance.now();
+      document.getElementById('btnCam').textContent = 'กำลังสแกน…';
+      cancelAnimationFrame(raf); loop();
+    }catch(e){
+      hint.style.display = '';
+      hint.innerHTML = 'เปิดกล้องไม่ได้: ' + (e && e.name ? e.name : e) +
+        '<br><small>ต้องเปิดผ่าน https:// (GitHub Pages) และอนุญาตกล้อง</small>';
+    }
+  }
+
+  function stopCam(){
+    running = false; cancelAnimationFrame(raf);
+    if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
+    v.srcObject = null; ctx.clearRect(0, 0, cv.width, cv.height);
+    document.getElementById('btnCam').textContent = 'เปิดกล้อง';
+  }
+
+  document.getElementById('btnCam').onclick = openCam;
+  document.getElementById('btnStop').onclick = stopCam;
+  document.getElementById('btnFlip').onclick = () => { facing = facing === 'environment' ? 'user' : 'environment'; if (stream) openCam(); };
+
+  document.getElementById('file').onchange = async (ev) => {
+    const f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    stopCam();
+    await ensureModel();
+    const img = new Image();
+    img.onload = async () => {
+      const k = Math.min(1, 1024 / Math.max(img.width, img.height));
+      const W = Math.round(img.width * k), H = Math.round(img.height * k);
+      v.style.display = 'none';
+      cv.style.objectFit = 'contain';
+      cv.width = W; cv.height = H;
+      // วาดรูปลง canvas แล้วตรวจจับจาก canvas
+      cv.getContext('2d').drawImage(img, 0, 0, W, H);
+      const t0 = performance.now();
+      const preds = await model.detect(cv, 20, 0.45);
+      sInf.textContent = Math.round(performance.now() - t0) + ' ms';
+      drawBoxes(preds, W, H);
+      renderList(preds);
+    };
+    img.src = URL.createObjectURL(f);
+  };
+})();
+</script>
+</body>
+</html>
