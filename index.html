@@ -416,6 +416,12 @@
     #aiScanFab .fab-label{ display:none; }
   }
 
+  .ai-hint-free{
+    display:flex; align-items:center; gap:7px; margin:10px 0 0;
+    font-size:11.5px; color:#5eead4; background:rgba(45,212,191,.10);
+    border:1px solid rgba(45,212,191,.35); border-radius:10px; padding:8px 11px;
+  }
+  .ai-hint-free i{ font-size:14px; }
   #aiScanOverlay{
     position:fixed; inset:0; z-index:210;
     background:rgba(8,9,11,0);
@@ -4381,18 +4387,73 @@ async function ensureAiModelLoaded(){
       aiModelStatus = "ready";
       return true;
     } catch (err) {
+      // ยังไม่มีโมเดลที่เทรนเอง → ใช้โมเดลฟรี COCO-SSD (80 ชนิด) ไปก่อน
+      const ok = await loadFreeFallbackModel();
+      if (ok) return true;
       aiModelStatus = manifestErrIsMissing(err) ? "unconfigured" : "error";
       return false;
     }
   })();
   return aiModelLoadPromise;
 }
+/* ---------- โมเดลฟรี: COCO-SSD (Apache-2.0) ใช้ได้ทันที ---------- */
+let cocoLoading = null;
+function loadCocoSsdScript(){
+  if (window.cocoSsd) return Promise.resolve();
+  if (cocoLoading) return cocoLoading;
+  cocoLoading = new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js";
+    s.onload = () => res();
+    s.onerror = () => rej(new Error("coco-ssd load failed"));
+    document.head.appendChild(s);
+  });
+  return cocoLoading;
+}
+
+async function loadFreeFallbackModel(){
+  try {
+    aiModelStatus = "loading";
+    await loadCocoSsdScript();
+    if (!window.cocoSsd) throw new Error("cocoSsd missing");
+    aiModel = await cocoSsd.load({ base: "lite_mobilenet_v2" });
+    aiModelConfig = {
+      mode: "detect",
+      label: "โมเดลฟรี (รู้จัก 80 ชนิด)",
+      topK: 4,
+      minConfidence: 0.45,
+    };
+    aiClassNames = null;
+    aiModelStatus = "fallback";
+    return true;
+  } catch (e) {
+    aiModelStatus = "error";
+    return false;
+  }
+}
+
 function manifestErrIsMissing(err){
   return /no manifest|no active version/.test(String(err?.message || err));
 }
 
 async function runAiInference(imgEl){
   const cfg = aiModelConfig;
+
+  // โหมดโมเดลฟรี: ตรวจจับวัตถุ (คืนกล่อง + ชื่อ)
+  if (cfg && cfg.mode === "detect") {
+    const preds = await aiModel.detect(imgEl, 20, 0.30);
+    if (!preds || !preds.length) return [];
+    const merged = new Map();
+    preds.forEach(p => {
+      const prev = merged.get(p.class) || 0;
+      if (p.score * 100 > prev) merged.set(p.class, p.score * 100);
+    });
+    return [...merged.entries()]
+      .map(([name, pct]) => ({ name, pct }))
+      .sort((a, b) => b.pct - a.pct)
+      .slice(0, cfg.topK);
+  }
+
   const input = tf.tidy(() => {
     let img = tf.browser.fromPixels(imgEl).toFloat();
     img = tf.image.resizeBilinear(img, [cfg.inputSize, cfg.inputSize]);
@@ -4426,8 +4487,10 @@ function openAiScan(onPick){
   mountAiScanFab(); // ensure DOM exists
   const overlay = document.getElementById("aiScanOverlay");
   overlay.classList.add("open");
-  ensureAiModelLoaded();
   renderAiScanBody();
+  ensureAiModelLoaded().then(() => {
+    if (overlay.classList.contains("open") && aiScanStage === "camera") renderAiScanBody();
+  });
   startAiCamera();
 }
 
@@ -4454,7 +4517,11 @@ function stopAiCamera(){
 
 function captureAiPhoto(){
   const video = document.getElementById("aiScanVideo");
-  if (!video || !video.videoWidth) return;
+  // กล้องไม่ขึ้น (ไม่อนุญาต / เครื่องไม่มีกล้อง) → เปิดคลังภาพแทน ไม่ให้ปุ่มเงียบ
+  if (!video || !video.videoWidth) {
+    document.getElementById("aiFileInput")?.click();
+    return;
+  }
   const canvas = document.createElement("canvas");
   const size = Math.min(video.videoWidth, video.videoHeight);
   canvas.width = size; canvas.height = size;
@@ -4520,8 +4587,9 @@ function renderAiScanBody(){
         </svg>
         <div class="ai-scan-hint">จัดอะไหล่ให้อยู่กลางวงกลม แล้วถ่ายภาพ</div>
       </div>
-      ${aiModelStatus === "unconfigured" ? `<div class="ai-low-conf">⚠️ ยังไม่ได้ตั้งค่าโมเดล AI (ไม่พบ models/manifest.json) — ดูวิธีตั้งค่าจากไฟล์ที่แนบให้</div>` : ""}
-      ${aiModelStatus === "error" ? `<div class="ai-low-conf">⚠️ โหลดโมเดล AI ไม่สำเร็จ ลองรีเฟรชหน้าเว็บใหม่</div>` : ""}
+      ${aiModelStatus === "unconfigured" ? `<div class="ai-low-conf">⚠️ ยังไม่ได้ตั้งค่าโมเดล AI (ไม่พบ models/manifest.json)</div>` : ""}
+      ${aiModelStatus === "fallback" ? `<div class="ai-hint-free"><i class="ti ti-info-circle"></i> โหมดทดลอง — ใช้โมเดลฟรี 80 ชนิด (ยังไม่ใช่โมเดลอะไหล่)</div>` : ""}
+      ${aiModelStatus === "error" ? `<div class="ai-low-conf">⚠️ โหลดโมเดลไม่สำเร็จ — ตรวจเน็ตแล้วลองกด “ถ่ายรูป” อีกครั้ง</div>` : ""}
       <div class="ai-scan-controls">
         <button class="btn btn-ai-capture" id="btnAiCapture"><i class="ti ti-camera"></i> ถ่ายรูป</button>
         <button class="btn btn-ghost" id="btnAiPickFile"><i class="ti ti-photo"></i> เลือกจากคลังภาพ</button>
