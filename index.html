@@ -4416,7 +4416,12 @@ async function loadFreeFallbackModel(){
     aiModelStatus = "loading";
     await loadCocoSsdScript();
     if (!window.cocoSsd) throw new Error("cocoSsd missing");
-    aiModel = await cocoSsd.load({ base: "lite_mobilenet_v2" });
+    // โหลดจากในเครื่องก่อน (เร็ว/ออฟไลน์ได้) ถ้าไม่มีค่อยไป CDN
+    try {
+      aiModel = await cocoSsd.load({ base: "lite_mobilenet_v2", modelUrl: "./models/coco/model.json" });
+    } catch (e) {
+      aiModel = await cocoSsd.load({ base: "lite_mobilenet_v2" });
+    }
     aiModelConfig = {
       mode: "detect",
       label: "โมเดลฟรี (รู้จัก 80 ชนิด)",
@@ -4588,6 +4593,7 @@ function renderAiScanBody(){
         <div class="ai-scan-hint">จัดอะไหล่ให้อยู่กลางวงกลม แล้วถ่ายภาพ</div>
       </div>
       ${aiModelStatus === "unconfigured" ? `<div class="ai-low-conf">⚠️ ยังไม่ได้ตั้งค่าโมเดล AI (ไม่พบ models/manifest.json)</div>` : ""}
+      ${aiModelStatus === "loading" ? `<div class="ai-hint-free"><i class="ti ti-loader"></i> กำลังเตรียมโมเดล… ครั้งแรกอาจใช้ 10–20 วิ</div>` : ""}
       ${aiModelStatus === "fallback" ? `<div class="ai-hint-free"><i class="ti ti-info-circle"></i> โหมดทดลอง — ใช้โมเดลฟรี 80 ชนิด (ยังไม่ใช่โมเดลอะไหล่)</div>` : ""}
       ${aiModelStatus === "error" ? `<div class="ai-low-conf">⚠️ โหลดโมเดลไม่สำเร็จ — ตรวจเน็ตแล้วลองกด “ถ่ายรูป” อีกครั้ง</div>` : ""}
       <div class="ai-scan-controls">
