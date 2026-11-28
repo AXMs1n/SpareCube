@@ -4353,7 +4353,8 @@ let aiModelLoadPromise = null;
 let aiScanCallback = null;
 let aiScanStream = null;
 let aiScanImageSrc = null;   // captured/selected image as dataURL
-let aiScanStage = "camera";  // camera | loading | result
+let aiScanStage = "camera";  // camera | loading | result | error
+let aiCamError = null;       // เหตุผลที่เปิดกล้องไม่ได้
 let aiScanResults = null;    // [{name, pct}]
 
 async function ensureAiModelLoaded(){
@@ -4489,14 +4490,12 @@ function openAiScan(onPick){
   aiScanImageSrc = null;
   aiScanResults = null;
   aiScanStage = "camera";
+  aiCamError = null;
   mountAiScanFab(); // ensure DOM exists
   const overlay = document.getElementById("aiScanOverlay");
   overlay.classList.add("open");
   renderAiScanBody();
-  ensureAiModelLoaded().then(() => {
-    if (overlay.classList.contains("open") && aiScanStage === "camera") renderAiScanBody();
-  });
-  startAiCamera();
+  startAiCamera();   // เปิดกล้องทันที — ไม่โหลดโมเดลตอนเปิด (กันแอปค้าง/จอดำ)
 }
 
 function closeAiScan(){
@@ -4511,8 +4510,11 @@ async function startAiCamera(){
     aiScanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
     const video = document.getElementById("aiScanVideo");
     if (video) { video.srcObject = aiScanStream; await video.play().catch(() => {}); }
-  } catch {
-    aiScanStream = null; // no camera access — user can still pick a file
+    aiCamError = null;
+  } catch (e) {
+    aiScanStream = null;
+    aiCamError = (e && e.name) ? e.name : "camera-error";
+    if (aiScanStage === "camera") renderAiScanBody();   // กันกล่องดำเงียบๆ
   }
 }
 function stopAiCamera(){
@@ -4524,7 +4526,7 @@ function captureAiPhoto(){
   const video = document.getElementById("aiScanVideo");
   // กล้องไม่ขึ้น (ไม่อนุญาต / เครื่องไม่มีกล้อง) → เปิดคลังภาพแทน ไม่ให้ปุ่มเงียบ
   if (!video || !video.videoWidth) {
-    document.getElementById("aiFileInput")?.click();
+    pickAiImage(true);   // กล้องไม่ขึ้น → เปิดกล้องเครื่องผ่าน file picker
     return;
   }
   const canvas = document.createElement("canvas");
@@ -4535,6 +4537,22 @@ function captureAiPhoto(){
   aiScanImageSrc = canvas.toDataURL("image/jpeg", 0.9);
   stopAiCamera();
   runAiScanOnCurrentImage();
+}
+
+/* เปิดตัวเลือกไฟล์แบบสดๆ ทุกครั้ง — ไม่พึ่ง input ที่อาจถูกวาดใหม่ทับ */
+function pickAiImage(fromCamera){
+  const inp = document.createElement("input");
+  inp.type = "file";
+  inp.accept = "image/*";
+  if (fromCamera) inp.capture = "environment";
+  inp.style.display = "none";
+  inp.onchange = () => {
+    const f = inp.files && inp.files[0];
+    if (f) handleAiFile(f);
+    inp.remove();
+  };
+  document.body.appendChild(inp);
+  inp.click();
 }
 
 function handleAiFile(file){
@@ -4551,9 +4569,17 @@ async function runAiScanOnCurrentImage(){
   aiScanStage = "loading";
   renderAiScanBody();
 
+  const t0 = Date.now();
+  const tick = setInterval(() => {
+    const el = document.getElementById("aiLoadTxt");
+    if (el) el.textContent = `กำลังเตรียมโมเดล… ${Math.round((Date.now() - t0) / 1000)} วิ (ครั้งแรกครั้งเดียว)`;
+  }, 400);
+
   const ok = await ensureAiModelLoaded();
-  if (!ok || aiModelStatus !== "ready") {
-    aiScanStage = "camera"; // bounce back with an inline message
+  clearInterval(tick);
+
+  if (!ok) {                       // โหลดไม่สำเร็จ → คงรูปไว้ให้เห็น + ปุ่มลองใหม่
+    aiScanStage = "error";
     renderAiScanBody();
     return;
   }
@@ -4586,11 +4612,17 @@ function renderAiScanBody(){
   if (aiScanStage === "camera") {
     stageHtml = `
       <div class="ai-scan-stage">
-        <video id="aiScanVideo" playsinline muted autoplay></video>
-        <svg class="ai-scan-guide" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <circle cx="50" cy="50" r="30" vector-effect="non-scaling-stroke"></circle>
-        </svg>
-        <div class="ai-scan-hint">จัดอะไหล่ให้อยู่กลางวงกลม แล้วถ่ายภาพ</div>
+        ${aiCamError
+          ? `<div class="ai-scan-placeholder">
+               <i class="ti ti-camera-off"></i>
+               เปิดกล้องไม่ได้ (${esc(aiCamError)})<br>
+               <span style="font-size:11.5px">กด “เลือกจากคลังภาพ” แทนได้เลย</span>
+             </div>`
+          : `<video id="aiScanVideo" playsinline muted autoplay></video>
+             <svg class="ai-scan-guide" viewBox="0 0 100 100" preserveAspectRatio="none">
+               <circle cx="50" cy="50" r="30" vector-effect="non-scaling-stroke"></circle>
+             </svg>
+             <div class="ai-scan-hint">จัดอะไหล่ให้อยู่กลางวงกลม แล้วถ่ายภาพ</div>`}
       </div>
       ${aiModelStatus === "unconfigured" ? `<div class="ai-low-conf">⚠️ ยังไม่ได้ตั้งค่าโมเดล AI (ไม่พบ models/manifest.json)</div>` : ""}
       ${aiModelStatus === "loading" ? `<div class="ai-hint-free"><i class="ti ti-loader"></i> กำลังเตรียมโมเดล… ครั้งแรกอาจใช้ 10–20 วิ</div>` : ""}
@@ -4605,7 +4637,17 @@ function renderAiScanBody(){
   } else if (aiScanStage === "loading") {
     stageHtml = `
       <div class="ai-scan-stage"><img src="${aiScanImageSrc}"></div>
-      <div class="ai-scan-loading"><div class="ai-spinner"></div><span>กำลังวิเคราะห์รูปภาพ...</span></div>
+      <div class="ai-scan-loading"><div class="ai-spinner"></div><span id="aiLoadTxt">กำลังเตรียมโมเดล…</span></div>
+    `;
+  } else if (aiScanStage === "error") {
+    stageHtml = `
+      <div class="ai-scan-stage"><img src="${aiScanImageSrc}"></div>
+      <div class="ai-low-conf">⚠️ โหลดโมเดลไม่สำเร็จ — ตรวจเน็ตแล้วลองอีกครั้ง<br>
+        <span style="font-size:11px">ครั้งแรกต้องโหลด ~18 MB (ถ้าอัปโฟลเดอร์ models/ ขึ้นเว็บแล้วจะเร็วมาก)</span></div>
+      <div class="ai-scan-controls">
+        <button class="btn btn-ai-capture" id="btnAiRetryModel"><i class="ti ti-refresh"></i> ลองโหลดใหม่</button>
+        <button class="btn btn-ghost" id="btnAiRetake"><i class="ti ti-camera"></i> เลือกรูปใหม่</button>
+      </div>
     `;
   } else if (aiScanStage === "result") {
     const top = aiScanResults?.[0];
@@ -4657,21 +4699,7 @@ function renderAiScanBody(){
   }
 }
 
-function wireAiScanBodyEvents(){
-  document.getElementById("btnAiCapture")?.addEventListener("click", captureAiPhoto);
-  document.getElementById("btnAiPickFile")?.addEventListener("click", () => document.getElementById("aiFileInput")?.click());
-  document.getElementById("aiFileInput")?.addEventListener("change", (e) => {
-    const file = e.target.files?.[0]; if (file) handleAiFile(file);
-  });
-  document.getElementById("btnAiRetake")?.addEventListener("click", retakeAiPhoto);
-  document.getElementById("btnAiUseResult")?.addEventListener("click", () => {
-    const name = aiScanResults?.[0]?.name;
-    if (name && aiScanCallback) aiScanCallback(name);
-    closeAiScan();
-    showToast(`เติมชื่อ "${name}" ให้แล้ว ตรวจสอบอีกครั้งก่อนบันทึก`);
-  });
-}
-
+function wireAiScanBodyEvents(){ /* ใช้ event delegation บน overlay แทน (กันหลุดหลัง re-render) */ }
 function mountAiScanFab(){
   if (document.getElementById("aiScanFab")) return;
 
@@ -4693,8 +4721,33 @@ function mountAiScanFab(){
     </div>
   `;
   document.body.appendChild(overlay);
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) closeAiScan(); });
-  document.getElementById("btnAiScanClose").addEventListener("click", closeAiScan);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) { closeAiScan(); return; }
+    const t = e.target.closest?.("#btnAiScanClose,#btnAiCapture,#btnAiPickFile,#btnAiRetake,#btnAiRetryModel,#btnAiUseResult");
+    if (!t) return;
+    e.stopPropagation();
+    switch (t.id){
+      case "btnAiScanClose": closeAiScan(); break;
+      case "btnAiCapture":   captureAiPhoto(); break;
+      case "btnAiPickFile":  pickAiImage(false); break;
+      case "btnAiRetake":    retakeAiPhoto(); break;
+      case "btnAiRetryModel": aiModelStatus = "idle"; aiModelLoadPromise = null; runAiScanOnCurrentImage(); break;
+      case "btnAiUseResult": {
+        const name = aiScanResults?.[0]?.name;
+        if (name && aiScanCallback) aiScanCallback(name);
+        closeAiScan();
+        showToast(`เติมชื่อ "${name}" ให้แล้ว ตรวจสอบอีกครั้งก่อนบันทึก`);
+        break;
+      }
+    }
+  });
+
+  // รับไฟล์จาก input (delegation — ทน re-render)
+  overlay.addEventListener("change", (e) => {
+    if (e.target?.id !== "aiFileInput") return;
+    const f = e.target.files?.[0];
+    if (f) handleAiFile(f);
+  });
 }
 
 /* ---------------- Scroll index (แถบชื่อเครื่องจักรด้านขวา) ---------------- */
